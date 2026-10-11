@@ -1,0 +1,18 @@
+{
+  "@@locale": "pt",
+  "appTitle": "DV Max",
+  "@appTitle": {
+    "description": "Título da janela"
+  },
+  "navQueue": "Fila",
+  "navDone": "Concluídos",
+  "navProfiles": "Perfis",
+  "navSettings": "Ajustes",
+  "queueEmpty": "Cole ou solte um link para baixar.",
+  "urlHint": "Cole um link",
+  "dropHint": "Solte um link aqui",
+  "doneEmpty": "Nada concluído ainda.",
+  "profilesEmpty": "Os perfis entram no próximo passo.",
+  "settingsEmpty": "Os ajustes entram no próximo passo.",
+  "binariesPending": "yt-dlp e FFmpeg ainda não foram verificados."
+}
