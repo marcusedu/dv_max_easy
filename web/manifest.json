@@ -1,11 +1,11 @@
 {
-    "name": "dv_max_easy",
-    "short_name": "dv_max_easy",
+    "name": "DV Max",
+    "short_name": "DV Max",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#070b12",
+    "theme_color": "#070b12",
+    "description": "Cliente desktop para baixar vídeo e áudio com yt-dlp e FFmpeg.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

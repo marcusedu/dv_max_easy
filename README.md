@@ -1,5 +1,9 @@
 # DV Max
 
+<p align="center">
+  <img src="assets/app_icon.png" width="128" alt="Ícone do DV Max: um raio neon baixando YouTube, TikTok, X e Instagram.">
+</p>
+
 Cliente de desktop para baixar vídeo e áudio com o [yt-dlp](https://github.com/yt-dlp/yt-dlp) e o FFmpeg que já estão instalados na máquina. A janela se chama DV Max. O pacote Flutter é `dv_max_easy`.
 
 O app não embute o yt-dlp nem o FFmpeg. Os extratores mudam com frequência, e o binário que você atualiza pelo gerenciador de pacotes continua sendo o que faz o download. O DV Max monta a fila, os perfis, o progresso e as ações no arquivo.

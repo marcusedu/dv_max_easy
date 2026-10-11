@@ -58,6 +58,7 @@ flutter:
   generate: true
   uses-material-design: true
   assets:
+    - assets/app_icon.png
     - assets/fonts/Inter-Regular.ttf
     - assets/fonts/Inter-SemiBold.ttf
   fonts:

@@ -288,11 +288,18 @@ class _TitleBar extends StatelessWidget {
                   onPanStart: (_) => beginWindowDrag(),
                   child: Align(
                     alignment: Alignment.centerLeft,
-                    child: Text(
-                      AppIdentity.displayName,
-                      style: text.bodyMedium?.copyWith(
-                        color: scheme.onSurfaceVariant,
-                      ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const _Mark(size: 18, radius: 4),
+                        const SizedBox(width: 8),
+                        Text(
+                          AppIdentity.displayName,
+                          style: text.bodyMedium?.copyWith(
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -351,9 +358,20 @@ class _Sidebar extends StatelessWidget {
                   AppSpacing.m,
                   AppSpacing.l,
                 ),
-                child: Text(
-                  AppIdentity.displayName,
-                  style: pageTitle(scheme.onSurface).copyWith(fontSize: 22),
+                child: Row(
+                  children: [
+                    const _Mark(size: 28, radius: 7),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        AppIdentity.displayName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: pageTitle(scheme.onSurface)
+                            .copyWith(fontSize: 22),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               for (final (index, value) in ShellSection.values.indexed)
@@ -366,6 +384,26 @@ class _Sidebar extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _Mark extends StatelessWidget {
+  const _Mark({required this.size, required this.radius});
+
+  final double size;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(radius),
+      child: Image.asset(
+        'assets/app_icon.png',
+        width: size,
+        height: size,
+        filterQuality: FilterQuality.medium,
       ),
     );
   }
