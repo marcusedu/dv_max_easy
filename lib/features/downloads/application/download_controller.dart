@@ -12,6 +12,11 @@ final downloadControllerProvider =
       DownloadController.new,
     );
 
+/// Fila já existente ao abrir. O app deixa vazia; o teste injeta um item.
+final initialDownloadsProvider = Provider<List<DownloadJob>>(
+  (ref) => const [],
+);
+
 final class DownloadJob {
   const DownloadJob({
     required this.id,
@@ -59,7 +64,7 @@ final class DownloadController extends Notifier<List<DownloadJob>> {
   final Map<String, Process> _processes = {};
 
   @override
-  List<DownloadJob> build() => const [];
+  List<DownloadJob> build() => ref.watch(initialDownloadsProvider);
 
   Future<void> enqueue(String raw) async {
     final url = raw.trim();
@@ -113,7 +118,7 @@ final class DownloadController extends Notifier<List<DownloadJob>> {
           running: false,
           error: code == 0 ? null : 'exit_$code',
           clearError: code == 0,
-          detail: code == 0 ? current.outputPath ?? 'done' : current.detail,
+          detail: code == 0 ? 'done' : current.detail,
         ),
       );
     } on Object catch (error) {
@@ -174,15 +179,14 @@ final class DownloadController extends Notifier<List<DownloadJob>> {
     }
     final progress = parseDownloadLine(line);
     if (progress == null) {
-      if (line.trim().isNotEmpty) {
-        _replace(current.copyWith(detail: line.trim()));
-      }
       return;
     }
     _replace(
       current.copyWith(
         fraction: progress.fraction,
-        detail: progress.detail ?? current.detail,
+        detail: progress.outputPath != null
+            ? current.detail
+            : progress.detail ?? current.detail,
         outputPath: progress.outputPath,
       ),
     );

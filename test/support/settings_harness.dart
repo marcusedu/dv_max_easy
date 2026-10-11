@@ -1,4 +1,5 @@
 import 'package:dv_max_easy/app/dv_max_app.dart';
+import 'package:dv_max_easy/features/downloads/application/download_controller.dart';
 import 'package:dv_max_easy/features/profiles/domain/profile.dart';
 import 'package:dv_max_easy/features/profiles/infrastructure/json_profile_store.dart';
 import 'package:dv_max_easy/features/settings/application/settings_controller.dart';
@@ -63,7 +64,10 @@ final class FixedVersionProbe implements VersionProbe {
   Future<String?> readVersion(String executable) async => version;
 }
 
-Widget appWithSettings(AppSettings settings) {
+Widget appWithSettings(
+  AppSettings settings, {
+  List<DownloadJob> jobs = const [],
+}) {
   return ProviderScope(
     overrides: [
       settingsStoreProvider.overrideWithValue(MemorySettingsStore(settings)),
@@ -74,6 +78,7 @@ Widget appWithSettings(AppSettings settings) {
       versionProbeProvider.overrideWithValue(
         const FixedVersionProbe('yt-dlp 2026.1.1'),
       ),
+      if (jobs.isNotEmpty) initialDownloadsProvider.overrideWithValue(jobs),
     ],
     child: const DvMaxApp(),
   );

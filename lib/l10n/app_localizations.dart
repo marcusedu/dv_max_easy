@@ -166,6 +166,54 @@ abstract class AppLocalizations {
   /// **'Cancelar'**
   String get downloadCancel;
 
+  /// No description provided for @statusDone.
+  ///
+  /// In pt, this message translates to:
+  /// **'Concluído'**
+  String get statusDone;
+
+  /// No description provided for @statusFailed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Falhou'**
+  String get statusFailed;
+
+  /// No description provided for @statusCancelled.
+  ///
+  /// In pt, this message translates to:
+  /// **'Cancelado'**
+  String get statusCancelled;
+
+  /// No description provided for @fileOpen.
+  ///
+  /// In pt, this message translates to:
+  /// **'Abrir'**
+  String get fileOpen;
+
+  /// No description provided for @fileCopy.
+  ///
+  /// In pt, this message translates to:
+  /// **'Copiar'**
+  String get fileCopy;
+
+  /// No description provided for @fileReveal.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mostrar na pasta'**
+  String get fileReveal;
+
+  /// No description provided for @fileShare.
+  ///
+  /// In pt, this message translates to:
+  /// **'Compartilhar'**
+  String get fileShare;
+
+  /// No description provided for @fileCopied.
+  ///
+  /// In pt, this message translates to:
+  /// **'Arquivo copiado'**
+  String get fileCopied;
+
   /// No description provided for @downloadNeedFolder.
   ///
   /// In pt, this message translates to:

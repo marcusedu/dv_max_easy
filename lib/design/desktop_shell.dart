@@ -77,7 +77,11 @@ class DesktopShellState extends ConsumerState<DesktopShell> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
-    final version = ref.watch(settingsControllerProvider).asData?.value.ytDlpVersion;
+    final version = ref
+        .watch(settingsControllerProvider)
+        .asData
+        ?.value
+        .ytDlpVersion;
     return Shortcuts(
       shortcuts: {
         _mod(LogicalKeyboardKey.keyL): const FocusUrlIntent(),
@@ -139,27 +143,28 @@ class DesktopShellState extends ConsumerState<DesktopShell> {
           autofocus: true,
           child: Scaffold(
             backgroundColor: scheme.surface,
-            body: Column(
+            body: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _Toolbar(
-                  title: _sectionTitle(l10n),
-                  status: version == null
-                      ? l10n.binariesPending
-                      : l10n.binariesReady(version),
+                _Sidebar(
+                  section: section,
+                  onSelect: _select,
+                  labels: [
+                    l10n.navQueue,
+                    l10n.navDone,
+                    l10n.navProfiles,
+                    l10n.navSettings,
+                  ],
                 ),
                 Expanded(
-                  child: Row(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      _Sidebar(
-                        section: section,
-                        onSelect: _select,
-                        labels: [
-                          l10n.navQueue,
-                          l10n.navDone,
-                          l10n.navProfiles,
-                          l10n.navSettings,
-                        ],
+                      _Toolbar(
+                        title: _sectionTitle(l10n),
+                        status: version == null
+                            ? l10n.binariesPending
+                            : l10n.binariesReady(version),
                       ),
                       Expanded(
                         child: AnimatedSwitcher(
@@ -213,16 +218,27 @@ class _Toolbar extends StatelessWidget {
         border: Border(bottom: BorderSide(color: scheme.outlineVariant)),
       ),
       child: SizedBox(
-        height: 52,
+        height: 56,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
           child: Row(
             children: [
-              Text(AppIdentity.displayName, style: text.titleLarge),
-              const SizedBox(width: AppSpacing.l),
               Text(title, style: text.titleMedium),
               const Spacer(),
-              Text(status, style: text.bodySmall),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: scheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: scheme.outlineVariant),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  child: Text(status, style: text.bodySmall),
+                ),
+              ),
             ],
           ),
         ),
@@ -260,9 +276,22 @@ class _Sidebar extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.m,
+                  AppSpacing.s,
+                  AppSpacing.m,
+                  AppSpacing.l,
+                ),
+                child: Text(
+                  AppIdentity.displayName,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
               for (final (index, value) in ShellSection.values.indexed)
                 _NavButton(
                   label: labels[index],
+                  icon: _navIcons[index],
                   selected: section == value,
                   onPressed: () => onSelect(value),
                 ),
@@ -274,40 +303,57 @@ class _Sidebar extends StatelessWidget {
   }
 }
 
+const _navIcons = [
+  Icons.download_rounded,
+  Icons.check_rounded,
+  Icons.tune_rounded,
+  Icons.settings_rounded,
+];
+
 class _NavButton extends StatelessWidget {
   const _NavButton({
     required this.label,
+    required this.icon,
     required this.selected,
     required this.onPressed,
   });
 
   final String label;
+  final IconData icon;
   final bool selected;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final color = selected ? scheme.onSurface : scheme.onSurfaceVariant;
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.s),
+      padding: const EdgeInsets.only(bottom: 4),
       child: Material(
-        color: selected ? scheme.secondaryContainer : Colors.transparent,
+        color: selected
+            ? scheme.primary.withValues(alpha: 0.16)
+            : Colors.transparent,
         borderRadius: BorderRadius.circular(AppSpacing.controlRadius),
         child: InkWell(
           onTap: onPressed,
+          hoverColor: scheme.onSurface.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(AppSpacing.controlRadius),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: AppSpacing.hit),
+            constraints: const BoxConstraints(minHeight: 36),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  label,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                children: [
+                  Icon(icon, size: 16, color: color),
+                  const SizedBox(width: 10),
+                  Text(
+                    label,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: color,
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
           ),
@@ -332,8 +378,6 @@ class _SectionBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final text = Theme.of(context).textTheme;
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.l),
       child: switch (section) {
@@ -342,7 +386,7 @@ class _SectionBody extends StatelessWidget {
           urlFocus: urlFocus,
           onSubmit: onSubmit,
         ),
-        ShellSection.done => Text(l10n.doneEmpty, style: text.bodyMedium),
+        ShellSection.done => const CompletedPanel(),
         ShellSection.profiles => const ProfilesPage(),
         ShellSection.settings => const SettingsForm(),
       },

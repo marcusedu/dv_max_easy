@@ -46,6 +46,30 @@ class AppLocalizationsPt extends AppLocalizations {
   String get downloadCancel => 'Cancelar';
 
   @override
+  String get statusDone => 'Concluído';
+
+  @override
+  String get statusFailed => 'Falhou';
+
+  @override
+  String get statusCancelled => 'Cancelado';
+
+  @override
+  String get fileOpen => 'Abrir';
+
+  @override
+  String get fileCopy => 'Copiar';
+
+  @override
+  String get fileReveal => 'Mostrar na pasta';
+
+  @override
+  String get fileShare => 'Compartilhar';
+
+  @override
+  String get fileCopied => 'Arquivo copiado';
+
+  @override
   String get downloadNeedFolder =>
       'Escolha a pasta padrão em Ajustes antes de baixar.';
 
