@@ -1,4 +1,6 @@
 import 'package:dv_max_easy/app/dv_max_app.dart';
+import 'package:dv_max_easy/features/profiles/domain/profile.dart';
+import 'package:dv_max_easy/features/profiles/infrastructure/json_profile_store.dart';
 import 'package:dv_max_easy/features/settings/application/settings_controller.dart';
 import 'package:dv_max_easy/features/settings/domain/app_settings.dart';
 import 'package:dv_max_easy/features/settings/domain/binary_path.dart';
@@ -13,6 +15,20 @@ AppSettings readySettings() {
     ytDlpPath: '/usr/local/bin/yt-dlp',
     ffmpegPath: '/usr/local/bin/ffmpeg',
   );
+}
+
+class MemoryProfileStore implements ProfileStore {
+  MemoryProfileStore(this.document);
+
+  ProfileDocument document;
+
+  @override
+  Future<ProfileDocument> ensureLoaded() async => document;
+
+  @override
+  Future<void> save(List<Profile> profiles) async {
+    document = ProfileDocument(profiles, seeded: document.seeded);
+  }
 }
 
 class MemorySettingsStore implements SettingsStore {
@@ -51,6 +67,9 @@ Widget appWithSettings(AppSettings settings) {
   return ProviderScope(
     overrides: [
       settingsStoreProvider.overrideWithValue(MemorySettingsStore(settings)),
+      profileStoreProvider.overrideWithValue(
+        MemoryProfileStore(ProfileDocument([musicPreset(), filmsPreset()])),
+      ),
       pathFactsProvider.overrideWithValue(const AcceptingPathFacts()),
       versionProbeProvider.overrideWithValue(
         const FixedVersionProbe('yt-dlp 2026.1.1'),

@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:dv_max_easy/core/clock.dart';
 import 'package:dv_max_easy/core/log.dart';
+import 'package:dv_max_easy/features/profiles/domain/profile_rules.dart';
+import 'package:dv_max_easy/features/profiles/infrastructure/json_profile_store.dart';
 import 'package:dv_max_easy/features/settings/domain/app_settings.dart';
 import 'package:dv_max_easy/features/settings/domain/binary_path.dart';
 import 'package:dv_max_easy/features/settings/domain/settings_ports.dart';
@@ -88,8 +90,21 @@ final class SettingsController extends AsyncNotifier<SettingsView> {
   @override
   Future<SettingsView> build() async {
     final loaded = await ref.read(settingsStoreProvider).load();
+    final profiles = await ref.read(profileStoreProvider).ensureLoaded();
+    var settings = loaded.settings;
+    final selected = preferredProfileId(
+      profiles.profiles,
+      settings.selectedProfileId,
+    );
+    if (selected != settings.selectedProfileId) {
+      settings = settings.copyWith(
+        selectedProfileId: selected,
+        clearProfile: selected == null,
+      );
+      await ref.read(settingsStoreProvider).save(settings);
+    }
     var view = SettingsView(
-      settings: loaded.settings,
+      settings: settings,
       noticeCode: loaded.backupPath == null ? null : 'schema_reset',
       noticeDetail: loaded.backupPath == null
           ? null
@@ -120,6 +135,14 @@ final class SettingsController extends AsyncNotifier<SettingsView> {
 
   Future<void> setRedactUrls(bool enabled) async {
     await _save(_current.settings.copyWith(redactUrlsInLog: enabled));
+  }
+
+  Future<void> selectProfile(String? id) async {
+    final next = _current.settings.copyWith(
+      selectedProfileId: id,
+      clearProfile: id == null,
+    );
+    await _persist(_current.copyWith(settings: next));
   }
 
   Future<void> stageCandidate(BinaryKind kind, String path) async {

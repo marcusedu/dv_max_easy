@@ -1,6 +1,7 @@
 import 'package:dv_max_easy/app/app_identity.dart';
 import 'package:dv_max_easy/app/shell_section.dart';
 import 'package:dv_max_easy/design/app_theme.dart';
+import 'package:dv_max_easy/features/profiles/presentation/profiles_page.dart';
 import 'package:dv_max_easy/features/settings/application/settings_controller.dart';
 import 'package:dv_max_easy/features/settings/presentation/settings_form.dart';
 import 'package:dv_max_easy/l10n/app_localizations.dart';
@@ -323,10 +324,7 @@ class _SectionBody extends StatelessWidget {
           ],
         ),
         ShellSection.done => Text(l10n.doneEmpty, style: text.bodyMedium),
-        ShellSection.profiles => Text(
-          l10n.profilesEmpty,
-          style: text.bodyMedium,
-        ),
+        ShellSection.profiles => const ProfilesPage(),
         ShellSection.settings => const SettingsForm(),
       },
     );

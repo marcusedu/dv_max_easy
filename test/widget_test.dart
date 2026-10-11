@@ -21,7 +21,7 @@ void main() {
     await tester.tap(find.text('Perfis'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Os perfis entram no próximo passo.'), findsOneWidget);
+    expect(find.text('Filmes'), findsWidgets);
   });
 
   testWidgets('control 4 opens settings', (tester) async {

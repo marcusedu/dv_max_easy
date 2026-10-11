@@ -6,10 +6,11 @@ import 'package:dv_max_easy/core/log.dart';
 import 'package:path/path.dart' as p;
 
 final class JsonRead {
-  const JsonRead(this.document, {this.backupPath});
+  const JsonRead(this.document, {this.backupPath, this.missing = false});
 
   final Map<String, dynamic>? document;
   final String? backupPath;
+  final bool missing;
 
   bool get isEmpty => document == null;
 }
@@ -24,7 +25,7 @@ final class JsonFile {
 
   Future<JsonRead> read({required int schemaVersion}) async {
     if (!await file.exists()) {
-      return const JsonRead(null);
+      return const JsonRead(null, missing: true);
     }
     Object? decoded;
     try {

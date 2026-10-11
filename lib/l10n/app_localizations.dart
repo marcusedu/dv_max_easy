@@ -310,6 +310,132 @@ abstract class AppLocalizations {
   /// **'Não encontrei o programa nesses caminhos.'**
   String get errNotFound;
 
+  /// No description provided for @profileNew.
+  ///
+  /// In pt, this message translates to:
+  /// **'Novo perfil'**
+  String get profileNew;
+
+  /// No description provided for @restoreMusic.
+  ///
+  /// In pt, this message translates to:
+  /// **'Restaurar Música'**
+  String get restoreMusic;
+
+  /// No description provided for @restoreFilms.
+  ///
+  /// In pt, this message translates to:
+  /// **'Restaurar Filmes'**
+  String get restoreFilms;
+
+  /// No description provided for @profileName.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nome'**
+  String get profileName;
+
+  /// No description provided for @presetLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Qualidade'**
+  String get presetLabel;
+
+  /// No description provided for @presetBest.
+  ///
+  /// In pt, this message translates to:
+  /// **'Melhor'**
+  String get presetBest;
+
+  /// No description provided for @preset1080.
+  ///
+  /// In pt, this message translates to:
+  /// **'1080p'**
+  String get preset1080;
+
+  /// No description provided for @preset720.
+  ///
+  /// In pt, this message translates to:
+  /// **'720p'**
+  String get preset720;
+
+  /// No description provided for @presetAudio.
+  ///
+  /// In pt, this message translates to:
+  /// **'Só áudio'**
+  String get presetAudio;
+
+  /// No description provided for @rateLimitLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Limite de velocidade (2M)'**
+  String get rateLimitLabel;
+
+  /// No description provided for @fragmentsLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Fragmentos ao mesmo tempo (1–16)'**
+  String get fragmentsLabel;
+
+  /// No description provided for @bitrateLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Bitrate máximo (kbps)'**
+  String get bitrateLabel;
+
+  /// No description provided for @profileSave.
+  ///
+  /// In pt, this message translates to:
+  /// **'Salvar perfil'**
+  String get profileSave;
+
+  /// No description provided for @profileDelete.
+  ///
+  /// In pt, this message translates to:
+  /// **'Apagar'**
+  String get profileDelete;
+
+  /// No description provided for @errNameEmpty.
+  ///
+  /// In pt, this message translates to:
+  /// **'O perfil precisa de um nome.'**
+  String get errNameEmpty;
+
+  /// No description provided for @errAudioEmbed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Só áudio não embute legenda.'**
+  String get errAudioEmbed;
+
+  /// No description provided for @errContainer.
+  ///
+  /// In pt, this message translates to:
+  /// **'Esse contêiner não combina com o tipo.'**
+  String get errContainer;
+
+  /// No description provided for @errBitrate.
+  ///
+  /// In pt, this message translates to:
+  /// **'O bitrate precisa ser um número maior que zero.'**
+  String get errBitrate;
+
+  /// No description provided for @errRate.
+  ///
+  /// In pt, this message translates to:
+  /// **'O limite de velocidade não está num formato aceito.'**
+  String get errRate;
+
+  /// No description provided for @errFragments.
+  ///
+  /// In pt, this message translates to:
+  /// **'Os fragmentos ficam entre 1 e 16.'**
+  String get errFragments;
+
+  /// No description provided for @errTemplate.
+  ///
+  /// In pt, this message translates to:
+  /// **'O nome do arquivo não pode sair da pasta.'**
+  String get errTemplate;
+
   /// No description provided for @schemaReset.
   ///
   /// In pt, this message translates to:

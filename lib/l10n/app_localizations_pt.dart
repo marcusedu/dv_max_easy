@@ -126,6 +126,69 @@ class AppLocalizationsPt extends AppLocalizations {
   String get errNotFound => 'Não encontrei o programa nesses caminhos.';
 
   @override
+  String get profileNew => 'Novo perfil';
+
+  @override
+  String get restoreMusic => 'Restaurar Música';
+
+  @override
+  String get restoreFilms => 'Restaurar Filmes';
+
+  @override
+  String get profileName => 'Nome';
+
+  @override
+  String get presetLabel => 'Qualidade';
+
+  @override
+  String get presetBest => 'Melhor';
+
+  @override
+  String get preset1080 => '1080p';
+
+  @override
+  String get preset720 => '720p';
+
+  @override
+  String get presetAudio => 'Só áudio';
+
+  @override
+  String get rateLimitLabel => 'Limite de velocidade (2M)';
+
+  @override
+  String get fragmentsLabel => 'Fragmentos ao mesmo tempo (1–16)';
+
+  @override
+  String get bitrateLabel => 'Bitrate máximo (kbps)';
+
+  @override
+  String get profileSave => 'Salvar perfil';
+
+  @override
+  String get profileDelete => 'Apagar';
+
+  @override
+  String get errNameEmpty => 'O perfil precisa de um nome.';
+
+  @override
+  String get errAudioEmbed => 'Só áudio não embute legenda.';
+
+  @override
+  String get errContainer => 'Esse contêiner não combina com o tipo.';
+
+  @override
+  String get errBitrate => 'O bitrate precisa ser um número maior que zero.';
+
+  @override
+  String get errRate => 'O limite de velocidade não está num formato aceito.';
+
+  @override
+  String get errFragments => 'Os fragmentos ficam entre 1 e 16.';
+
+  @override
+  String get errTemplate => 'O nome do arquivo não pode sair da pasta.';
+
+  @override
   String schemaReset(String name) {
     return 'As configurações antigas foram guardadas em $name e o app começou de novo.';
   }
