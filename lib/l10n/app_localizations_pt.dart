@@ -272,6 +272,15 @@ class AppLocalizationsPt extends AppLocalizations {
   String get presetLabel => 'Qualidade';
 
   @override
+  String get containerLabel => 'Contêiner';
+
+  @override
+  String get profileRate => 'Taxa';
+
+  @override
+  String get profileFolder => 'Pasta deste perfil';
+
+  @override
   String get presetBest => 'Melhor';
 
   @override
@@ -284,13 +293,22 @@ class AppLocalizationsPt extends AppLocalizations {
   String get presetAudio => 'Só áudio';
 
   @override
-  String get rateLimitLabel => 'Limite de velocidade (2M)';
+  String get rateLimitLabel => 'Velocidade';
 
   @override
-  String get fragmentsLabel => 'Fragmentos ao mesmo tempo (1–16)';
+  String get rateLimitHint => 'Ex.: 2M ou 500K. Vazio não limita.';
 
   @override
-  String get bitrateLabel => 'Bitrate máximo (kbps)';
+  String get fragmentsLabel => 'Fragmentos';
+
+  @override
+  String get fragmentsHint => 'De 1 a 16 ao mesmo tempo.';
+
+  @override
+  String get bitrateLabel => 'Bitrate máximo';
+
+  @override
+  String get bitrateHint => 'Em kbps. Vazio não limita.';
 
   @override
   String get profileSave => 'Salvar perfil';

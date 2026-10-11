@@ -21,51 +21,135 @@ class ProfilesPage extends ConsumerWidget {
       data: (view) {
         final selected = view.selected;
         return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            SizedBox(
-              width: 200,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  for (final profile in view.profiles)
-                    ListTile(
-                      selected: profile.id == view.selectedId,
-                      title: Text(profile.name),
-                      onTap: () => ref
-                          .read(profileControllerProvider.notifier)
-                          .select(profile.id),
-                    ),
-                  OutlinedButton(
-                    onPressed: () =>
-                        ref.read(profileControllerProvider.notifier).create(),
-                    child: Text(l10n.profileNew),
-                  ),
-                  if (view.canRestoreMusic)
-                    TextButton(
-                      onPressed: () => ref
-                          .read(profileControllerProvider.notifier)
-                          .restoreMusic(),
-                      child: Text(l10n.restoreMusic),
-                    ),
-                  if (view.canRestoreFilms)
-                    TextButton(
-                      onPressed: () => ref
-                          .read(profileControllerProvider.notifier)
-                          .restoreFilms(),
-                      child: Text(l10n.restoreFilms),
-                    ),
-                ],
-              ),
-            ),
+            SizedBox(width: 248, child: _ProfileList(view: view)),
             const SizedBox(width: AppSpacing.l),
             if (selected == null)
               Text(l10n.profilesEmpty)
             else
-              Expanded(child: _Editor(profile: selected, error: view.errorCode)),
+              Expanded(
+                child: _Editor(profile: selected, error: view.errorCode),
+              ),
           ],
         );
       },
+    );
+  }
+}
+
+class _ProfileList extends ConsumerWidget {
+  const _ProfileList({required this.view});
+
+  final ProfileView view;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final notifier = ref.read(profileControllerProvider.notifier);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(AppSpacing.panelRadius),
+        border: Border.all(color: scheme.outlineVariant),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: ListView.separated(
+                itemCount: view.profiles.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final profile = view.profiles[index];
+                  return _ProfileRow(
+                    name: profile.name,
+                    summary: profileSummary(l10n, profile),
+                    selected: profile.id == view.selectedId,
+                    onTap: () => notifier.select(profile.id),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: AppSpacing.l),
+            OutlinedButton.icon(
+              onPressed: () => notifier.create(),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(40),
+              ),
+              icon: const Icon(Icons.add, size: 18),
+              label: Text(l10n.profileNew),
+            ),
+            if (view.canRestoreMusic) ...[
+              const SizedBox(height: 4),
+              TextButton(
+                onPressed: () => notifier.restoreMusic(),
+                child: Text(l10n.restoreMusic),
+              ),
+            ],
+            if (view.canRestoreFilms)
+              TextButton(
+                onPressed: () => notifier.restoreFilms(),
+                child: Text(l10n.restoreFilms),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfileRow extends StatelessWidget {
+  const _ProfileRow({
+    required this.name,
+    required this.summary,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String name;
+  final String summary;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    return Material(
+      color: selected
+          ? scheme.primary.withValues(alpha: 0.16)
+          : Colors.transparent,
+      borderRadius: BorderRadius.circular(AppSpacing.controlRadius),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppSpacing.controlRadius),
+        hoverColor: scheme.onSurface.withValues(alpha: 0.05),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: text.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                summary,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: text.bodySmall,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -125,97 +209,121 @@ class _EditorState extends ConsumerState<_Editor> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (widget.error != null)
-          Text(profileMessage(l10n, widget.error!), style: text.bodyMedium),
-        TextField(
-          controller: _name,
-          decoration: InputDecoration(labelText: l10n.profileName),
-          onChanged: (value) => _draft = _draft.copyWith(name: value),
+    final fieldFill = scheme.surface;
+    final namePanel = _Panel(
+      title: l10n.profileName,
+      child: TextField(
+        controller: _name,
+        decoration: InputDecoration(
+          labelText: l10n.profileName,
+          fillColor: fieldFill,
+          isDense: false,
         ),
-        const SizedBox(height: AppSpacing.m),
-        Text(l10n.presetLabel, style: text.bodyMedium),
-        Wrap(
-          spacing: AppSpacing.s,
-          children: [
-            for (final preset in QualityPreset.values)
-              ChoiceChip(
-                label: Text(presetLabel(l10n, preset)),
-                selected: _draft.preset == preset,
-                onSelected: (_) => setState(() {
-                  _draft = _draft.copyWith(
-                    preset: preset,
-                    container: preset == QualityPreset.audio
-                        ? MediaContainer.mp3
-                        : MediaContainer.mkv,
-                    subtitleMode: preset == QualityPreset.audio
-                        ? SubtitleMode.none
-                        : _draft.subtitleMode,
-                  );
-                }),
-              ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.m),
-        DropdownButton<MediaContainer>(
-          value: _draft.container,
-          items: [
-            for (final container in _containersFor(_draft.preset))
-              DropdownMenuItem(value: container, child: Text(container.name)),
-          ],
-          onChanged: (value) {
-            if (value == null) {
-              return;
-            }
-            setState(() => _draft = _draft.copyWith(container: value));
-          },
-        ),
-        const SizedBox(height: AppSpacing.m),
-        TextField(
-          controller: _rate,
-          decoration: InputDecoration(labelText: l10n.rateLimitLabel),
-          onChanged: (value) => _draft = _draft.copyWith(
-            rateLimit: value,
-            clearRate: value.trim().isEmpty,
+        onChanged: (value) => _draft = _draft.copyWith(name: value),
+      ),
+    );
+    final qualityPanel = _Panel(
+      title: l10n.presetLabel,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: AppSpacing.s,
+            runSpacing: AppSpacing.s,
+            children: [
+              for (final preset in QualityPreset.values)
+                ChoiceChip(
+                  label: Text(presetLabel(l10n, preset)),
+                  selected: _draft.preset == preset,
+                  visualDensity: VisualDensity.comfortable,
+                  onSelected: (_) => setState(() {
+                    _draft = _draft.copyWith(
+                      preset: preset,
+                      container: preset == QualityPreset.audio
+                          ? MediaContainer.mp3
+                          : MediaContainer.mkv,
+                      subtitleMode: preset == QualityPreset.audio
+                          ? SubtitleMode.none
+                          : _draft.subtitleMode,
+                    );
+                  }),
+                ),
+            ],
           ),
-        ),
-        TextField(
-          controller: _fragments,
-          decoration: InputDecoration(labelText: l10n.fragmentsLabel),
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          onChanged: (value) {
-            final parsed = int.tryParse(value);
-            _draft = _draft.copyWith(
-              concurrentFragments: parsed,
-              clearFragments: value.isEmpty,
+          const SizedBox(height: AppSpacing.l),
+          Text(l10n.containerLabel, style: text.bodySmall),
+          const SizedBox(height: AppSpacing.s),
+          Wrap(
+            spacing: AppSpacing.s,
+            runSpacing: AppSpacing.s,
+            children: [
+              for (final container in _containersFor(_draft.preset))
+                ChoiceChip(
+                  label: Text(container.name),
+                  selected: _draft.container == container,
+                  visualDensity: VisualDensity.comfortable,
+                  onSelected: (_) => setState(
+                    () => _draft = _draft.copyWith(container: container),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+    final ratePanel = _Panel(
+      title: l10n.profileRate,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final rate = _rateField(l10n, fieldFill);
+          final fragments = _fragmentsField(l10n, fieldFill);
+          final bitrate = _bitrateField(l10n, fieldFill);
+          if (constraints.maxWidth < 480) {
+            return Column(
+              children: [
+                rate,
+                const SizedBox(height: AppSpacing.m),
+                fragments,
+                const SizedBox(height: AppSpacing.m),
+                bitrate,
+              ],
             );
-          },
-        ),
-        TextField(
-          controller: _bitrate,
-          decoration: InputDecoration(labelText: l10n.bitrateLabel),
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          onChanged: (value) {
-            final parsed = int.tryParse(value);
-            _draft = _draft.copyWith(
-              maxBitrateKbps: parsed,
-              clearBitrate: value.isEmpty,
-            );
-          },
-        ),
-        const SizedBox(height: AppSpacing.m),
-        Text(
-          _draft.destinationFolder ?? l10n.folderEmpty,
-          style: text.bodySmall,
-        ),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: OutlinedButton(
+          }
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: rate),
+              const SizedBox(width: AppSpacing.m),
+              Expanded(child: fragments),
+              const SizedBox(width: AppSpacing.m),
+              Expanded(child: bitrate),
+            ],
+          );
+        },
+      ),
+    );
+    final folderPanel = _Panel(
+      title: l10n.profileFolder,
+      child: Row(
+        children: [
+          Icon(Icons.folder_outlined, size: 18, color: scheme.primary),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              _draft.destinationFolder ?? l10n.folderEmpty,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: text.bodyMedium?.copyWith(
+                color: _draft.destinationFolder == null
+                    ? scheme.onSurfaceVariant
+                    : scheme.onSurface,
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.m),
+          OutlinedButton(
             onPressed: () async {
               final folder = await getDirectoryPath();
               if (folder == null) {
@@ -227,25 +335,153 @@ class _EditorState extends ConsumerState<_Editor> {
             },
             child: Text(l10n.chooseFolder),
           ),
+        ],
+      ),
+    );
+    final actions = Row(
+      children: [
+        FilledButton(
+          onPressed: () =>
+              ref.read(profileControllerProvider.notifier).save(_draft),
+          child: Text(l10n.profileSave),
         ),
-        const SizedBox(height: AppSpacing.m),
-        Row(
-          children: [
-            FilledButton(
-              onPressed: () =>
-                  ref.read(profileControllerProvider.notifier).save(_draft),
-              child: Text(l10n.profileSave),
-            ),
-            const SizedBox(width: AppSpacing.s),
-            TextButton(
-              onPressed: () => ref
-                  .read(profileControllerProvider.notifier)
-                  .delete(_draft.id),
-              child: Text(l10n.profileDelete),
-            ),
-          ],
+        const Spacer(),
+        TextButton(
+          onPressed: () =>
+              ref.read(profileControllerProvider.notifier).delete(_draft.id),
+          style: TextButton.styleFrom(foregroundColor: scheme.error),
+          child: Text(l10n.profileDelete),
         ),
       ],
+    );
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final wide = constraints.maxWidth >= 640;
+        return ListView(
+          padding: const EdgeInsets.only(bottom: AppSpacing.l),
+          children: [
+            if (widget.error != null) ...[
+              Text(
+                profileMessage(l10n, widget.error!),
+                style: text.bodyMedium?.copyWith(color: scheme.error),
+              ),
+              const SizedBox(height: AppSpacing.m),
+            ],
+            if (wide)
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(flex: 2, child: namePanel),
+                  const SizedBox(width: AppSpacing.m),
+                  Expanded(flex: 3, child: qualityPanel),
+                ],
+              )
+            else ...[
+              namePanel,
+              const SizedBox(height: AppSpacing.m),
+              qualityPanel,
+            ],
+            const SizedBox(height: AppSpacing.m),
+            ratePanel,
+            const SizedBox(height: AppSpacing.m),
+            folderPanel,
+            const SizedBox(height: AppSpacing.l),
+            actions,
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _rateField(AppLocalizations l10n, Color fill) {
+    return TextField(
+      controller: _rate,
+      decoration: InputDecoration(
+        labelText: l10n.rateLimitLabel,
+        helperText: l10n.rateLimitHint,
+        fillColor: fill,
+        isDense: false,
+      ),
+      onChanged: (value) => _draft = _draft.copyWith(
+        rateLimit: value,
+        clearRate: value.trim().isEmpty,
+      ),
+    );
+  }
+
+  Widget _fragmentsField(AppLocalizations l10n, Color fill) {
+    return TextField(
+      controller: _fragments,
+      decoration: InputDecoration(
+        labelText: l10n.fragmentsLabel,
+        helperText: l10n.fragmentsHint,
+        fillColor: fill,
+        isDense: false,
+      ),
+      keyboardType: TextInputType.number,
+      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+      onChanged: (value) {
+        final parsed = int.tryParse(value);
+        _draft = _draft.copyWith(
+          concurrentFragments: parsed,
+          clearFragments: value.isEmpty,
+        );
+      },
+    );
+  }
+
+  Widget _bitrateField(AppLocalizations l10n, Color fill) {
+    return TextField(
+      controller: _bitrate,
+      decoration: InputDecoration(
+        labelText: l10n.bitrateLabel,
+        helperText: l10n.bitrateHint,
+        fillColor: fill,
+        isDense: false,
+      ),
+      keyboardType: TextInputType.number,
+      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+      onChanged: (value) {
+        final parsed = int.tryParse(value);
+        _draft = _draft.copyWith(
+          maxBitrateKbps: parsed,
+          clearBitrate: value.isEmpty,
+        );
+      },
+    );
+  }
+}
+
+class _Panel extends StatelessWidget {
+  const _Panel({required this.title, required this.child});
+
+  final String title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(AppSpacing.panelRadius),
+        border: Border.all(color: scheme.outlineVariant),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              title,
+              style: Theme.of(context).textTheme.bodyMedium
+                  ?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 12),
+            child,
+          ],
+        ),
+      ),
     );
   }
 }

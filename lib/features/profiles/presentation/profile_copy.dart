@@ -1,6 +1,10 @@
 import 'package:dv_max_easy/features/profiles/domain/profile.dart';
 import 'package:dv_max_easy/l10n/app_localizations.dart';
 
+String profileSummary(AppLocalizations l10n, Profile profile) {
+  return '${presetLabel(l10n, profile.preset)} · ${profile.container.name}';
+}
+
 String presetLabel(AppLocalizations l10n, QualityPreset preset) {
   return switch (preset) {
     QualityPreset.best => l10n.presetBest,

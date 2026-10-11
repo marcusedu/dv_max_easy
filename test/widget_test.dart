@@ -33,6 +33,28 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Filmes'), findsWidgets);
+    expect(find.text('1080p · mkv'), findsOneWidget);
+    expect(find.text('Só áudio · mp3'), findsOneWidget);
+    expect(find.text('Qualidade'), findsOneWidget);
+    expect(find.text('Taxa'), findsOneWidget);
+    expect(find.text('Contêiner'), findsOneWidget);
+    expect(find.text('Pasta deste perfil'), findsOneWidget);
+
+    final films = tester.getRect(
+      find.byWidgetPredicate(
+        (widget) => widget is Text && widget.data == 'Filmes',
+      ),
+    );
+    final add = tester.getRect(find.text('Novo perfil'));
+    expect(add.top, greaterThan(films.bottom + 12));
+
+    final save = tester.getRect(find.text('Salvar perfil'));
+    final delete = tester.getRect(find.text('Apagar'));
+    expect(delete.left, greaterThan(save.right + 24));
+    expect(
+      save.top,
+      greaterThan(tester.getRect(find.text('Qualidade')).bottom),
+    );
   });
 
   testWidgets('a finished file offers open, copy, reveal and share', (

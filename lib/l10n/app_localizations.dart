@@ -586,6 +586,24 @@ abstract class AppLocalizations {
   /// **'Qualidade'**
   String get presetLabel;
 
+  /// No description provided for @containerLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Contêiner'**
+  String get containerLabel;
+
+  /// No description provided for @profileRate.
+  ///
+  /// In pt, this message translates to:
+  /// **'Taxa'**
+  String get profileRate;
+
+  /// No description provided for @profileFolder.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pasta deste perfil'**
+  String get profileFolder;
+
   /// No description provided for @presetBest.
   ///
   /// In pt, this message translates to:
@@ -613,20 +631,38 @@ abstract class AppLocalizations {
   /// No description provided for @rateLimitLabel.
   ///
   /// In pt, this message translates to:
-  /// **'Limite de velocidade (2M)'**
+  /// **'Velocidade'**
   String get rateLimitLabel;
+
+  /// No description provided for @rateLimitHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ex.: 2M ou 500K. Vazio não limita.'**
+  String get rateLimitHint;
 
   /// No description provided for @fragmentsLabel.
   ///
   /// In pt, this message translates to:
-  /// **'Fragmentos ao mesmo tempo (1–16)'**
+  /// **'Fragmentos'**
   String get fragmentsLabel;
+
+  /// No description provided for @fragmentsHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'De 1 a 16 ao mesmo tempo.'**
+  String get fragmentsHint;
 
   /// No description provided for @bitrateLabel.
   ///
   /// In pt, this message translates to:
-  /// **'Bitrate máximo (kbps)'**
+  /// **'Bitrate máximo'**
   String get bitrateLabel;
+
+  /// No description provided for @bitrateHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Em kbps. Vazio não limita.'**
+  String get bitrateHint;
 
   /// No description provided for @profileSave.
   ///
