@@ -1,7 +1,12 @@
+import 'dart:io';
+
 import 'package:dv_max_easy/app/app_identity.dart';
 import 'package:dv_max_easy/app/shell_section.dart';
 import 'package:dv_max_easy/app/window_drag.dart';
 import 'package:dv_max_easy/design/app_theme.dart';
+import 'package:dv_max_easy/features/convert/application/convert_request.dart';
+import 'package:dv_max_easy/features/convert/domain/convert_plan.dart';
+import 'package:dv_max_easy/features/convert/presentation/convert_page.dart';
 import 'package:dv_max_easy/features/downloads/application/clipboard_offer.dart';
 import 'package:dv_max_easy/features/downloads/application/download_controller.dart';
 import 'package:dv_max_easy/features/downloads/application/library_query.dart';
@@ -9,6 +14,7 @@ import 'package:dv_max_easy/features/downloads/domain/download_plan.dart';
 import 'package:dv_max_easy/features/downloads/infrastructure/system_clipboard.dart';
 import 'package:dv_max_easy/features/downloads/presentation/download_status_bar.dart';
 import 'package:dv_max_easy/features/downloads/presentation/queue_panel.dart';
+import 'package:dv_max_easy/features/lists/presentation/lists_page.dart';
 import 'package:dv_max_easy/features/profiles/presentation/profiles_page.dart';
 import 'package:dv_max_easy/features/settings/application/settings_controller.dart';
 import 'package:dv_max_easy/features/settings/presentation/settings_form.dart';
@@ -74,13 +80,36 @@ class DesktopShellState extends ConsumerState<DesktopShell>
     if (!mounted) {
       return;
     }
-    ref
-        .read(clipboardOfferProvider.notifier)
-        .offer(text, enabled: settings.settings.clipboardPromptEnabled);
+    final enabled = settings.settings.clipboardPromptEnabled;
+    final local = localMediaPath(text ?? '', home: _home);
+    if (local != null && File(local).existsSync()) {
+      ref
+          .read(clipboardOfferProvider.notifier)
+          .offerLocal(local, enabled: enabled);
+      return;
+    }
+    ref.read(clipboardOfferProvider.notifier).offer(text, enabled: enabled);
+  }
+
+  String get _home =>
+      Platform.environment['HOME'] ?? Platform.environment['USERPROFILE'] ?? '';
+
+  void _openConvert(String path) {
+    ref.read(convertRequestProvider.notifier).open(path);
+    _select(ShellSection.convert);
   }
 
   void _onUrlEdited() {
     final next = urlController.text;
+    final local = localMediaPath(next, home: _home);
+    if (looksLikePastedLocal(_urlBefore, next, home: _home) &&
+        local != null &&
+        File(local).existsSync()) {
+      _urlBefore = '';
+      urlController.clear();
+      _openConvert(local);
+      return;
+    }
     if (looksLikePastedUrl(_urlBefore, next)) {
       _urlBefore = '';
       final url = next.trim();
@@ -102,6 +131,15 @@ class DesktopShellState extends ConsumerState<DesktopShell>
 
   Future<void> _pasteAndStart() async {
     final data = await ref.read(clipboardReaderProvider).readText();
+    final local = localMediaPath(data ?? '', home: _home);
+    if (local != null &&
+        File(local).existsSync() &&
+        !isHttpUrl(urlController.text)) {
+      _urlBefore = '';
+      urlController.clear();
+      _openConvert(local);
+      return;
+    }
     final url = downloadUrl(field: urlController.text, clipboard: data);
     if (url == null) {
       return;
@@ -149,9 +187,15 @@ class DesktopShellState extends ConsumerState<DesktopShell>
           ShellSection.done,
         ),
         _mod(LogicalKeyboardKey.digit3): const SelectSectionIntent(
-          ShellSection.profiles,
+          ShellSection.lists,
         ),
         _mod(LogicalKeyboardKey.digit4): const SelectSectionIntent(
+          ShellSection.convert,
+        ),
+        _mod(LogicalKeyboardKey.digit5): const SelectSectionIntent(
+          ShellSection.profiles,
+        ),
+        _mod(LogicalKeyboardKey.digit6): const SelectSectionIntent(
           ShellSection.settings,
         ),
         _mod(LogicalKeyboardKey.period): const CancelJobIntent(),
@@ -219,6 +263,8 @@ class DesktopShellState extends ConsumerState<DesktopShell>
                         labels: [
                           l10n.navQueue,
                           l10n.navDone,
+                          l10n.navLists,
+                          l10n.navConvert,
                           l10n.navProfiles,
                           l10n.navSettings,
                         ],
@@ -237,6 +283,8 @@ class DesktopShellState extends ConsumerState<DesktopShell>
                               onSubmit: _start,
                               onPaste: _pasteAndStart,
                               onDownload: _start,
+                              onConvert: _openConvert,
+                              onQueued: () => _select(ShellSection.queue),
                               onOpenCompleted: (url) {
                                 ref
                                     .read(libraryQueryProvider.notifier)
@@ -412,6 +460,8 @@ class _Mark extends StatelessWidget {
 const _navIcons = [
   Icons.download_rounded,
   Icons.check_circle_outline,
+  Icons.bookmarks_outlined,
+  Icons.movie_filter_outlined,
   Icons.layers_outlined,
   Icons.settings_outlined,
 ];
@@ -484,6 +534,8 @@ class _SectionBody extends StatelessWidget {
     required this.onSubmit,
     required this.onPaste,
     required this.onDownload,
+    required this.onConvert,
+    required this.onQueued,
     required this.onOpenCompleted,
   });
 
@@ -493,6 +545,8 @@ class _SectionBody extends StatelessWidget {
   final VoidCallback onSubmit;
   final Future<void> Function() onPaste;
   final ValueChanged<String> onDownload;
+  final ValueChanged<String> onConvert;
+  final VoidCallback onQueued;
   final ValueChanged<String> onOpenCompleted;
 
   @override
@@ -508,6 +562,15 @@ class _SectionBody extends StatelessWidget {
           onPaste: onPaste,
           onDownload: onDownload,
           onOpenCompleted: onOpenCompleted,
+          onConvert: onConvert,
+        ),
+        ShellSection.lists => _Page(
+          title: l10n.navLists,
+          child: ListsPage(onQueued: onQueued),
+        ),
+        ShellSection.convert => _Page(
+          title: l10n.navConvert,
+          child: const ConvertPage(),
         ),
         ShellSection.done => _Page(
           title: l10n.navDone,

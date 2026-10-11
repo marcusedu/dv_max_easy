@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-enum ShellSection { queue, done, profiles, settings }
+enum ShellSection { queue, done, lists, convert, profiles, settings }
 
 class FocusUrlIntent extends Intent {
   const FocusUrlIntent();

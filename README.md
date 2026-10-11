@@ -21,13 +21,14 @@ Funciona no macOS, no Windows e no Linux. Android, iOS e web não são alvos: as
 - Cortar um vídeo já baixado: tirar começo, fim ou um trecho do meio e juntar o que sobrou. O arquivo novo fica ao lado do original, com `-corte` no nome.
 - Apagar o arquivo depois de um prazo do perfil. O histórico permanece. Um arquivo pode ficar de fora desse prazo.
 - Ver, na barra de baixo, arquivos na pasta, espaço usado, espaço livre e o andamento global dos downloads.
+- Guardar listas de links e baixar a lista inteira de uma vez. As listas ficam salvas depois de fechar a janela.
+- Converter um arquivo local (mp4, mkv, webm, avi, mpg, mp3 e outros) para MP4, MKV, WebM, MP3 ou M4A. O original permanece. Um endereço `https`, mesmo terminando em `.mp4`, continua sendo download.
 
 A interface acompanha o tema claro ou escuro do sistema. Os textos visíveis estão em português.
 
 ## O que ainda não entra
 
 - Unir as partes de uma playlist na ordem da lista.
-- Conversão de um arquivo local que não veio de um download.
 - Receber um link pelo compartilhar do sistema e começar sozinho.
 - Player dentro da janela. O corte é por tempo, sem pré-visualização.
 
@@ -61,9 +62,9 @@ flutter run -d macos
 
 Troque `macos` por `windows` ou `linux` no sistema correspondente.
 
-Atalhos, com ⌘ no macOS e Ctrl no Windows e no Linux: L foca o campo, Enter baixa, 1 a 4 trocam Fila, Concluídos, Perfis e Ajustes, vírgula também abre Ajustes, ponto cancela o download em curso. Esc dispensa a faixa do link copiado.
+Atalhos, com ⌘ no macOS e Ctrl no Windows e no Linux: L foca o campo, Enter baixa, 1 a 6 trocam Fila, Concluídos, Listas, Converter, Perfis e Ajustes, vírgula também abre Ajustes, ponto cancela o download em curso. Esc dispensa a faixa do link copiado.
 
-Fila, perfis e ajustes ficam em JSON no diretório de suporte do aplicativo e continuam lá depois de fechar a janela.
+Fila, listas, perfis e ajustes ficam em JSON no diretório de suporte do aplicativo e continuam lá depois de fechar a janela.
 
 ## Testes
 

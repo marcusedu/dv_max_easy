@@ -23,6 +23,17 @@ final class ClipboardOfferController extends Notifier<String?> {
     state = url;
   }
 
+  void offerLocal(String path, {required bool enabled}) {
+    if (!enabled) {
+      return;
+    }
+    final text = path.trim();
+    if (text.isEmpty || _seen.contains(text) || state == text) {
+      return;
+    }
+    state = text;
+  }
+
   void dismiss() {
     final current = state;
     if (current != null) {

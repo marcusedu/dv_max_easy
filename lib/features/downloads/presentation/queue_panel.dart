@@ -2,6 +2,7 @@ import 'package:dv_max_easy/design/app_theme.dart';
 import 'package:dv_max_easy/features/downloads/application/clipboard_offer.dart';
 import 'package:dv_max_easy/features/downloads/application/download_controller.dart';
 import 'package:dv_max_easy/features/downloads/application/library_query.dart';
+import 'package:dv_max_easy/features/downloads/domain/download_plan.dart';
 import 'package:dv_max_easy/features/downloads/domain/file_stamp.dart';
 import 'package:dv_max_easy/features/downloads/domain/library.dart';
 import 'package:dv_max_easy/features/downloads/domain/retention.dart';
@@ -22,6 +23,7 @@ class QueuePanel extends ConsumerWidget {
     required this.onSubmit,
     required this.onPaste,
     required this.onDownload,
+    required this.onConvert,
     required this.onOpenCompleted,
     super.key,
   });
@@ -31,6 +33,7 @@ class QueuePanel extends ConsumerWidget {
   final VoidCallback onSubmit;
   final Future<void> Function() onPaste;
   final ValueChanged<String> onDownload;
+  final ValueChanged<String> onConvert;
   final ValueChanged<String> onOpenCompleted;
 
   @override
@@ -72,11 +75,20 @@ class QueuePanel extends ConsumerWidget {
         ),
         const SizedBox(height: 6),
         Text(l10n.queueSubtitle, style: text.bodySmall),
-        if (offer != null) ...[
+        if (offer != null && isHttpUrl(offer)) ...[
           const SizedBox(height: AppSpacing.m),
           _ClipboardBanner(
             url: offer,
             onDownload: () => onDownload(offer),
+            onDismiss: () =>
+                ref.read(clipboardOfferProvider.notifier).dismiss(),
+          ),
+        ],
+        if (offer != null && !isHttpUrl(offer)) ...[
+          const SizedBox(height: AppSpacing.m),
+          _LocalFileBanner(
+            path: offer,
+            onConvert: () => onConvert(offer),
             onDismiss: () =>
                 ref.read(clipboardOfferProvider.notifier).dismiss(),
           ),
@@ -581,6 +593,66 @@ class _ClipboardBanner extends StatelessWidget {
               onPressed: onDownload,
               child: Text(l10n.downloadStart),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LocalFileBanner extends StatelessWidget {
+  const _LocalFileBanner({
+    required this.path,
+    required this.onConvert,
+    required this.onDismiss,
+  });
+
+  final String path;
+  final VoidCallback onConvert;
+  final VoidCallback onDismiss;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: scheme.primary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppSpacing.panelRadius),
+        border: Border.all(color: scheme.primary.withValues(alpha: 0.35)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        child: Row(
+          children: [
+            Icon(Icons.movie_filter_outlined, size: 18, color: scheme.primary),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.localOffer,
+                    style: text.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    path,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: text.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+            TextButton(
+              onPressed: onDismiss,
+              child: Text(l10n.clipboardDismiss),
+            ),
+            const SizedBox(width: 4),
+            FilledButton(onPressed: onConvert, child: Text(l10n.navConvert)),
           ],
         ),
       ),

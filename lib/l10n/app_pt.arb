@@ -6,6 +6,8 @@
   },
   "navQueue": "Fila",
   "navDone": "Concluídos",
+  "navLists": "Listas",
+  "navConvert": "Converter",
   "navProfiles": "Perfis",
   "navSettings": "Ajustes",
   "queueEmpty": "Cole ou solte um link para baixar.",
@@ -261,5 +263,34 @@
   "cutEmpty": "Esse corte apaga o vídeo inteiro.",
   "cutFailed": "Não foi possível cortar o vídeo.",
   "cutNoProbe": "O ffprobe não está ao lado do FFmpeg, então a duração não foi lida.",
-  "timeHint": "5, 0:20 ou 1:02:03"
+  "timeHint": "5, 0:20 ou 1:02:03",
+  "listsEmpty": "Nenhuma lista salva. Guarde links para baixar de novo.",
+  "listsNew": "Nova lista",
+  "listsName": "Nome",
+  "listsAdd": "Adicionar",
+  "listsUrlHint": "https://",
+  "listsDownloadAll": "Baixar todos",
+  "listsRemove": "Tirar",
+  "listsDelete": "Apagar lista",
+  "listsBadUrl": "Este texto não é um link http ou https.",
+  "listsDuplicate": "Esse link já está na lista.",
+  "listsFull": "Essa lista chegou ao limite.",
+  "listsTooMany": "O limite de listas foi atingido.",
+  "listsEmptyName": "A lista precisa de um nome.",
+  "listsCount": "{count, plural, =1{1 link} other{{count} links}}",
+  "@listsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "localOffer": "Tem um arquivo de mídia copiado",
+  "convertHelp": "Escolha um arquivo local e o formato de saída. O original permanece. O novo arquivo fica na mesma pasta.",
+  "convertPick": "Escolher arquivo",
+  "convertNone": "Nenhum arquivo escolhido.",
+  "convertSave": "Converter",
+  "convertSaving": "Convertendo…",
+  "convertSaved": "Arquivo convertido ao lado do original.",
+  "convertFailed": "Não foi possível converter o arquivo.",
+  "convertNeedVideo": "Esse arquivo não tem vídeo. Escolha MP3 ou M4A.",
+  "convertNoBinary": "Aponte o FFmpeg em Ajustes."
 }

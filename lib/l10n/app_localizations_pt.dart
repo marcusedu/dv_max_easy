@@ -19,6 +19,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get navDone => 'Concluídos';
 
   @override
+  String get navLists => 'Listas';
+
+  @override
+  String get navConvert => 'Converter';
+
+  @override
   String get navProfiles => 'Perfis';
 
   @override
@@ -579,4 +585,87 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get timeHint => '5, 0:20 ou 1:02:03';
+
+  @override
+  String get listsEmpty =>
+      'Nenhuma lista salva. Guarde links para baixar de novo.';
+
+  @override
+  String get listsNew => 'Nova lista';
+
+  @override
+  String get listsName => 'Nome';
+
+  @override
+  String get listsAdd => 'Adicionar';
+
+  @override
+  String get listsUrlHint => 'https://';
+
+  @override
+  String get listsDownloadAll => 'Baixar todos';
+
+  @override
+  String get listsRemove => 'Tirar';
+
+  @override
+  String get listsDelete => 'Apagar lista';
+
+  @override
+  String get listsBadUrl => 'Este texto não é um link http ou https.';
+
+  @override
+  String get listsDuplicate => 'Esse link já está na lista.';
+
+  @override
+  String get listsFull => 'Essa lista chegou ao limite.';
+
+  @override
+  String get listsTooMany => 'O limite de listas foi atingido.';
+
+  @override
+  String get listsEmptyName => 'A lista precisa de um nome.';
+
+  @override
+  String listsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count links',
+      one: '1 link',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get localOffer => 'Tem um arquivo de mídia copiado';
+
+  @override
+  String get convertHelp =>
+      'Escolha um arquivo local e o formato de saída. O original permanece. O novo arquivo fica na mesma pasta.';
+
+  @override
+  String get convertPick => 'Escolher arquivo';
+
+  @override
+  String get convertNone => 'Nenhum arquivo escolhido.';
+
+  @override
+  String get convertSave => 'Converter';
+
+  @override
+  String get convertSaving => 'Convertendo…';
+
+  @override
+  String get convertSaved => 'Arquivo convertido ao lado do original.';
+
+  @override
+  String get convertFailed => 'Não foi possível converter o arquivo.';
+
+  @override
+  String get convertNeedVideo =>
+      'Esse arquivo não tem vídeo. Escolha MP3 ou M4A.';
+
+  @override
+  String get convertNoBinary => 'Aponte o FFmpeg em Ajustes.';
 }

@@ -112,6 +112,18 @@ abstract class AppLocalizations {
   /// **'Concluídos'**
   String get navDone;
 
+  /// No description provided for @navLists.
+  ///
+  /// In pt, this message translates to:
+  /// **'Listas'**
+  String get navLists;
+
+  /// No description provided for @navConvert.
+  ///
+  /// In pt, this message translates to:
+  /// **'Converter'**
+  String get navConvert;
+
   /// No description provided for @navProfiles.
   ///
   /// In pt, this message translates to:
@@ -1107,6 +1119,150 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'5, 0:20 ou 1:02:03'**
   String get timeHint;
+
+  /// No description provided for @listsEmpty.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhuma lista salva. Guarde links para baixar de novo.'**
+  String get listsEmpty;
+
+  /// No description provided for @listsNew.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nova lista'**
+  String get listsNew;
+
+  /// No description provided for @listsName.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nome'**
+  String get listsName;
+
+  /// No description provided for @listsAdd.
+  ///
+  /// In pt, this message translates to:
+  /// **'Adicionar'**
+  String get listsAdd;
+
+  /// No description provided for @listsUrlHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'https://'**
+  String get listsUrlHint;
+
+  /// No description provided for @listsDownloadAll.
+  ///
+  /// In pt, this message translates to:
+  /// **'Baixar todos'**
+  String get listsDownloadAll;
+
+  /// No description provided for @listsRemove.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tirar'**
+  String get listsRemove;
+
+  /// No description provided for @listsDelete.
+  ///
+  /// In pt, this message translates to:
+  /// **'Apagar lista'**
+  String get listsDelete;
+
+  /// No description provided for @listsBadUrl.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este texto não é um link http ou https.'**
+  String get listsBadUrl;
+
+  /// No description provided for @listsDuplicate.
+  ///
+  /// In pt, this message translates to:
+  /// **'Esse link já está na lista.'**
+  String get listsDuplicate;
+
+  /// No description provided for @listsFull.
+  ///
+  /// In pt, this message translates to:
+  /// **'Essa lista chegou ao limite.'**
+  String get listsFull;
+
+  /// No description provided for @listsTooMany.
+  ///
+  /// In pt, this message translates to:
+  /// **'O limite de listas foi atingido.'**
+  String get listsTooMany;
+
+  /// No description provided for @listsEmptyName.
+  ///
+  /// In pt, this message translates to:
+  /// **'A lista precisa de um nome.'**
+  String get listsEmptyName;
+
+  /// No description provided for @listsCount.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =1{1 link} other{{count} links}}'**
+  String listsCount(int count);
+
+  /// No description provided for @localOffer.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tem um arquivo de mídia copiado'**
+  String get localOffer;
+
+  /// No description provided for @convertHelp.
+  ///
+  /// In pt, this message translates to:
+  /// **'Escolha um arquivo local e o formato de saída. O original permanece. O novo arquivo fica na mesma pasta.'**
+  String get convertHelp;
+
+  /// No description provided for @convertPick.
+  ///
+  /// In pt, this message translates to:
+  /// **'Escolher arquivo'**
+  String get convertPick;
+
+  /// No description provided for @convertNone.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhum arquivo escolhido.'**
+  String get convertNone;
+
+  /// No description provided for @convertSave.
+  ///
+  /// In pt, this message translates to:
+  /// **'Converter'**
+  String get convertSave;
+
+  /// No description provided for @convertSaving.
+  ///
+  /// In pt, this message translates to:
+  /// **'Convertendo…'**
+  String get convertSaving;
+
+  /// No description provided for @convertSaved.
+  ///
+  /// In pt, this message translates to:
+  /// **'Arquivo convertido ao lado do original.'**
+  String get convertSaved;
+
+  /// No description provided for @convertFailed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não foi possível converter o arquivo.'**
+  String get convertFailed;
+
+  /// No description provided for @convertNeedVideo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Esse arquivo não tem vídeo. Escolha MP3 ou M4A.'**
+  String get convertNeedVideo;
+
+  /// No description provided for @convertNoBinary.
+  ///
+  /// In pt, this message translates to:
+  /// **'Aponte o FFmpeg em Ajustes.'**
+  String get convertNoBinary;
 }
 
 class _AppLocalizationsDelegate

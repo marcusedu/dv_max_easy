@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dv_max_easy/features/downloads/application/download_controller.dart';
+import 'package:dv_max_easy/features/lists/presentation/lists_page.dart';
 import 'package:dv_max_easy/features/profiles/domain/profile.dart';
 import 'package:dv_max_easy/features/settings/domain/app_settings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -139,7 +140,7 @@ void main() {
     expect(find.text('Abrir'), findsOneWidget);
   });
 
-  testWidgets('control 4 opens settings', (tester) async {
+  testWidgets('control 6 opens settings', (tester) async {
     tester.view.physicalSize = const Size(1200, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -148,7 +149,7 @@ void main() {
     await tester.pumpWidget(appWithSettings(readySettings()));
     await tester.pumpAndSettle();
     await tester.sendKeyDownEvent(LogicalKeyboardKey.control);
-    await tester.sendKeyEvent(LogicalKeyboardKey.digit4);
+    await tester.sendKeyEvent(LogicalKeyboardKey.digit6);
     await tester.sendKeyUpEvent(LogicalKeyboardKey.control);
     await tester.pumpAndSettle();
 
@@ -446,5 +447,53 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('https://videos.example/old'), findsOneWidget);
+  });
+
+  testWidgets('a saved list keeps a link without downloading it', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 1100);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(appWithSettings(readySettings()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Listas'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Nenhuma lista salva. Guarde links para baixar de novo.'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Nova lista'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(listsUrlFieldKey),
+      'https://example.com/a',
+    );
+    await tester.tap(find.text('Adicionar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('https://example.com/a'), findsOneWidget);
+    expect(find.text('1 link'), findsOneWidget);
+    expect(find.text('Baixar'), findsNothing);
+  });
+
+  testWidgets('the convert page waits for a local file', (tester) async {
+    tester.view.physicalSize = const Size(1200, 1100);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(appWithSettings(readySettings()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Converter'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Escolher arquivo'), findsOneWidget);
+    expect(find.text('Nenhum arquivo escolhido.'), findsOneWidget);
+    expect(find.text('MP4'), findsOneWidget);
+    expect(find.text('MP3'), findsOneWidget);
   });
 }
