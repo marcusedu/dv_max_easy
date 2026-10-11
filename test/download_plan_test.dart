@@ -57,7 +57,7 @@ void main() {
     expect(args, contains('--no-playlist'));
     expect(
       args[args.indexOf('-f') + 1],
-      'bv*[height<=1080]+ba[language^=ja]/bv*[height<=1080]+ba[language^=pt]/bv*[height<=1080]+ba/b[height<=1080]',
+      'bv*[height<=1080]+ba[language^=ja]/bv*[height<=1080]+ba[language^=pt]/bv*[height<=1080]+ba/b[height<=1080]/bv*+ba/b',
     );
     expect(args, contains('--embed-subs'));
     expect(args, contains('pt.*,-live_chat'));
@@ -74,6 +74,7 @@ void main() {
 
     expect(args, contains('-x'));
     expect(args, contains('mp3'));
+    expect(args[args.indexOf('-f') + 1], 'ba/b');
     expect(args, isNot(contains('--embed-subs')));
     expect(args, containsAll(['-r', '2M', '-N', '4']));
   });

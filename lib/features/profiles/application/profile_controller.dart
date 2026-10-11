@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dv_max_easy/features/profiles/domain/profile.dart';
 import 'package:dv_max_easy/features/profiles/domain/profile_rules.dart';
 import 'package:dv_max_easy/features/profiles/infrastructure/json_profile_store.dart';
@@ -31,9 +33,11 @@ final class ProfileView {
     return profiles.isEmpty ? null : profiles.first;
   }
 
-  bool get canRestoreMusic => profiles.every((profile) => profile.name != 'Música');
+  bool get canRestoreMusic =>
+      profiles.every((profile) => profile.name != 'Música');
 
-  bool get canRestoreFilms => profiles.every((profile) => profile.name != 'Filmes');
+  bool get canRestoreFilms =>
+      profiles.every((profile) => profile.name != 'Filmes');
 }
 
 final class ProfileController extends AsyncNotifier<ProfileView> {
@@ -91,17 +95,41 @@ final class ProfileController extends AsyncNotifier<ProfileView> {
     final selected = preferredProfileId(profiles, _current.selectedId);
     await ref.read(settingsControllerProvider.notifier).selectProfile(selected);
     state = AsyncData(
-      _current.copyWith(profiles: profiles, selectedId: selected, clearError: true),
+      _current.copyWith(
+        profiles: profiles,
+        selectedId: selected,
+        clearError: true,
+      ),
     );
   }
 
-  Future<void> restoreMusic() => _restore(musicPreset());
+  Future<void> restoreMusic() {
+    final music = ref.read(standardFoldersProvider).music;
+    return _restore(
+      musicPreset(destinationFolder: music.isEmpty ? null : music),
+    );
+  }
 
-  Future<void> restoreFilms() => _restore(filmsPreset());
+  Future<void> restoreFilms() {
+    final films = ref.read(standardFoldersProvider).films;
+    return _restore(
+      filmsPreset(destinationFolder: films.isEmpty ? null : films),
+    );
+  }
 
   Future<void> _restore(Profile preset) async {
     if (_current.profiles.any((profile) => profile.name == preset.name)) {
       return;
+    }
+    final folder = preset.destinationFolder;
+    if (folder != null &&
+        folder.isNotEmpty &&
+        !Platform.environment.containsKey('FLUTTER_TEST')) {
+      try {
+        Directory(folder).createSync(recursive: true);
+      } on Object {
+        // A pasta padrão pode estar indisponível. O download avisa depois.
+      }
     }
     final profiles = [..._current.profiles, preset];
     await ref.read(profileStoreProvider).save(profiles);

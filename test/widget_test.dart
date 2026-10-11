@@ -154,6 +154,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Pasta padrão'), findsOneWidget);
+    expect(find.text('Instalar yt-dlp e FFmpeg'), findsNothing);
   });
 
   testWidgets('a copied link is offered once and does not start alone', (
@@ -208,6 +209,34 @@ void main() {
     expect(find.textContaining('Errno 63'), findsNothing);
   });
 
+  testWidgets('a rejected format explains itself', (tester) async {
+    tester.view.physicalSize = const Size(1200, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      appWithSettings(
+        readySettings(),
+        jobs: const [
+          DownloadJob(
+            id: '1',
+            url: 'https://www.facebook.com/share/r/1C8Y24hRr2/',
+            profileName: 'Filmes',
+            running: false,
+            error: 'failed',
+            errorDetail:
+                'ERROR: [facebook] 1: Requested format is not available.',
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('formato do perfil'), findsOneWidget);
+    expect(find.textContaining('Requested format'), findsNothing);
+  });
+
   testWidgets('missing binaries replace the shell', (tester) async {
     tester.view.physicalSize = const Size(1200, 800);
     tester.view.devicePixelRatio = 1;
@@ -222,6 +251,7 @@ void main() {
       find.text('Para baixar, aponte o yt-dlp e o FFmpeg.'),
       findsOneWidget,
     );
+    expect(find.text('Instalar yt-dlp e FFmpeg'), findsOneWidget);
   });
 
   testWidgets('the queue keeps ten cards and completed can filter the rest', (

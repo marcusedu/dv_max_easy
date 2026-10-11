@@ -152,11 +152,14 @@ final class Profile {
   }
 }
 
-Profile musicPreset({String id = Profile.musicId}) {
+Profile musicPreset({
+  String id = Profile.musicId,
+  String? destinationFolder,
+}) {
   return Profile(
     id: id,
     name: 'Música',
-    destinationFolder: null,
+    destinationFolder: destinationFolder,
     preset: QualityPreset.audio,
     container: MediaContainer.mp3,
     preferredAudioLanguages: const [],
@@ -171,11 +174,14 @@ Profile musicPreset({String id = Profile.musicId}) {
   );
 }
 
-Profile filmsPreset({String id = Profile.filmsId}) {
+Profile filmsPreset({
+  String id = Profile.filmsId,
+  String? destinationFolder,
+}) {
   return Profile(
     id: id,
     name: 'Filmes',
-    destinationFolder: null,
+    destinationFolder: destinationFolder,
     preset: QualityPreset.h1080,
     container: MediaContainer.mkv,
     preferredAudioLanguages: const ['ja', 'pt'],
@@ -188,4 +194,23 @@ Profile filmsPreset({String id = Profile.filmsId}) {
     concurrentFragments: null,
     filenameTemplate: Profile.defaultTemplate,
   );
+}
+
+List<Profile> assignInitialFolders(
+  List<Profile> profiles, {
+  required String music,
+  required String films,
+}) {
+  return [
+    for (final profile in profiles)
+      if (profile.destinationFolder != null &&
+          profile.destinationFolder!.isNotEmpty)
+        profile
+      else if (profile.name == 'Música' && music.isNotEmpty)
+        profile.copyWith(destinationFolder: music)
+      else if (profile.name == 'Filmes' && films.isNotEmpty)
+        profile.copyWith(destinationFolder: films)
+      else
+        profile,
+  ];
 }

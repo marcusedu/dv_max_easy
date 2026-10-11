@@ -495,15 +495,27 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
     _onMenu(selected);
   }
 
+  String? _reason() {
+    final code = job.error;
+    if (code != 'failed') {
+      return code;
+    }
+    final again = classifyDownloadFailure(job.errorDetail ?? '');
+    return again == 'failed' ? code : again;
+  }
+
   String? _extra() {
-    return switch (job.error) {
-      'filename_too_long' || 'interrupted' || null => null,
+    return switch (_reason()) {
+      'filename_too_long' ||
+      'format_unavailable' ||
+      'interrupted' ||
+      null => null,
       _ => shortFailureDetail(job.errorDetail),
     };
   }
 
   String _status(AppLocalizations l10n) {
-    return switch (job.error) {
+    return switch (_reason()) {
       'missing_folder' => l10n.downloadNeedFolder,
       'missing_binary' => l10n.downloadNeedBinary,
       'filename_too_long' => l10n.errFilename,
@@ -513,6 +525,7 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
       'unsupported_url' => l10n.errUnsupported,
       'forbidden' => l10n.errForbidden,
       'extract_failed' => l10n.errExtract,
+      'format_unavailable' => l10n.errFormat,
       'ffmpeg_failed' => l10n.errFfmpeg,
       'network' => l10n.errNetwork,
       'interrupted' => l10n.errInterrupted,

@@ -63,6 +63,10 @@ class SettingsForm extends ConsumerWidget {
                         ),
                       ),
                     ),
+                  if (!view.binariesReady) ...[
+                    const _InstallTools(),
+                    const SizedBox(height: AppSpacing.l),
+                  ],
                   _BinaryRow(
                     label: l10n.ytDlpPathLabel,
                     path: view.settings.ytDlpPath,
@@ -178,6 +182,105 @@ class SettingsForm extends ConsumerWidget {
       return;
     }
     await ref.read(settingsControllerProvider.notifier).setFolder(folder);
+  }
+}
+
+class _InstallTools extends ConsumerStatefulWidget {
+  const _InstallTools();
+
+  @override
+  ConsumerState<_InstallTools> createState() => _InstallToolsState();
+}
+
+class _InstallToolsState extends ConsumerState<_InstallTools> {
+  var _busy = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: FilledButton(
+        onPressed: _busy ? null : _install,
+        child: Text(_busy ? l10n.installRunning : l10n.installAction),
+      ),
+    );
+  }
+
+  Future<void> _install() async {
+    setState(() => _busy = true);
+    try {
+      final controller = ref.read(settingsControllerProvider.notifier);
+      final plan = controller.availablePackage();
+      if (plan != null) {
+        final allowed = await _confirm(
+          title: AppLocalizations.of(context).installPackageTitle(plan.tool),
+          body: AppLocalizations.of(context)
+              .installPackageBody(plan.description),
+        );
+        if (!allowed || !mounted) {
+          return;
+        }
+        await controller.runPackageInstall(plan);
+        await controller.adoptInstalled();
+        final ready =
+            ref.read(settingsControllerProvider).asData?.value.binariesReady ??
+            false;
+        if (ready || !mounted) {
+          return;
+        }
+      }
+      if (!mounted) {
+        return;
+      }
+      final download = await _confirm(
+        title: AppLocalizations.of(context).installDownloadTitle,
+        body: AppLocalizations.of(context).installDownloadBody,
+      );
+      if (!download || !mounted) {
+        return;
+      }
+      final error = await controller.downloadOfficialBinaries();
+      if (error != null) {
+        controller.failInstall();
+        return;
+      }
+      await controller.adoptInstalled();
+      final ready =
+          ref.read(settingsControllerProvider).asData?.value.binariesReady ??
+          false;
+      if (!ready) {
+        controller.failInstall();
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _busy = false);
+      }
+    }
+  }
+
+  Future<bool> _confirm({required String title, required String body}) async {
+    final l10n = AppLocalizations.of(context);
+    final answer = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(title),
+          content: SingleChildScrollView(child: SelectableText(body)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l10n.installCancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(l10n.installConfirm),
+            ),
+          ],
+        );
+      },
+    );
+    return answer == true;
   }
 }
 

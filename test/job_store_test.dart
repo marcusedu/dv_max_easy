@@ -14,6 +14,12 @@ void main() {
       'filename_too_long',
     );
     expect(classifyDownloadFailure('ERROR: Video unavailable'), 'unavailable');
+    expect(
+      classifyDownloadFailure(
+        'ERROR: [facebook] 1: Requested format is not available. Use --list-formats',
+      ),
+      'format_unavailable',
+    );
     expect(shortFailureDetail('ERROR: Video unavailable'), 'Video unavailable');
     expect(notableErrorLine('WARNING: something'), isNull);
   });

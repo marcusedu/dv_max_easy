@@ -122,6 +122,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get errExtract => 'Não deu para ler os dados desse link.';
 
   @override
+  String get errFormat =>
+      'Esse vídeo não tem o formato do perfil. Tente de novo para baixar o melhor disponível.';
+
+  @override
   String get errFfmpeg => 'O FFmpeg não conseguiu fechar o arquivo.';
 
   @override
@@ -668,4 +672,37 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get convertNoBinary => 'Aponte o FFmpeg em Ajustes.';
+
+  @override
+  String get installAction => 'Instalar yt-dlp e FFmpeg';
+
+  @override
+  String installPackageTitle(String tool) {
+    return 'Instalar com $tool';
+  }
+
+  @override
+  String installPackageBody(String command) {
+    return 'O DV Max vai executar, com a sua permissão:\n$command';
+  }
+
+  @override
+  String get installDownloadTitle => 'Baixar os binários oficiais';
+
+  @override
+  String get installDownloadBody =>
+      'O gerenciador não está disponível ou não deixou os programas prontos. O DV Max pode baixar o yt-dlp e o FFmpeg oficiais para a pasta do aplicativo.';
+
+  @override
+  String get installConfirm => 'Instalar';
+
+  @override
+  String get installCancel => 'Agora não';
+
+  @override
+  String get installRunning => 'Instalando yt-dlp e FFmpeg…';
+
+  @override
+  String get installFailed =>
+      'A instalação não terminou. Você pode escolher os arquivos manualmente.';
 }

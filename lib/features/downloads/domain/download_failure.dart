@@ -48,6 +48,9 @@ String classifyDownloadFailure(String raw) {
   if (text.contains('http error 403') || text.contains('forbidden')) {
     return 'forbidden';
   }
+  if (text.contains('requested format is not available')) {
+    return 'format_unavailable';
+  }
   if (text.contains('unable to extract') || text.contains('no video formats')) {
     return 'extract_failed';
   }

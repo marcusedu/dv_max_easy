@@ -304,6 +304,12 @@ abstract class AppLocalizations {
   /// **'Não deu para ler os dados desse link.'**
   String get errExtract;
 
+  /// No description provided for @errFormat.
+  ///
+  /// In pt, this message translates to:
+  /// **'Esse vídeo não tem o formato do perfil. Tente de novo para baixar o melhor disponível.'**
+  String get errFormat;
+
   /// No description provided for @errFfmpeg.
   ///
   /// In pt, this message translates to:
@@ -1263,6 +1269,60 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Aponte o FFmpeg em Ajustes.'**
   String get convertNoBinary;
+
+  /// No description provided for @installAction.
+  ///
+  /// In pt, this message translates to:
+  /// **'Instalar yt-dlp e FFmpeg'**
+  String get installAction;
+
+  /// No description provided for @installPackageTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Instalar com {tool}'**
+  String installPackageTitle(String tool);
+
+  /// No description provided for @installPackageBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'O DV Max vai executar, com a sua permissão:\n{command}'**
+  String installPackageBody(String command);
+
+  /// No description provided for @installDownloadTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Baixar os binários oficiais'**
+  String get installDownloadTitle;
+
+  /// No description provided for @installDownloadBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'O gerenciador não está disponível ou não deixou os programas prontos. O DV Max pode baixar o yt-dlp e o FFmpeg oficiais para a pasta do aplicativo.'**
+  String get installDownloadBody;
+
+  /// No description provided for @installConfirm.
+  ///
+  /// In pt, this message translates to:
+  /// **'Instalar'**
+  String get installConfirm;
+
+  /// No description provided for @installCancel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Agora não'**
+  String get installCancel;
+
+  /// No description provided for @installRunning.
+  ///
+  /// In pt, this message translates to:
+  /// **'Instalando yt-dlp e FFmpeg…'**
+  String get installRunning;
+
+  /// No description provided for @installFailed.
+  ///
+  /// In pt, this message translates to:
+  /// **'A instalação não terminou. Você pode escolher os arquivos manualmente.'**
+  String get installFailed;
 }
 
 class _AppLocalizationsDelegate

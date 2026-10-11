@@ -1,3 +1,4 @@
+import 'dart:ffi' show Abi;
 import 'dart:io';
 
 import 'package:dv_max_easy/core/clock.dart';
@@ -6,11 +7,15 @@ import 'package:dv_max_easy/features/profiles/domain/profile_rules.dart';
 import 'package:dv_max_easy/features/profiles/infrastructure/json_profile_store.dart';
 import 'package:dv_max_easy/features/settings/domain/app_settings.dart';
 import 'package:dv_max_easy/features/settings/domain/binary_path.dart';
+import 'package:dv_max_easy/features/settings/domain/install_plan.dart';
 import 'package:dv_max_easy/features/settings/domain/settings_ports.dart';
+import 'package:dv_max_easy/features/settings/domain/standard_folders.dart';
 import 'package:dv_max_easy/features/settings/infrastructure/io_path_facts.dart';
+import 'package:dv_max_easy/features/settings/infrastructure/official_install.dart';
 import 'package:dv_max_easy/features/settings/infrastructure/process_version_probe.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 final clockProvider = Provider<Clock>((ref) => SystemClock());
 
@@ -24,6 +29,10 @@ final pathFactsProvider = Provider<PathFactsReader>((ref) => IoPathFacts());
 
 final versionProbeProvider = Provider<VersionProbe>(
   (ref) => ProcessVersionProbe(),
+);
+
+final standardFoldersProvider = Provider<StandardFolders>(
+  (ref) => const StandardFolders(music: '', films: '', downloads: ''),
 );
 
 final settingsControllerProvider =
@@ -92,6 +101,14 @@ final class SettingsController extends AsyncNotifier<SettingsView> {
     final loaded = await ref.read(settingsStoreProvider).load();
     final profiles = await ref.read(profileStoreProvider).ensureLoaded();
     var settings = loaded.settings;
+    var changed = false;
+    final downloads = ref.read(standardFoldersProvider).downloads;
+    final folder = settings.defaultDownloadFolder;
+    if ((folder == null || folder.isEmpty) && downloads.isNotEmpty) {
+      settings = settings.copyWith(defaultDownloadFolder: downloads);
+      changed = true;
+      _createFolder(downloads);
+    }
     final selected = preferredProfileId(
       profiles.profiles,
       settings.selectedProfileId,
@@ -101,6 +118,9 @@ final class SettingsController extends AsyncNotifier<SettingsView> {
         selectedProfileId: selected,
         clearProfile: selected == null,
       );
+      changed = true;
+    }
+    if (changed) {
       await ref.read(settingsStoreProvider).save(settings);
     }
     var view = SettingsView(
@@ -148,11 +168,7 @@ final class SettingsController extends AsyncNotifier<SettingsView> {
   Future<void> stageCandidate(BinaryKind kind, String path) async {
     final current = _current;
     state = AsyncData(
-      current.copyWith(
-        pendingPath: path,
-        pendingKind: kind,
-        clearError: true,
-      ),
+      current.copyWith(pendingPath: path, pendingKind: kind, clearError: true),
     );
   }
 
@@ -180,7 +196,11 @@ final class SettingsController extends AsyncNotifier<SettingsView> {
       BinaryKind.ytDlp => _current.settings.copyWith(ytDlpPath: path),
       BinaryKind.ffmpeg => _current.settings.copyWith(ffmpegPath: path),
     };
-    var view = _current.copyWith(settings: next, clearError: true, clearPending: true);
+    var view = _current.copyWith(
+      settings: next,
+      clearError: true,
+      clearPending: true,
+    );
     if (kind == BinaryKind.ytDlp) {
       view = view.copyWith(ytDlpVersion: checked.version);
     } else {
@@ -190,31 +210,126 @@ final class SettingsController extends AsyncNotifier<SettingsView> {
   }
 
   Future<String?> search(BinaryKind kind) async {
+    final candidate = await _find(kind);
+    if (candidate == null) {
+      state = AsyncData(_current.copyWith(errorCode: 'not_found'));
+      return null;
+    }
+    await stageCandidate(kind, candidate);
+    return candidate;
+  }
+
+  PackageInstall? availablePackage() {
+    final pathEnv = Platform.environment['PATH'] ?? '';
+    final separator = Platform.isWindows ? ';' : ':';
+    return firstAvailableInstall(
+      packageInstalls(Platform.operatingSystem),
+      exists: (path) => File(path).existsSync(),
+      pathDirectories: [
+        for (final entry in pathEnv.split(separator))
+          if (entry.isNotEmpty) entry,
+      ],
+    );
+  }
+
+  Future<String?> runPackageInstall(PackageInstall plan) {
+    return const OfficialInstaller().runPackage(plan);
+  }
+
+  Future<String?> downloadOfficialBinaries() async {
+    final directory = await _binaryDirectory();
+    if (directory == null) {
+      return 'install_failed';
+    }
+    return const OfficialInstaller().download(
+      operatingSystem: Platform.operatingSystem,
+      arch: _cpuArch(),
+      directory: directory,
+    );
+  }
+
+  Future<void> adoptInstalled() async {
+    for (final kind in const [BinaryKind.ytDlp, BinaryKind.ffmpeg]) {
+      final ready = switch (kind) {
+        BinaryKind.ytDlp => _current.ytDlpVersion != null,
+        BinaryKind.ffmpeg => _current.ffmpegVersion != null,
+      };
+      if (ready) {
+        continue;
+      }
+      final found = await _find(kind);
+      if (found != null) {
+        await acceptBinary(kind, found);
+      }
+    }
+  }
+
+  void failInstall() {
+    if (_current.errorCode != null) {
+      return;
+    }
+    state = AsyncData(
+      _current.copyWith(errorCode: 'install_failed', clearPending: true),
+    );
+  }
+
+  Future<String?> _find(BinaryKind kind) async {
     final names = switch (kind) {
-      BinaryKind.ytDlp => Platform.isWindows
-          ? ['yt-dlp.exe', 'yt-dlp']
-          : ['yt-dlp'],
-      BinaryKind.ffmpeg => Platform.isWindows
-          ? ['ffmpeg.exe', 'ffmpeg']
-          : ['ffmpeg'],
+      BinaryKind.ytDlp =>
+        Platform.isWindows ? ['yt-dlp.exe', 'yt-dlp'] : ['yt-dlp'],
+      BinaryKind.ffmpeg =>
+        Platform.isWindows ? ['ffmpeg.exe', 'ffmpeg'] : ['ffmpeg'],
     };
+    for (final directory in await _searchDirectories()) {
+      for (final name in names) {
+        final candidate = p.join(directory, name);
+        final facts = ref.read(pathFactsProvider).inspect(candidate);
+        if (facts.kind == PathKind.file) {
+          return candidate;
+        }
+      }
+    }
+    return null;
+  }
+
+  Future<List<String>> _searchDirectories() async {
     final directories = binarySearchDirectories(
       pathEnv: Platform.environment['PATH'] ?? '',
       operatingSystem: Platform.operatingSystem,
       environment: Platform.environment,
     );
-    for (final directory in directories) {
-      for (final name in names) {
-        final candidate = p.join(directory, name);
-        final facts = ref.read(pathFactsProvider).inspect(candidate);
-        if (facts.kind == PathKind.file) {
-          await stageCandidate(kind, candidate);
-          return candidate;
-        }
-      }
+    final bin = await _binaryDirectory();
+    if (bin == null || directories.contains(bin)) {
+      return directories;
     }
-    state = AsyncData(_current.copyWith(errorCode: 'not_found'));
-    return null;
+    return [...directories, bin];
+  }
+
+  Future<String?> _binaryDirectory() async {
+    try {
+      final support = await getApplicationSupportDirectory();
+      return p.join(support.path, 'bin');
+    } on Object {
+      return null;
+    }
+  }
+
+  String _cpuArch() {
+    return switch (Abi.current()) {
+      Abi.macosArm64 || Abi.linuxArm64 || Abi.windowsArm64 => 'arm64',
+      _ => 'x64',
+    };
+  }
+
+  void _createFolder(String folder) {
+    if (Platform.environment.containsKey('FLUTTER_TEST')) {
+      return;
+    }
+    try {
+      Directory(folder).createSync(recursive: true);
+    } on Object {
+      // A pasta padrão pode estar indisponível. O download avisa depois.
+    }
   }
 
   SettingsView get _current {
@@ -226,7 +341,9 @@ final class SettingsController extends AsyncNotifier<SettingsView> {
   }
 
   Future<void> _save(AppSettings settings) async {
-    await _persist(await _refreshVersions(_current.copyWith(settings: settings)));
+    await _persist(
+      await _refreshVersions(_current.copyWith(settings: settings)),
+    );
   }
 
   Future<void> _persist(SettingsView view) async {

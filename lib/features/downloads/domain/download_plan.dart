@@ -138,6 +138,13 @@ String _videoFormat(Profile profile) {
     selectors.add('bv*$height+ba');
     selectors.add('b$height');
   }
+  // Sites like Facebook often omit height. A strict filter then matches nothing.
+  if (height.isNotEmpty) {
+    selectors.add('bv*+ba');
+  }
+  if (selectors.isEmpty || selectors.last != 'b') {
+    selectors.add('b');
+  }
   return selectors.join('/');
 }
 
@@ -148,6 +155,9 @@ String _audioFormat(Profile profile) {
   ];
   if (profile.audioFallback == AudioFallback.any || selectors.isEmpty) {
     selectors.add('ba');
+  }
+  if (selectors.isEmpty || selectors.last != 'b') {
+    selectors.add('b');
   }
   return selectors.join('/');
 }

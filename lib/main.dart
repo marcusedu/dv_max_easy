@@ -8,6 +8,7 @@ import 'package:dv_max_easy/features/lists/infrastructure/json_link_list_store.d
 import 'package:dv_max_easy/features/downloads/infrastructure/json_job_store.dart';
 import 'package:dv_max_easy/features/profiles/infrastructure/json_profile_store.dart';
 import 'package:dv_max_easy/features/settings/application/settings_controller.dart';
+import 'package:dv_max_easy/features/settings/domain/standard_folders.dart';
 import 'package:dv_max_easy/features/settings/infrastructure/json_settings_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,10 +25,25 @@ Future<void> main() async {
     clock: clock,
     log: log,
   );
+  final home =
+      Platform.environment['HOME'] ?? Platform.environment['USERPROFILE'] ?? '';
+  String? userDirs;
+  if (Platform.isLinux && home.isNotEmpty) {
+    final file = File(p.join(home, '.config', 'user-dirs.dirs'));
+    if (file.existsSync()) {
+      userDirs = file.readAsStringSync();
+    }
+  }
+  final folders = standardFolders(
+    operatingSystem: Platform.operatingSystem,
+    home: home,
+    userDirs: userDirs,
+  );
   final profiles = JsonProfileStore(
     file: File(p.join(support.path, 'profiles.json')),
     clock: clock,
     log: log,
+    folders: folders,
   );
   final lists = JsonLinkListStore(
     file: File(p.join(support.path, 'link_lists.json')),
@@ -46,6 +62,7 @@ Future<void> main() async {
         clockProvider.overrideWithValue(clock),
         logProvider.overrideWithValue(log),
         settingsStoreProvider.overrideWithValue(store),
+        standardFoldersProvider.overrideWithValue(folders),
         profileStoreProvider.overrideWithValue(profiles),
         linkListStoreProvider.overrideWithValue(lists),
         jobStoreProvider.overrideWithValue(jobs),
