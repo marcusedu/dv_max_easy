@@ -1,5 +1,6 @@
 import 'package:dv_max_easy/app/dv_max_app.dart';
 import 'package:dv_max_easy/features/downloads/application/download_controller.dart';
+import 'package:dv_max_easy/features/downloads/infrastructure/system_clipboard.dart';
 import 'package:dv_max_easy/features/profiles/domain/profile.dart';
 import 'package:dv_max_easy/features/profiles/infrastructure/json_profile_store.dart';
 import 'package:dv_max_easy/features/settings/application/settings_controller.dart';
@@ -64,9 +65,19 @@ final class FixedVersionProbe implements VersionProbe {
   Future<String?> readVersion(String executable) async => version;
 }
 
+final class FixedClipboard implements ClipboardReader {
+  const FixedClipboard(this.text);
+
+  final String? text;
+
+  @override
+  Future<String?> readText() async => text;
+}
+
 Widget appWithSettings(
   AppSettings settings, {
   List<DownloadJob> jobs = const [],
+  String? clipboard,
 }) {
   return ProviderScope(
     overrides: [
@@ -78,6 +89,7 @@ Widget appWithSettings(
       versionProbeProvider.overrideWithValue(
         const FixedVersionProbe('yt-dlp 2026.1.1'),
       ),
+      clipboardReaderProvider.overrideWithValue(FixedClipboard(clipboard)),
       if (jobs.isNotEmpty) initialDownloadsProvider.overrideWithValue(jobs),
     ],
     child: const DvMaxApp(),

@@ -232,6 +232,84 @@ abstract class AppLocalizations {
   /// **'Cancelar'**
   String get downloadCancel;
 
+  /// No description provided for @downloadRetry.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tentar de novo'**
+  String get downloadRetry;
+
+  /// No description provided for @clipboardOffer.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tem um link copiado'**
+  String get clipboardOffer;
+
+  /// No description provided for @clipboardDismiss.
+  ///
+  /// In pt, this message translates to:
+  /// **'Agora não'**
+  String get clipboardDismiss;
+
+  /// No description provided for @errFilename.
+  ///
+  /// In pt, this message translates to:
+  /// **'O nome do arquivo passou do limite do sistema. Tente de novo para baixar com o nome encurtado.'**
+  String get errFilename;
+
+  /// No description provided for @errPrivate.
+  ///
+  /// In pt, this message translates to:
+  /// **'Esse vídeo é privado.'**
+  String get errPrivate;
+
+  /// No description provided for @errUnavailable.
+  ///
+  /// In pt, this message translates to:
+  /// **'Esse vídeo não está disponível.'**
+  String get errUnavailable;
+
+  /// No description provided for @errLogin.
+  ///
+  /// In pt, this message translates to:
+  /// **'O site pediu login ou uma confirmação no navegador.'**
+  String get errLogin;
+
+  /// No description provided for @errUnsupported.
+  ///
+  /// In pt, this message translates to:
+  /// **'Esse endereço não é suportado.'**
+  String get errUnsupported;
+
+  /// No description provided for @errForbidden.
+  ///
+  /// In pt, this message translates to:
+  /// **'O site recusou o download.'**
+  String get errForbidden;
+
+  /// No description provided for @errExtract.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não deu para ler os dados desse link.'**
+  String get errExtract;
+
+  /// No description provided for @errFfmpeg.
+  ///
+  /// In pt, this message translates to:
+  /// **'O FFmpeg não conseguiu fechar o arquivo.'**
+  String get errFfmpeg;
+
+  /// No description provided for @errNetwork.
+  ///
+  /// In pt, this message translates to:
+  /// **'A rede falhou no meio do download.'**
+  String get errNetwork;
+
+  /// No description provided for @errInterrupted.
+  ///
+  /// In pt, this message translates to:
+  /// **'O download parou porque o app foi fechado.'**
+  String get errInterrupted;
+
   /// No description provided for @statusDone.
   ///
   /// In pt, this message translates to:

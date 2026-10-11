@@ -1,11 +1,17 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dv_max_easy/features/downloads/domain/download_failure.dart';
+import 'package:dv_max_easy/features/downloads/domain/download_job.dart';
 import 'package:dv_max_easy/features/downloads/domain/download_plan.dart';
+import 'package:dv_max_easy/features/downloads/infrastructure/json_job_store.dart';
 import 'package:dv_max_easy/features/profiles/domain/profile.dart';
 import 'package:dv_max_easy/features/profiles/infrastructure/json_profile_store.dart';
 import 'package:dv_max_easy/features/settings/application/settings_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+export 'package:dv_max_easy/features/downloads/domain/download_job.dart';
 
 final downloadControllerProvider =
     NotifierProvider<DownloadController, List<DownloadJob>>(
@@ -15,86 +21,17 @@ final downloadControllerProvider =
 /// Fila já existente ao abrir. O app deixa vazia; o teste injeta um item.
 final initialDownloadsProvider = Provider<List<DownloadJob>>((ref) => const []);
 
-final class DownloadJob {
-  const DownloadJob({
-    required this.id,
-    required this.url,
-    required this.profileName,
-    required this.running,
-    this.fraction,
-    this.detail,
-    this.outputPath,
-    this.error,
-    this.audio = false,
-    this.qualityLabel,
-    this.containerLabel = '',
-    this.destination,
-    this.downloaded,
-    this.total,
-    this.speed,
-    this.eta,
-    this.thumbnailUrl,
-  });
-
-  final String id;
-  final String url;
-  final String profileName;
-  final bool running;
-  final double? fraction;
-  final String? detail;
-  final String? outputPath;
-  final String? error;
-  final bool audio;
-  final String? qualityLabel;
-  final String containerLabel;
-  final String? destination;
-  final int? downloaded;
-  final int? total;
-  final double? speed;
-  final int? eta;
-  final String? thumbnailUrl;
-
-  DownloadJob copyWith({
-    bool? running,
-    double? fraction,
-    bool clearFraction = false,
-    String? detail,
-    String? outputPath,
-    String? error,
-    bool clearError = false,
-    int? downloaded,
-    int? total,
-    double? speed,
-    int? eta,
-    String? thumbnailUrl,
-  }) {
-    return DownloadJob(
-      id: id,
-      url: url,
-      profileName: profileName,
-      running: running ?? this.running,
-      fraction: clearFraction ? null : fraction ?? this.fraction,
-      detail: detail ?? this.detail,
-      outputPath: outputPath ?? this.outputPath,
-      error: clearError ? null : error ?? this.error,
-      audio: audio,
-      qualityLabel: qualityLabel,
-      containerLabel: containerLabel,
-      destination: destination,
-      downloaded: downloaded ?? this.downloaded,
-      total: total ?? this.total,
-      speed: speed ?? this.speed,
-      eta: eta ?? this.eta,
-      thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
-    );
-  }
-}
-
 final class DownloadController extends Notifier<List<DownloadJob>> {
   final Map<String, Process> _processes = {};
+  Timer? _saveTimer;
 
   @override
-  List<DownloadJob> build() => ref.watch(initialDownloadsProvider);
+  List<DownloadJob> build() {
+    ref.onDispose(() {
+      _saveTimer?.cancel();
+    });
+    return ref.watch(initialDownloadsProvider);
+  }
 
   Future<void> enqueue(String raw) async {
     final url = raw.trim();
@@ -132,39 +69,115 @@ final class DownloadController extends Notifier<List<DownloadJob>> {
       containerLabel: profile.container.name,
       destination: destination,
     );
-    state = [job, ...state];
+    _set([job, ...state], immediate: true);
+    await _spawn(
+      job: job,
+      ytDlp: ytDlp,
+      ffmpeg: ffmpeg,
+      profile: profile,
+      destination: destination,
+    );
+  }
+
+  Future<void> retry(String id) async {
+    final existing = _job(id);
+    if (existing == null || existing.running) {
+      return;
+    }
+    final settings = ref.read(settingsControllerProvider).asData?.value;
+    final ytDlp = settings?.settings.ytDlpPath;
+    final ffmpeg = settings?.settings.ffmpegPath;
+    if (settings == null || ytDlp == null || ffmpeg == null) {
+      _replace(
+        existing.copyWith(running: false, error: 'missing_binary'),
+        immediate: true,
+      );
+      return;
+    }
+    final document = await ref.read(profileStoreProvider).ensureLoaded();
+    final profile = _profile(
+      document.profiles,
+      settings.settings.selectedProfileId,
+    );
+    final destination =
+        existing.destination ??
+        profile.destinationFolder ??
+        settings.settings.defaultDownloadFolder;
+    if (destination == null || destination.isEmpty) {
+      _replace(
+        existing.copyWith(running: false, error: 'missing_folder'),
+        immediate: true,
+      );
+      return;
+    }
+    final job = existing.copyWith(
+      running: true,
+      detail: 'starting',
+      clearError: true,
+      clearErrorDetail: true,
+      clearFraction: true,
+    );
+    _replace(job, immediate: true);
+    await _spawn(
+      job: job,
+      ytDlp: ytDlp,
+      ffmpeg: ffmpeg,
+      profile: profile,
+      destination: destination,
+    );
+  }
+
+  Future<void> _spawn({
+    required DownloadJob job,
+    required String ytDlp,
+    required String ffmpeg,
+    required Profile profile,
+    required String destination,
+  }) async {
     final args = downloadArguments(
       profile: profile,
       destination: destination,
       ffmpegPath: ffmpeg,
-      url: url,
+      url: job.url,
     );
     try {
       final process = await Process.start(ytDlp, args);
-      _processes[id] = process;
-      _listen(id, process.stdout);
-      _listen(id, process.stderr);
+      _processes[job.id] = process;
+      _listen(job.id, process.stdout);
+      _listen(job.id, process.stderr);
       final code = await process.exitCode;
-      _processes.remove(id);
-      final current = _job(id);
+      _processes.remove(job.id);
+      final current = _job(job.id);
       if (current == null || !current.running) {
+        return;
+      }
+      final failure = code == 0
+          ? null
+          : classifyDownloadFailure(current.errorDetail ?? '');
+      _replace(
+        current.copyWith(
+          running: false,
+          error: failure,
+          clearError: failure == null,
+          detail: code == 0 ? 'done' : current.detail,
+          clearErrorDetail: failure == null,
+        ),
+        immediate: true,
+      );
+    } on Object catch (error) {
+      _processes.remove(job.id);
+      final current = _job(job.id);
+      if (current == null) {
         return;
       }
       _replace(
         current.copyWith(
           running: false,
-          error: code == 0 ? null : 'exit_$code',
-          clearError: code == 0,
-          detail: code == 0 ? 'done' : current.detail,
+          error: 'failed',
+          errorDetail: '$error',
         ),
+        immediate: true,
       );
-    } on Object catch (error) {
-      _processes.remove(id);
-      final current = _job(id);
-      if (current == null) {
-        return;
-      }
-      _replace(current.copyWith(running: false, error: '$error'));
     }
   }
 
@@ -182,10 +195,10 @@ final class DownloadController extends Notifier<List<DownloadJob>> {
   }
 
   void clearFinished() {
-    state = [
+    _set([
       for (final job in state)
         if (job.running || job.error != null) job,
-    ];
+    ], immediate: true);
   }
 
   String? _quality(Profile profile) {
@@ -231,6 +244,10 @@ final class DownloadController extends Notifier<List<DownloadJob>> {
     }
     final progress = parseDownloadLine(line);
     if (progress == null) {
+      final note = notableErrorLine(line);
+      if (note != null) {
+        _replace(current.copyWith(errorDetail: note));
+      }
       return;
     }
     _replace(
@@ -256,11 +273,14 @@ final class DownloadController extends Notifier<List<DownloadJob>> {
     if (current == null) {
       return;
     }
-    _replace(current.copyWith(running: false, detail: 'cancelled'));
+    _replace(
+      current.copyWith(running: false, detail: 'cancelled'),
+      immediate: true,
+    );
   }
 
   void _addFailed(String url, String profileName, String error) {
-    state = [
+    _set([
       DownloadJob(
         id: DateTime.now().microsecondsSinceEpoch.toString(),
         url: url,
@@ -269,7 +289,7 @@ final class DownloadController extends Notifier<List<DownloadJob>> {
         error: error,
       ),
       ...state,
-    ];
+    ], immediate: true);
   }
 
   DownloadJob? _job(String id) {
@@ -281,10 +301,31 @@ final class DownloadController extends Notifier<List<DownloadJob>> {
     return null;
   }
 
-  void _replace(DownloadJob job) {
-    state = [
+  void _replace(DownloadJob job, {bool immediate = false}) {
+    _set([
       for (final current in state)
         if (current.id == job.id) job else current,
-    ];
+    ], immediate: immediate);
+  }
+
+  void _set(List<DownloadJob> jobs, {required bool immediate}) {
+    state = jobs;
+    if (immediate) {
+      _saveTimer?.cancel();
+      _saveTimer = null;
+      _write();
+      return;
+    }
+    if (_saveTimer != null) {
+      return;
+    }
+    _saveTimer = Timer(const Duration(milliseconds: 500), () {
+      _saveTimer = null;
+      _write();
+    });
+  }
+
+  void _write() {
+    ref.read(jobStoreProvider).save(state);
   }
 }

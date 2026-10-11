@@ -1,5 +1,6 @@
 import 'package:dv_max_easy/design/app_theme.dart';
 import 'package:dv_max_easy/features/downloads/application/download_controller.dart';
+import 'package:dv_max_easy/features/downloads/domain/download_failure.dart';
 import 'package:dv_max_easy/features/downloads/domain/download_plan.dart';
 import 'package:dv_max_easy/features/downloads/infrastructure/file_actions.dart';
 import 'package:dv_max_easy/l10n/app_localizations.dart';
@@ -126,7 +127,29 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
                     ),
                   ],
                   const SizedBox(height: 8),
-                  Text(_status(l10n), style: text.bodySmall),
+                  Text(
+                    _status(l10n),
+                    style: text.bodySmall?.copyWith(
+                      color: job.error == null ? null : scheme.error,
+                    ),
+                  ),
+                  if (_extra() case final extra?) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      extra,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: text.bodySmall?.copyWith(color: scheme.error),
+                    ),
+                  ],
+                  if (job.error != null && !job.running)
+                    TextButton.icon(
+                      onPressed: () => ref
+                          .read(downloadControllerProvider.notifier)
+                          .retry(job.id),
+                      icon: const Icon(Icons.refresh_rounded, size: 16),
+                      label: Text(l10n.downloadRetry),
+                    ),
                   if (job.running) ...[
                     const SizedBox(height: 10),
                     LinearProgressIndicator(value: job.fraction),
@@ -256,10 +279,27 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
     );
   }
 
+  String? _extra() {
+    return switch (job.error) {
+      'filename_too_long' || 'interrupted' || null => null,
+      _ => shortFailureDetail(job.errorDetail),
+    };
+  }
+
   String _status(AppLocalizations l10n) {
     return switch (job.error) {
       'missing_folder' => l10n.downloadNeedFolder,
       'missing_binary' => l10n.downloadNeedBinary,
+      'filename_too_long' => l10n.errFilename,
+      'private_video' => l10n.errPrivate,
+      'unavailable' => l10n.errUnavailable,
+      'login_required' => l10n.errLogin,
+      'unsupported_url' => l10n.errUnsupported,
+      'forbidden' => l10n.errForbidden,
+      'extract_failed' => l10n.errExtract,
+      'ffmpeg_failed' => l10n.errFfmpeg,
+      'network' => l10n.errNetwork,
+      'interrupted' => l10n.errInterrupted,
       null when job.running => _running(l10n),
       null when job.detail == 'cancelled' => l10n.statusCancelled,
       null => l10n.statusDone,

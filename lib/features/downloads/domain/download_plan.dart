@@ -59,6 +59,8 @@ List<String> downloadArguments({
     'postprocess:{"event":"postprocess","status":"%(progress.status)s","postprocessor":"%(progress.postprocessor|)s"}',
     '--ffmpeg-location',
     ffmpegPath,
+    '--trim-filenames',
+    '120',
     '-P',
     destination,
     '-o',

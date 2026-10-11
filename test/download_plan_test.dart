@@ -40,6 +40,8 @@ void main() {
       url: 'https://www.youtube.com/watch?v=abcdefghijk',
     );
 
+    expect(args, contains('--trim-filenames'));
+    expect(args, contains('120'));
     expect(args, contains('--no-playlist'));
     expect(
       args[args.indexOf('-f') + 1],

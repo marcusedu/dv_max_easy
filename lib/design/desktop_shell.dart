@@ -2,8 +2,10 @@ import 'package:dv_max_easy/app/app_identity.dart';
 import 'package:dv_max_easy/app/shell_section.dart';
 import 'package:dv_max_easy/app/window_drag.dart';
 import 'package:dv_max_easy/design/app_theme.dart';
+import 'package:dv_max_easy/features/downloads/application/clipboard_offer.dart';
 import 'package:dv_max_easy/features/downloads/application/download_controller.dart';
 import 'package:dv_max_easy/features/downloads/domain/download_plan.dart';
+import 'package:dv_max_easy/features/downloads/infrastructure/system_clipboard.dart';
 import 'package:dv_max_easy/features/downloads/presentation/queue_panel.dart';
 import 'package:dv_max_easy/features/profiles/presentation/profiles_page.dart';
 import 'package:dv_max_easy/features/settings/application/settings_controller.dart';
@@ -21,7 +23,8 @@ class DesktopShell extends ConsumerStatefulWidget {
   ConsumerState<DesktopShell> createState() => DesktopShellState();
 }
 
-class DesktopShellState extends ConsumerState<DesktopShell> {
+class DesktopShellState extends ConsumerState<DesktopShell>
+    with WidgetsBindingObserver {
   ShellSection section = ShellSection.queue;
   final urlFocus = FocusNode();
   final urlController = TextEditingController();
@@ -30,15 +33,47 @@ class DesktopShellState extends ConsumerState<DesktopShell> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    windowChannel.setMethodCallHandler((call) async {
+      if (call.method == 'focus') {
+        await _offerClipboard();
+      }
+    });
     urlController.addListener(_onUrlEdited);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _offerClipboard();
+    });
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    windowChannel.setMethodCallHandler(null);
     urlController.removeListener(_onUrlEdited);
     urlFocus.dispose();
     urlController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _offerClipboard();
+    }
+  }
+
+  Future<void> _offerClipboard() async {
+    final settings = ref.read(settingsControllerProvider).asData?.value;
+    if (settings == null) {
+      return;
+    }
+    final text = await ref.read(clipboardReaderProvider).readText();
+    if (!mounted) {
+      return;
+    }
+    ref
+        .read(clipboardOfferProvider.notifier)
+        .offer(text, enabled: settings.settings.clipboardPromptEnabled);
   }
 
   void _onUrlEdited() {
@@ -63,8 +98,8 @@ class DesktopShellState extends ConsumerState<DesktopShell> {
   }
 
   Future<void> _pasteAndStart() async {
-    final data = await Clipboard.getData(Clipboard.kTextPlain);
-    final url = downloadUrl(field: urlController.text, clipboard: data?.text);
+    final data = await ref.read(clipboardReaderProvider).readText();
+    final url = downloadUrl(field: urlController.text, clipboard: data);
     if (url == null) {
       return;
     }
@@ -87,6 +122,11 @@ class DesktopShellState extends ConsumerState<DesktopShell> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(settingsControllerProvider, (previous, next) {
+      if (next.hasValue && previous?.hasValue != true) {
+        _offerClipboard();
+      }
+    });
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     final version = ref
@@ -136,7 +176,10 @@ class DesktopShellState extends ConsumerState<DesktopShell> {
             },
           ),
           DismissBannerIntent: CallbackAction<DismissBannerIntent>(
-            onInvoke: (_) => null,
+            onInvoke: (_) {
+              ref.read(clipboardOfferProvider.notifier).dismiss();
+              return null;
+            },
           ),
           OpenSettingsIntent: CallbackAction<OpenSettingsIntent>(
             onInvoke: (_) {
@@ -190,6 +233,7 @@ class DesktopShellState extends ConsumerState<DesktopShell> {
                               urlController: urlController,
                               onSubmit: _start,
                               onPaste: _pasteAndStart,
+                              onDownload: _start,
                             ),
                           ),
                         ),
@@ -391,6 +435,7 @@ class _SectionBody extends StatelessWidget {
     required this.urlController,
     required this.onSubmit,
     required this.onPaste,
+    required this.onDownload,
   });
 
   final ShellSection section;
@@ -398,6 +443,7 @@ class _SectionBody extends StatelessWidget {
   final TextEditingController urlController;
   final VoidCallback onSubmit;
   final Future<void> Function() onPaste;
+  final ValueChanged<String> onDownload;
 
   @override
   Widget build(BuildContext context) {
@@ -410,6 +456,7 @@ class _SectionBody extends StatelessWidget {
           urlFocus: urlFocus,
           onSubmit: onSubmit,
           onPaste: onPaste,
+          onDownload: onDownload,
         ),
         ShellSection.done => _Page(
           title: l10n.navDone,

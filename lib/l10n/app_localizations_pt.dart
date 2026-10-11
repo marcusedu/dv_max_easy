@@ -85,6 +85,46 @@ class AppLocalizationsPt extends AppLocalizations {
   String get downloadCancel => 'Cancelar';
 
   @override
+  String get downloadRetry => 'Tentar de novo';
+
+  @override
+  String get clipboardOffer => 'Tem um link copiado';
+
+  @override
+  String get clipboardDismiss => 'Agora não';
+
+  @override
+  String get errFilename =>
+      'O nome do arquivo passou do limite do sistema. Tente de novo para baixar com o nome encurtado.';
+
+  @override
+  String get errPrivate => 'Esse vídeo é privado.';
+
+  @override
+  String get errUnavailable => 'Esse vídeo não está disponível.';
+
+  @override
+  String get errLogin => 'O site pediu login ou uma confirmação no navegador.';
+
+  @override
+  String get errUnsupported => 'Esse endereço não é suportado.';
+
+  @override
+  String get errForbidden => 'O site recusou o download.';
+
+  @override
+  String get errExtract => 'Não deu para ler os dados desse link.';
+
+  @override
+  String get errFfmpeg => 'O FFmpeg não conseguiu fechar o arquivo.';
+
+  @override
+  String get errNetwork => 'A rede falhou no meio do download.';
+
+  @override
+  String get errInterrupted => 'O download parou porque o app foi fechado.';
+
+  @override
   String get statusDone => 'Concluído';
 
   @override

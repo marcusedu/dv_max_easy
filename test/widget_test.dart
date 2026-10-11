@@ -20,7 +20,11 @@ void main() {
     expect(find.text('DV Max'), findsNWidgets(2));
     expect(find.text('Fila'), findsWidgets);
     expect(find.text('Concluídos'), findsOneWidget);
-    expect(find.text('Arraste um link ou cole aqui'), findsOneWidget);
+    expect(
+      find.text('Baixe vídeos e áudios de redes sociais com facilidade.'),
+      findsOneWidget,
+    );
+    expect(find.text('Arraste um link ou cole aqui'), findsNothing);
     expect(find.text('Perfil ativo'), findsOneWidget);
     expect(find.text('Filmes'), findsOneWidget);
     expect(find.text('Baixar'), findsOneWidget);
@@ -95,6 +99,58 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Pasta padrão'), findsOneWidget);
+  });
+
+  testWidgets('a copied link is offered once and does not start alone', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      appWithSettings(readySettings(), clipboard: 'https://example.com/video'),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tem um link copiado'), findsOneWidget);
+    expect(find.text('https://example.com/video'), findsOneWidget);
+    expect(find.text('Downloads'), findsNothing);
+
+    await tester.tap(find.text('Agora não'));
+    await tester.pumpAndSettle();
+    expect(find.text('Tem um link copiado'), findsNothing);
+  });
+
+  testWidgets('a filename error explains itself and offers retry', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      appWithSettings(
+        readySettings(),
+        jobs: const [
+          DownloadJob(
+            id: '1',
+            url: 'https://x.com/a/status/1',
+            profileName: 'Filmes',
+            running: false,
+            error: 'filename_too_long',
+            errorDetail: 'ERROR: [Errno 63] File name too long',
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('nome do arquivo'), findsOneWidget);
+    expect(find.text('Tentar de novo'), findsOneWidget);
+    expect(find.textContaining('Errno 63'), findsNothing);
   });
 
   testWidgets('missing binaries replace the shell', (tester) async {

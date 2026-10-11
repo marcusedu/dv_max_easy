@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:dv_max_easy/app/dv_max_app.dart';
 import 'package:dv_max_easy/core/clock.dart';
 import 'package:dv_max_easy/core/log.dart';
+import 'package:dv_max_easy/features/downloads/application/download_controller.dart';
+import 'package:dv_max_easy/features/downloads/infrastructure/json_job_store.dart';
 import 'package:dv_max_easy/features/profiles/infrastructure/json_profile_store.dart';
 import 'package:dv_max_easy/features/settings/application/settings_controller.dart';
 import 'package:dv_max_easy/features/settings/infrastructure/json_settings_store.dart';
@@ -26,6 +28,12 @@ Future<void> main() async {
     clock: clock,
     log: log,
   );
+  final jobs = JsonJobStore(
+    file: File(p.join(support.path, 'jobs.json')),
+    clock: clock,
+    log: log,
+  );
+  final restored = await jobs.load();
   runApp(
     ProviderScope(
       overrides: [
@@ -33,6 +41,8 @@ Future<void> main() async {
         logProvider.overrideWithValue(log),
         settingsStoreProvider.overrideWithValue(store),
         profileStoreProvider.overrideWithValue(profiles),
+        jobStoreProvider.overrideWithValue(jobs),
+        initialDownloadsProvider.overrideWithValue(restored),
       ],
       child: const DvMaxApp(),
     ),

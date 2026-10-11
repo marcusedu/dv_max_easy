@@ -56,4 +56,9 @@ class MainFlutterWindow: NSWindow {
 
     super.awakeFromNib()
   }
+
+  override func becomeKey() {
+    super.becomeKey()
+    fileChannel?.invokeMethod("focus", arguments: nil)
+  }
 }

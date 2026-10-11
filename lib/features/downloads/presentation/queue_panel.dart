@@ -1,4 +1,5 @@
 import 'package:dv_max_easy/design/app_theme.dart';
+import 'package:dv_max_easy/features/downloads/application/clipboard_offer.dart';
 import 'package:dv_max_easy/features/downloads/application/download_controller.dart';
 import 'package:dv_max_easy/features/downloads/presentation/job_card.dart';
 import 'package:dv_max_easy/features/profiles/application/profile_controller.dart';
@@ -12,6 +13,7 @@ class QueuePanel extends ConsumerWidget {
     required this.urlFocus,
     required this.onSubmit,
     required this.onPaste,
+    required this.onDownload,
     super.key,
   });
 
@@ -19,6 +21,7 @@ class QueuePanel extends ConsumerWidget {
   final FocusNode urlFocus;
   final VoidCallback onSubmit;
   final Future<void> Function() onPaste;
+  final ValueChanged<String> onDownload;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -33,6 +36,7 @@ class QueuePanel extends ConsumerWidget {
         .selected
         ?.name;
     final finished = jobs.where((job) => !job.running && job.error == null);
+    final offer = ref.watch(clipboardOfferProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -65,12 +69,15 @@ class QueuePanel extends ConsumerWidget {
         ),
         const SizedBox(height: 6),
         Text(l10n.queueSubtitle, style: text.bodySmall),
-        const SizedBox(height: AppSpacing.l),
-        _DropZone(
-          onTap: urlFocus.requestFocus,
-          title: l10n.dropTitle,
-          support: l10n.dropSupport,
-        ),
+        if (offer != null) ...[
+          const SizedBox(height: AppSpacing.m),
+          _ClipboardBanner(
+            url: offer,
+            onDownload: () => onDownload(offer),
+            onDismiss: () =>
+                ref.read(clipboardOfferProvider.notifier).dismiss(),
+          ),
+        ],
         const SizedBox(height: AppSpacing.m),
         Row(
           children: [
@@ -197,58 +204,63 @@ class _LinkField extends StatelessWidget {
   }
 }
 
-class _DropZone extends StatelessWidget {
-  const _DropZone({
-    required this.onTap,
-    required this.title,
-    required this.support,
+class _ClipboardBanner extends StatelessWidget {
+  const _ClipboardBanner({
+    required this.url,
+    required this.onDownload,
+    required this.onDismiss,
   });
 
-  final VoidCallback onTap;
-  final String title;
-  final String support;
+  final String url;
+  final VoidCallback onDownload;
+  final VoidCallback onDismiss;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-    return Material(
-      color: scheme.surfaceContainerHighest.withValues(alpha: 0.45),
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        hoverColor: scheme.primary.withValues(alpha: 0.04),
-        child: CustomPaint(
-          painter: _DashedBorder(
-            color: scheme.onSurfaceVariant.withValues(alpha: 0.45),
-          ),
-          child: SizedBox(
-            height: 176,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: scheme.outlineVariant),
-                  ),
-                  child: SizedBox(
-                    width: 46,
-                    height: 46,
-                    child: Icon(
-                      Icons.download_rounded,
-                      color: scheme.onSurfaceVariant,
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: scheme.primary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppSpacing.panelRadius),
+        border: Border.all(color: scheme.primary.withValues(alpha: 0.35)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        child: Row(
+          children: [
+            Icon(Icons.link_rounded, size: 18, color: scheme.primary),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.clipboardOffer,
+                    style: text.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                ),
-                const SizedBox(height: 14),
-                Text(title, style: text.titleMedium?.copyWith(fontSize: 16)),
-                const SizedBox(height: 6),
-                Text(support, style: text.bodySmall),
-              ],
+                  Text(
+                    url,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: text.bodySmall,
+                  ),
+                ],
+              ),
             ),
-          ),
+            TextButton(
+              onPressed: onDismiss,
+              child: Text(l10n.clipboardDismiss),
+            ),
+            const SizedBox(width: 4),
+            FilledButton(
+              onPressed: onDownload,
+              child: Text(l10n.downloadStart),
+            ),
+          ],
         ),
       ),
     );
@@ -277,40 +289,6 @@ class _Count extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-class _DashedBorder extends CustomPainter {
-  const _DashedBorder({required this.color});
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2;
-    final path = Path()
-      ..addRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(1, 1, size.width - 2, size.height - 2),
-          const Radius.circular(16),
-        ),
-      );
-    for (final metric in path.computeMetrics()) {
-      var start = 0.0;
-      while (start < metric.length) {
-        final end = (start + 7).clamp(0, metric.length).toDouble();
-        canvas.drawPath(metric.extractPath(start, end), paint);
-        start += 12;
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _DashedBorder oldDelegate) {
-    return oldDelegate.color != color;
   }
 }
 
