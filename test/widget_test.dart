@@ -3,6 +3,7 @@ import 'package:dv_max_easy/features/settings/domain/app_settings.dart';
 
 import 'support/settings_harness.dart';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -93,6 +94,19 @@ void main() {
     expect(find.text('Vídeo'), findsOneWidget);
     expect(find.text('mkv'), findsOneWidget);
 
+    await tester.tap(
+      find.text('https://x.com/birinaite80/status/1'),
+      buttons: kSecondaryMouseButton,
+      kind: PointerDeviceKind.mouse,
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Abrir'), findsOneWidget);
+    expect(find.text('Copiar'), findsOneWidget);
+    expect(find.text('Compartilhar'), findsOneWidget);
+    expect(find.text('Abrir pasta'), findsNWidgets(2));
+
+    await tester.tapAt(const Offset(420, 160));
+    await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.more_horiz));
     await tester.pumpAndSettle();
     expect(find.text('Abrir'), findsOneWidget);
