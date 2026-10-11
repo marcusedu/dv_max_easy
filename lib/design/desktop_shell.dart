@@ -4,6 +4,7 @@ import 'package:dv_max_easy/app/window_drag.dart';
 import 'package:dv_max_easy/design/app_theme.dart';
 import 'package:dv_max_easy/features/downloads/application/clipboard_offer.dart';
 import 'package:dv_max_easy/features/downloads/application/download_controller.dart';
+import 'package:dv_max_easy/features/downloads/application/library_query.dart';
 import 'package:dv_max_easy/features/downloads/domain/download_plan.dart';
 import 'package:dv_max_easy/features/downloads/infrastructure/system_clipboard.dart';
 import 'package:dv_max_easy/features/downloads/presentation/queue_panel.dart';
@@ -42,6 +43,7 @@ class DesktopShellState extends ConsumerState<DesktopShell>
     urlController.addListener(_onUrlEdited);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _offerClipboard();
+      ref.read(downloadControllerProvider.notifier).purgeExpired();
     });
   }
 
@@ -234,6 +236,12 @@ class DesktopShellState extends ConsumerState<DesktopShell>
                               onSubmit: _start,
                               onPaste: _pasteAndStart,
                               onDownload: _start,
+                              onOpenCompleted: (url) {
+                                ref
+                                    .read(libraryQueryProvider.notifier)
+                                    .focusUrl(url);
+                                _select(ShellSection.done);
+                              },
                             ),
                           ),
                         ),
@@ -436,6 +444,7 @@ class _SectionBody extends StatelessWidget {
     required this.onSubmit,
     required this.onPaste,
     required this.onDownload,
+    required this.onOpenCompleted,
   });
 
   final ShellSection section;
@@ -444,6 +453,7 @@ class _SectionBody extends StatelessWidget {
   final VoidCallback onSubmit;
   final Future<void> Function() onPaste;
   final ValueChanged<String> onDownload;
+  final ValueChanged<String> onOpenCompleted;
 
   @override
   Widget build(BuildContext context) {
@@ -457,6 +467,7 @@ class _SectionBody extends StatelessWidget {
           onSubmit: onSubmit,
           onPaste: onPaste,
           onDownload: onDownload,
+          onOpenCompleted: onOpenCompleted,
         ),
         ShellSection.done => _Page(
           title: l10n.navDone,

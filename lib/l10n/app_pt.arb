@@ -132,5 +132,86 @@
     "placeholders": {
       "name": {"type": "String"}
     }
-  }
+  },
+  "queuePreviewHint": "A fila mostra os 10 mais recentes. O restante está em Concluídos.",
+  "doneSearch": "Pesquisar por nome ou link",
+  "filterSource": "Fonte",
+  "filterProfile": "Perfil",
+  "filterType": "Tipo",
+  "filterDisk": "Arquivo",
+  "filterAll": "Todos",
+  "diskPresent": "Na pasta",
+  "diskMissing": "Fora da pasta",
+  "diskScheduled": "Com prazo",
+  "diskPurged": "Apagados",
+  "fileMissing": "O arquivo não está mais na pasta em que foi salvo.",
+  "filePurged": "O app apagou este arquivo. O histórico fica.",
+  "downloadAgain": "Baixar de novo",
+  "keepFile": "Manter este arquivo",
+  "resumeRetention": "Voltar a apagar no prazo",
+  "deletesIn": "Apaga em {when}",
+  "@deletesIn": {
+    "placeholders": {
+      "when": {"type": "String"}
+    }
+  },
+  "downloadedAt": "Baixado em {when}",
+  "@downloadedAt": {
+    "placeholders": {
+      "when": {"type": "String"}
+    }
+  },
+  "whenMinute": "1 minuto",
+  "whenMinutes": "{count} minutos",
+  "@whenMinutes": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "whenHour": "1 hora",
+  "whenHours": "{count} horas",
+  "@whenHours": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "whenDay": "1 dia",
+  "whenDays": "{count} dias",
+  "@whenDays": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "alreadyDownloaded": "Este link já foi baixado",
+  "seeCompleted": "Ver nos concluídos",
+  "duplicateDismiss": "Fechar",
+  "retentionLabel": "Apagar o arquivo",
+  "retentionNever": "Nunca",
+  "retentionTwo": "2 dias",
+  "retentionThirty": "30 dias",
+  "retentionCustom": "Personalizado",
+  "retentionDays": "Dias",
+  "retentionHint": "Ao abrir, o app apaga o arquivo depois desse prazo. O histórico permanece.",
+  "errRetention": "O prazo precisa ser um número de dias maior que zero.",
+  "storageTitle": "Armazenamento",
+  "storageHistory": "{count} no histórico",
+  "@storageHistory": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "storageOnDisk": "{count} arquivos ainda na pasta",
+  "@storageOnDisk": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "storageSize": "{size} no disco",
+  "@storageSize": {
+    "placeholders": {
+      "size": {"type": "String"}
+    }
+  },
+  "purgeNow": "Apagar os que já venceram",
+  "doneEmptyFilter": "Nenhum download combina com esses filtros."
 }

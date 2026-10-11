@@ -723,6 +723,252 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'As configurações antigas foram guardadas em {name} e o app começou de novo.'**
   String schemaReset(String name);
+
+  /// No description provided for @queuePreviewHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'A fila mostra os 10 mais recentes. O restante está em Concluídos.'**
+  String get queuePreviewHint;
+
+  /// No description provided for @doneSearch.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pesquisar por nome ou link'**
+  String get doneSearch;
+
+  /// No description provided for @filterSource.
+  ///
+  /// In pt, this message translates to:
+  /// **'Fonte'**
+  String get filterSource;
+
+  /// No description provided for @filterProfile.
+  ///
+  /// In pt, this message translates to:
+  /// **'Perfil'**
+  String get filterProfile;
+
+  /// No description provided for @filterType.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tipo'**
+  String get filterType;
+
+  /// No description provided for @filterDisk.
+  ///
+  /// In pt, this message translates to:
+  /// **'Arquivo'**
+  String get filterDisk;
+
+  /// No description provided for @filterAll.
+  ///
+  /// In pt, this message translates to:
+  /// **'Todos'**
+  String get filterAll;
+
+  /// No description provided for @diskPresent.
+  ///
+  /// In pt, this message translates to:
+  /// **'Na pasta'**
+  String get diskPresent;
+
+  /// No description provided for @diskMissing.
+  ///
+  /// In pt, this message translates to:
+  /// **'Fora da pasta'**
+  String get diskMissing;
+
+  /// No description provided for @diskScheduled.
+  ///
+  /// In pt, this message translates to:
+  /// **'Com prazo'**
+  String get diskScheduled;
+
+  /// No description provided for @diskPurged.
+  ///
+  /// In pt, this message translates to:
+  /// **'Apagados'**
+  String get diskPurged;
+
+  /// No description provided for @fileMissing.
+  ///
+  /// In pt, this message translates to:
+  /// **'O arquivo não está mais na pasta em que foi salvo.'**
+  String get fileMissing;
+
+  /// No description provided for @filePurged.
+  ///
+  /// In pt, this message translates to:
+  /// **'O app apagou este arquivo. O histórico fica.'**
+  String get filePurged;
+
+  /// No description provided for @downloadAgain.
+  ///
+  /// In pt, this message translates to:
+  /// **'Baixar de novo'**
+  String get downloadAgain;
+
+  /// No description provided for @keepFile.
+  ///
+  /// In pt, this message translates to:
+  /// **'Manter este arquivo'**
+  String get keepFile;
+
+  /// No description provided for @resumeRetention.
+  ///
+  /// In pt, this message translates to:
+  /// **'Voltar a apagar no prazo'**
+  String get resumeRetention;
+
+  /// No description provided for @deletesIn.
+  ///
+  /// In pt, this message translates to:
+  /// **'Apaga em {when}'**
+  String deletesIn(String when);
+
+  /// No description provided for @downloadedAt.
+  ///
+  /// In pt, this message translates to:
+  /// **'Baixado em {when}'**
+  String downloadedAt(String when);
+
+  /// No description provided for @whenMinute.
+  ///
+  /// In pt, this message translates to:
+  /// **'1 minuto'**
+  String get whenMinute;
+
+  /// No description provided for @whenMinutes.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count} minutos'**
+  String whenMinutes(int count);
+
+  /// No description provided for @whenHour.
+  ///
+  /// In pt, this message translates to:
+  /// **'1 hora'**
+  String get whenHour;
+
+  /// No description provided for @whenHours.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count} horas'**
+  String whenHours(int count);
+
+  /// No description provided for @whenDay.
+  ///
+  /// In pt, this message translates to:
+  /// **'1 dia'**
+  String get whenDay;
+
+  /// No description provided for @whenDays.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count} dias'**
+  String whenDays(int count);
+
+  /// No description provided for @alreadyDownloaded.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este link já foi baixado'**
+  String get alreadyDownloaded;
+
+  /// No description provided for @seeCompleted.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ver nos concluídos'**
+  String get seeCompleted;
+
+  /// No description provided for @duplicateDismiss.
+  ///
+  /// In pt, this message translates to:
+  /// **'Fechar'**
+  String get duplicateDismiss;
+
+  /// No description provided for @retentionLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Apagar o arquivo'**
+  String get retentionLabel;
+
+  /// No description provided for @retentionNever.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nunca'**
+  String get retentionNever;
+
+  /// No description provided for @retentionTwo.
+  ///
+  /// In pt, this message translates to:
+  /// **'2 dias'**
+  String get retentionTwo;
+
+  /// No description provided for @retentionThirty.
+  ///
+  /// In pt, this message translates to:
+  /// **'30 dias'**
+  String get retentionThirty;
+
+  /// No description provided for @retentionCustom.
+  ///
+  /// In pt, this message translates to:
+  /// **'Personalizado'**
+  String get retentionCustom;
+
+  /// No description provided for @retentionDays.
+  ///
+  /// In pt, this message translates to:
+  /// **'Dias'**
+  String get retentionDays;
+
+  /// No description provided for @retentionHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ao abrir, o app apaga o arquivo depois desse prazo. O histórico permanece.'**
+  String get retentionHint;
+
+  /// No description provided for @errRetention.
+  ///
+  /// In pt, this message translates to:
+  /// **'O prazo precisa ser um número de dias maior que zero.'**
+  String get errRetention;
+
+  /// No description provided for @storageTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Armazenamento'**
+  String get storageTitle;
+
+  /// No description provided for @storageHistory.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count} no histórico'**
+  String storageHistory(int count);
+
+  /// No description provided for @storageOnDisk.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count} arquivos ainda na pasta'**
+  String storageOnDisk(int count);
+
+  /// No description provided for @storageSize.
+  ///
+  /// In pt, this message translates to:
+  /// **'{size} no disco'**
+  String storageSize(String size);
+
+  /// No description provided for @purgeNow.
+  ///
+  /// In pt, this message translates to:
+  /// **'Apagar os que já venceram'**
+  String get purgeNow;
+
+  /// No description provided for @doneEmptyFilter.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhum download combina com esses filtros.'**
+  String get doneEmptyFilter;
 }
 
 class _AppLocalizationsDelegate

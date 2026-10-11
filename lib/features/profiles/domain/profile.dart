@@ -22,6 +22,7 @@ final class Profile {
     required this.rateLimit,
     required this.concurrentFragments,
     required this.filenameTemplate,
+    this.deleteAfterDays,
   });
 
   static const musicId = 'a31c0b52-6d4e-4a1f-9c88-2f0b6e5d7a10';
@@ -42,6 +43,7 @@ final class Profile {
   final String? rateLimit;
   final int? concurrentFragments;
   final String filenameTemplate;
+  final int? deleteAfterDays;
 
   bool get isAudio => preset == QualityPreset.audio;
 
@@ -63,6 +65,8 @@ final class Profile {
     int? concurrentFragments,
     bool clearFragments = false,
     String? filenameTemplate,
+    int? deleteAfterDays,
+    bool clearRetention = false,
   }) {
     return Profile(
       id: id,
@@ -86,6 +90,9 @@ final class Profile {
           ? null
           : concurrentFragments ?? this.concurrentFragments,
       filenameTemplate: filenameTemplate ?? this.filenameTemplate,
+      deleteAfterDays: clearRetention
+          ? null
+          : deleteAfterDays ?? this.deleteAfterDays,
     );
   }
 
@@ -106,6 +113,7 @@ final class Profile {
       'rateLimit': rateLimit,
       'concurrentFragments': concurrentFragments,
       'filenameTemplate': filenameTemplate,
+      'deleteAfterDays': deleteAfterDays,
     };
   }
 
@@ -117,7 +125,9 @@ final class Profile {
       preset: QualityPreset.values.byName(json['preset'] as String),
       container: MediaContainer.values.byName(json['container'] as String),
       preferredAudioLanguages: _strings(json['preferredAudioLanguages']),
-      audioFallback: AudioFallback.values.byName(json['audioFallback'] as String),
+      audioFallback: AudioFallback.values.byName(
+        json['audioFallback'] as String,
+      ),
       subtitleLanguages: _strings(json['subtitleLanguages']),
       subtitleMode: SubtitleMode.values.byName(json['subtitleMode'] as String),
       includeAutoSubtitles: json['includeAutoSubtitles'] == true,
@@ -125,6 +135,9 @@ final class Profile {
       rateLimit: json['rateLimit'] as String?,
       concurrentFragments: json['concurrentFragments'] as int?,
       filenameTemplate: json['filenameTemplate'] as String? ?? defaultTemplate,
+      deleteAfterDays: json['deleteAfterDays'] is int
+          ? json['deleteAfterDays'] as int
+          : null,
     );
   }
 
@@ -132,7 +145,10 @@ final class Profile {
     if (value is! List) {
       return const [];
     }
-    return [for (final item in value) if (item is String) item];
+    return [
+      for (final item in value)
+        if (item is String) item,
+    ];
   }
 }
 

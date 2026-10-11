@@ -4,20 +4,18 @@ import 'package:dv_max_easy/design/app_theme.dart';
 import 'package:dv_max_easy/features/downloads/application/download_controller.dart';
 import 'package:dv_max_easy/features/downloads/domain/download_failure.dart';
 import 'package:dv_max_easy/features/downloads/domain/download_plan.dart';
+import 'package:dv_max_easy/features/downloads/domain/retention.dart';
 import 'package:dv_max_easy/features/downloads/infrastructure/file_actions.dart';
+import 'package:dv_max_easy/features/downloads/infrastructure/io_file_stamp.dart';
 import 'package:dv_max_easy/features/downloads/presentation/source_favicon.dart';
+import 'package:dv_max_easy/features/profiles/application/profile_controller.dart';
+import 'package:dv_max_easy/features/settings/application/settings_controller.dart';
 import 'package:dv_max_easy/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:super_drag_and_drop/super_drag_and_drop.dart';
 
-bool jobHasFile(DownloadJob job) {
-  return !job.running &&
-      job.error == null &&
-      job.detail != 'cancelled' &&
-      job.outputPath != null &&
-      job.outputPath!.isNotEmpty;
-}
+bool jobHasFile(DownloadJob job) => downloadSucceeded(job);
 
 String containerOf(DownloadJob job) {
   if (job.containerLabel.isNotEmpty) {
@@ -85,14 +83,19 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    ref.watch(profileControllerProvider);
+    ref.watch(fileStampReaderProvider);
+    ref.watch(clockProvider);
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
     final path = job.outputPath;
     final folder = folderOf(job);
     final fileName = fileTitle(path, job.url);
     final showFileName = path != null && path.isNotEmpty;
-    final hasFile = path != null && jobHasFile(job);
-    final hasMenu = hasFile || job.running;
+    final facts = _facts();
+    final hasFile = facts.onDisk && jobHasFile(job);
+    final missing = jobHasFile(job) && !facts.onDisk;
+    final hasMenu = _menuItems(l10n, facts).isNotEmpty;
     final container = containerOf(job);
     final quality = [
       if (job.qualityLabel != null) job.qualityLabel!,
@@ -115,7 +118,11 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
               _Thumb(
                 url: job.thumbnailUrl,
                 playLabel: l10n.fileOpen,
-                onPlay: hasFile ? () => _run(_actions.open(path)) : null,
+                onPlay: switch (path) {
+                  final String saved when hasFile =>
+                    () => _run(_actions.open(saved)),
+                  _ => null,
+                },
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -165,6 +172,50 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
                         style: text.bodySmall?.copyWith(color: scheme.error),
                       ),
                     ],
+                    if (facts.modified != null && facts.onDisk) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        l10n.downloadedAt(formatStamp(facts.modified!)),
+                        style: text.bodySmall?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                    if (facts.deleteAt != null &&
+                        facts.onDisk &&
+                        facts.deleteAt!.isAfter(facts.now)) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(Icons.schedule, size: 14, color: scheme.primary),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              l10n.deletesIn(
+                                retentionWhen(
+                                  l10n,
+                                  facts.deleteAt!.difference(facts.now),
+                                ),
+                              ),
+                              style: text.bodySmall?.copyWith(
+                                color: scheme.primary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    if (missing) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        job.purgedAt == null
+                            ? l10n.fileMissing
+                            : l10n.filePurged,
+                        style: text.bodySmall?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                     if (job.error != null && !job.running)
                       TextButton.icon(
                         onPressed: () => ref
@@ -172,6 +223,14 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
                             .retry(job.id),
                         icon: const Icon(Icons.refresh_rounded, size: 16),
                         label: Text(l10n.downloadRetry),
+                      ),
+                    if (missing)
+                      TextButton.icon(
+                        onPressed: () => ref
+                            .read(downloadControllerProvider.notifier)
+                            .retry(job.id),
+                        icon: const Icon(Icons.refresh_rounded, size: 16),
+                        label: Text(l10n.downloadAgain),
                       ),
                     if (job.running) ...[
                       const SizedBox(height: 10),
@@ -252,7 +311,7 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
                               color: scheme.onSurfaceVariant,
                             ),
                             onSelected: _onMenu,
-                            itemBuilder: (context) => _menuItems(l10n),
+                            itemBuilder: (context) => _menuItems(l10n, facts),
                           ),
                         ],
                       ],
@@ -265,37 +324,77 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
         ),
       ),
     );
-    if (!hasFile || !fileDragOutEnabled) {
-      return card;
+    final shown = missing ? Opacity(opacity: 0.55, child: card) : card;
+    if (path case final String saved when hasFile && fileDragOutEnabled) {
+      return DragItemWidget(
+        allowedOperations: () => [DropOperation.copy],
+        dragItemProvider: (_) {
+          final item = DragItem(suggestedName: fileName);
+          item.add(
+            Formats.fileUri(fileDragUri(saved, windows: Platform.isWindows)),
+          );
+          return item;
+        },
+        child: DraggableWidget(
+          child: MouseRegion(cursor: SystemMouseCursors.grab, child: shown),
+        ),
+      );
     }
-    return DragItemWidget(
-      allowedOperations: () => [DropOperation.copy],
-      dragItemProvider: (_) {
-        final item = DragItem(suggestedName: fileName);
-        item.add(
-          Formats.fileUri(fileDragUri(path, windows: Platform.isWindows)),
-        );
-        return item;
-      },
-      child: DraggableWidget(
-        child: MouseRegion(cursor: SystemMouseCursors.grab, child: card),
+    return shown;
+  }
+
+  _CardFacts _facts() {
+    final path = job.outputPath;
+    final stamp = path == null || path.isEmpty
+        ? null
+        : ref.read(fileStampReaderProvider).stamp(path);
+    final profiles =
+        ref.read(profileControllerProvider).asData?.value.profiles ?? const [];
+    final days = retentionDays(job, profiles);
+    final now = ref.read(clockProvider).now();
+    return _CardFacts(
+      onDisk: stamp?.exists == true,
+      modified: stamp?.modified,
+      deleteAt: scheduledDelete(
+        job: job,
+        days: days,
+        modified: stamp?.modified,
       ),
+      canResume:
+          job.keepFile &&
+          days != null &&
+          days > 0 &&
+          stamp?.exists == true &&
+          job.purgedAt == null,
+      now: now,
     );
   }
 
-  List<PopupMenuEntry<String>> _menuItems(AppLocalizations l10n) {
+  List<PopupMenuEntry<String>> _menuItems(
+    AppLocalizations l10n,
+    _CardFacts facts,
+  ) {
     final folder = folderOf(job);
+    final open = facts.onDisk && jobHasFile(job);
+    final again = jobHasFile(job) && !facts.onDisk;
+    final scheduled =
+        facts.deleteAt != null &&
+        facts.onDisk &&
+        facts.deleteAt!.isAfter(facts.now);
     return [
-      if (jobHasFile(job)) ...[
+      if (open) ...[
         PopupMenuItem(value: 'open', child: Text(l10n.fileOpen)),
         PopupMenuItem(value: 'copy', child: Text(l10n.fileCopy)),
       ],
       if (folder != null)
         PopupMenuItem(value: 'reveal', child: Text(l10n.fileReveal)),
-      if (jobHasFile(job))
-        PopupMenuItem(value: 'share', child: Text(l10n.fileShare)),
+      if (open) PopupMenuItem(value: 'share', child: Text(l10n.fileShare)),
+      if (scheduled) PopupMenuItem(value: 'keep', child: Text(l10n.keepFile)),
+      if (facts.canResume)
+        PopupMenuItem(value: 'resume', child: Text(l10n.resumeRetention)),
       if (job.error != null && !job.running)
         PopupMenuItem(value: 'retry', child: Text(l10n.downloadRetry)),
+      if (again) PopupMenuItem(value: 'retry', child: Text(l10n.downloadAgain)),
       if (job.running)
         PopupMenuItem(value: 'cancel', child: Text(l10n.downloadCancel)),
     ];
@@ -315,6 +414,14 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
         _run(_actions.share(path));
       case 'retry':
         ref.read(downloadControllerProvider.notifier).retry(job.id);
+      case 'keep':
+        ref
+            .read(downloadControllerProvider.notifier)
+            .setKeepFile(job.id, keep: true);
+      case 'resume':
+        ref
+            .read(downloadControllerProvider.notifier)
+            .setKeepFile(job.id, keep: false);
       case 'cancel':
         ref.read(downloadControllerProvider.notifier).cancel(job.id);
     }
@@ -322,7 +429,7 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
 
   Future<void> _showContextMenu(Offset global) async {
     final l10n = AppLocalizations.of(context);
-    final items = _menuItems(l10n);
+    final items = _menuItems(l10n, _facts());
     if (items.isEmpty) {
       return;
     }
@@ -384,6 +491,56 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
     }
     return l10n.statusDownloading(parts.join(' • '));
   }
+}
+
+final class _CardFacts {
+  const _CardFacts({
+    required this.onDisk,
+    required this.modified,
+    required this.deleteAt,
+    required this.canResume,
+    required this.now,
+  });
+
+  final bool onDisk;
+  final DateTime? modified;
+  final DateTime? deleteAt;
+  final bool canResume;
+  final DateTime now;
+}
+
+String formatStamp(DateTime time) {
+  const months = [
+    'jan.',
+    'fev.',
+    'mar.',
+    'abr.',
+    'mai.',
+    'jun.',
+    'jul.',
+    'ago.',
+    'set.',
+    'out.',
+    'nov.',
+    'dez.',
+  ];
+  final local = time.toLocal();
+  final hour = local.hour.toString().padLeft(2, '0');
+  final minute = local.minute.toString().padLeft(2, '0');
+  return '${local.day} ${months[local.month - 1]} $hour:$minute';
+}
+
+String retentionWhen(AppLocalizations l10n, Duration left) {
+  if (left.inMinutes < 60) {
+    final count = left.inMinutes < 1 ? 1 : left.inMinutes;
+    return count == 1 ? l10n.whenMinute : l10n.whenMinutes(count);
+  }
+  if (left.inHours < 24) {
+    final count = left.inHours;
+    return count == 1 ? l10n.whenHour : l10n.whenHours(count);
+  }
+  final count = (left.inHours / 24).ceil();
+  return count == 1 ? l10n.whenDay : l10n.whenDays(count);
 }
 
 class _Thumb extends StatelessWidget {

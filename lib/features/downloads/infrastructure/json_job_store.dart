@@ -123,6 +123,9 @@ Map<String, dynamic> jobToJson(DownloadJob job) {
     'destination': job.destination,
     'thumbnailUrl': job.thumbnailUrl,
     'fraction': job.fraction,
+    if (job.keepFile) 'keepFile': true,
+    if (job.purgedAt != null)
+      'purgedAt': job.purgedAt!.toUtc().toIso8601String(),
   };
 }
 
@@ -162,5 +165,9 @@ DownloadJob? jobFromJson(Map<String, dynamic> json) {
         ? json['thumbnailUrl'] as String
         : null,
     fraction: fraction is num ? fraction.toDouble() : null,
+    keepFile: json['keepFile'] == true,
+    purgedAt: json['purgedAt'] is String
+        ? DateTime.tryParse(json['purgedAt'] as String)
+        : null,
   );
 }

@@ -1,9 +1,16 @@
 import 'package:dv_max_easy/design/app_theme.dart';
 import 'package:dv_max_easy/features/downloads/application/clipboard_offer.dart';
 import 'package:dv_max_easy/features/downloads/application/download_controller.dart';
+import 'package:dv_max_easy/features/downloads/application/library_query.dart';
+import 'package:dv_max_easy/features/downloads/domain/file_stamp.dart';
+import 'package:dv_max_easy/features/downloads/domain/library.dart';
+import 'package:dv_max_easy/features/downloads/domain/retention.dart';
+import 'package:dv_max_easy/features/downloads/infrastructure/io_file_stamp.dart';
 import 'package:dv_max_easy/features/downloads/presentation/job_card.dart';
 import 'package:dv_max_easy/features/downloads/presentation/source_favicon.dart';
 import 'package:dv_max_easy/features/profiles/application/profile_controller.dart';
+import 'package:dv_max_easy/features/profiles/domain/profile.dart';
+import 'package:dv_max_easy/features/settings/application/settings_controller.dart';
 import 'package:dv_max_easy/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,6 +22,7 @@ class QueuePanel extends ConsumerWidget {
     required this.onSubmit,
     required this.onPaste,
     required this.onDownload,
+    required this.onOpenCompleted,
     super.key,
   });
 
@@ -23,6 +31,7 @@ class QueuePanel extends ConsumerWidget {
   final VoidCallback onSubmit;
   final Future<void> Function() onPaste;
   final ValueChanged<String> onDownload;
+  final ValueChanged<String> onOpenCompleted;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,6 +39,17 @@ class QueuePanel extends ConsumerWidget {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
     final jobs = ref.watch(downloadControllerProvider);
+    final visible = queuePreview(jobs);
+    final hidden = jobs.length - visible.length;
+    final noticeId = ref.watch(duplicateNoticeProvider);
+    DownloadJob? prior;
+    if (noticeId != null) {
+      for (final job in jobs) {
+        if (job.id == noticeId) {
+          prior = job;
+        }
+      }
+    }
     final profileName = ref
         .watch(profileControllerProvider)
         .asData
@@ -61,6 +81,17 @@ class QueuePanel extends ConsumerWidget {
                 ref.read(clipboardOfferProvider.notifier).dismiss(),
           ),
         ],
+        if (prior != null) ...[
+          const SizedBox(height: AppSpacing.m),
+          _DuplicateBanner(
+            onOpen: () {
+              final url = prior!.url;
+              ref.read(duplicateNoticeProvider.notifier).clear();
+              onOpenCompleted(url);
+            },
+            onDismiss: () => ref.read(duplicateNoticeProvider.notifier).clear(),
+          ),
+        ],
         const SizedBox(height: AppSpacing.m),
         Row(
           children: [
@@ -82,7 +113,7 @@ class QueuePanel extends ConsumerWidget {
             ),
           ],
         ),
-        if (jobs.isNotEmpty) ...[
+        if (visible.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.l),
           Row(
             children: [
@@ -91,7 +122,7 @@ class QueuePanel extends ConsumerWidget {
                 style: text.titleMedium?.copyWith(fontSize: 16),
               ),
               const SizedBox(width: 8),
-              _Count(value: jobs.length),
+              _Count(value: visible.length),
               const Spacer(),
               OutlinedButton.icon(
                 onPressed: finished.isEmpty
@@ -104,12 +135,16 @@ class QueuePanel extends ConsumerWidget {
               ),
             ],
           ),
+          if (hidden > 0) ...[
+            const SizedBox(height: AppSpacing.s),
+            Text(l10n.queuePreviewHint, style: text.bodySmall),
+          ],
           const SizedBox(height: AppSpacing.m),
           Expanded(
             child: ListView.separated(
-              itemCount: jobs.length,
+              itemCount: visible.length,
               separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.s),
-              itemBuilder: (_, index) => DownloadJobCard(job: jobs[index]),
+              itemBuilder: (_, index) => DownloadJobCard(job: visible[index]),
             ),
           ),
         ],
@@ -118,26 +153,282 @@ class QueuePanel extends ConsumerWidget {
   }
 }
 
-class CompletedPanel extends ConsumerWidget {
+class CompletedPanel extends ConsumerStatefulWidget {
   const CompletedPanel({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CompletedPanel> createState() => _CompletedPanelState();
+}
+
+class _CompletedPanelState extends ConsumerState<CompletedPanel> {
+  late final TextEditingController _search;
+
+  @override
+  void initState() {
+    super.initState();
+    _search = TextEditingController(text: ref.read(libraryQueryProvider).text);
+  }
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final jobs = ref
-        .watch(downloadControllerProvider)
-        .where(jobHasFile)
-        .toList();
-    if (jobs.isEmpty) {
-      return Text(
-        l10n.doneEmpty,
-        style: Theme.of(context).textTheme.bodyMedium,
-      );
+    final text = Theme.of(context).textTheme;
+    ref.listen(libraryQueryProvider, (previous, next) {
+      if (next.text != _search.text) {
+        _search.text = next.text;
+      }
+    });
+    final query = ref.watch(libraryQueryProvider);
+    final jobs = ref.watch(downloadControllerProvider);
+    final history = [
+      for (final job in jobs)
+        if (!job.running) job,
+    ];
+    if (history.isEmpty) {
+      return Text(l10n.doneEmpty, style: text.bodyMedium);
     }
-    return ListView.separated(
-      itemCount: jobs.length,
-      separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.s),
-      itemBuilder: (_, index) => DownloadJobCard(job: jobs[index]),
+    final profiles =
+        ref.watch(profileControllerProvider).asData?.value.profiles ??
+        const <Profile>[];
+    final reader = ref.watch(fileStampReaderProvider);
+    final now = ref.watch(clockProvider).now();
+    final shown = [
+      for (final job in history)
+        if (_matches(job, query, profiles, reader.stamp, now)) job,
+    ];
+    final notifier = ref.read(libraryQueryProvider.notifier);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TextField(
+          controller: _search,
+          decoration: InputDecoration(
+            hintText: l10n.doneSearch,
+            prefixIcon: const Icon(Icons.search, size: 18),
+            isDense: true,
+          ),
+          onChanged: notifier.setText,
+        ),
+        const SizedBox(height: AppSpacing.s),
+        Wrap(
+          spacing: AppSpacing.s,
+          runSpacing: AppSpacing.s,
+          children: [
+            _ChoiceFilter(
+              label: l10n.filterSource,
+              selected: query.host,
+              options: distinctValues([
+                for (final job in history) sourceHost(job.url),
+              ]),
+              onSelected: notifier.setHost,
+            ),
+            _ChoiceFilter(
+              label: l10n.filterProfile,
+              selected: query.profile,
+              options: distinctValues([
+                for (final job in history) job.profileName,
+              ]),
+              onSelected: notifier.setProfile,
+            ),
+            _ChoiceFilter(
+              label: l10n.filterType,
+              selected: query.type,
+              options: distinctValues([
+                for (final job in history) fileType(job),
+              ]),
+              onSelected: notifier.setType,
+            ),
+            _DiskFilter(disk: query.disk, onSelected: notifier.setDisk),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.m),
+        if (shown.isEmpty)
+          Text(l10n.doneEmptyFilter, style: text.bodyMedium)
+        else
+          Expanded(
+            child: ListView.separated(
+              itemCount: shown.length,
+              separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.s),
+              itemBuilder: (_, index) => DownloadJobCard(job: shown[index]),
+            ),
+          ),
+      ],
+    );
+  }
+
+  bool _matches(
+    DownloadJob job,
+    LibraryQuery query,
+    List<Profile> profiles,
+    FileStamp Function(String path) stampOf,
+    DateTime now,
+  ) {
+    final path = job.outputPath;
+    final stamp = path == null || path.isEmpty ? null : stampOf(path);
+    final deleteAt = scheduledDelete(
+      job: job,
+      days: retentionDays(job, profiles),
+      modified: stamp?.modified,
+    );
+    return libraryMatches(
+      job,
+      query,
+      stamp: stamp,
+      deleteAt: deleteAt,
+      now: now,
+    );
+  }
+}
+
+class _ChoiceFilter extends StatelessWidget {
+  const _ChoiceFilter({
+    required this.label,
+    required this.selected,
+    required this.options,
+    required this.onSelected,
+  });
+
+  final String label;
+  final String? selected;
+  final List<String> options;
+  final ValueChanged<String?> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return PopupMenuButton<String>(
+      tooltip: label,
+      padding: EdgeInsets.zero,
+      onSelected: (value) => onSelected(value.isEmpty ? null : value),
+      itemBuilder: (context) => [
+        PopupMenuItem(value: '', child: Text(l10n.filterAll)),
+        for (final option in options)
+          PopupMenuItem(value: option, child: Text(option)),
+      ],
+      child: _FilterFace(text: selected ?? label, active: selected != null),
+    );
+  }
+}
+
+class _DiskFilter extends StatelessWidget {
+  const _DiskFilter({required this.disk, required this.onSelected});
+
+  final DiskFilter disk;
+  final ValueChanged<DiskFilter> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final labels = {
+      DiskFilter.any: l10n.filterDisk,
+      DiskFilter.present: l10n.diskPresent,
+      DiskFilter.missing: l10n.diskMissing,
+      DiskFilter.scheduled: l10n.diskScheduled,
+      DiskFilter.purged: l10n.diskPurged,
+    };
+    return PopupMenuButton<DiskFilter>(
+      tooltip: l10n.filterDisk,
+      padding: EdgeInsets.zero,
+      onSelected: onSelected,
+      itemBuilder: (context) => [
+        for (final value in DiskFilter.values)
+          PopupMenuItem(
+            value: value,
+            child: Text(
+              value == DiskFilter.any ? l10n.filterAll : labels[value]!,
+            ),
+          ),
+      ],
+      child: _FilterFace(text: labels[disk]!, active: disk != DiskFilter.any),
+    );
+  }
+}
+
+class _FilterFace extends StatelessWidget {
+  const _FilterFace({required this.text, required this.active});
+
+  final String text;
+  final bool active;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: active ? scheme.primary.withValues(alpha: 0.16) : scheme.surface,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: active ? scheme.primary : scheme.outlineVariant,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 6, 8, 6),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              text,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: active ? scheme.primary : scheme.onSurface,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            Icon(
+              Icons.expand_more,
+              size: 16,
+              color: active ? scheme.primary : scheme.onSurfaceVariant,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DuplicateBanner extends StatelessWidget {
+  const _DuplicateBanner({required this.onOpen, required this.onDismiss});
+
+  final VoidCallback onOpen;
+  final VoidCallback onDismiss;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: scheme.tertiary.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppSpacing.panelRadius),
+        border: Border.all(color: scheme.tertiary.withValues(alpha: 0.4)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        child: Row(
+          children: [
+            Icon(Icons.history, size: 18, color: scheme.tertiary),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                l10n.alreadyDownloaded,
+                style: text.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+              ),
+            ),
+            TextButton(
+              onPressed: onDismiss,
+              child: Text(l10n.duplicateDismiss),
+            ),
+            const SizedBox(width: 4),
+            FilledButton(onPressed: onOpen, child: Text(l10n.seeCompleted)),
+          ],
+        ),
+      ),
     );
   }
 }

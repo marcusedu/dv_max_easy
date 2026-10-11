@@ -5,6 +5,9 @@ import 'dart:io';
 import 'package:dv_max_easy/features/downloads/domain/download_failure.dart';
 import 'package:dv_max_easy/features/downloads/domain/download_job.dart';
 import 'package:dv_max_easy/features/downloads/domain/download_plan.dart';
+import 'package:dv_max_easy/features/downloads/domain/library.dart';
+import 'package:dv_max_easy/features/downloads/domain/retention.dart';
+import 'package:dv_max_easy/features/downloads/infrastructure/io_file_stamp.dart';
 import 'package:dv_max_easy/features/downloads/infrastructure/json_job_store.dart';
 import 'package:dv_max_easy/features/profiles/domain/profile.dart';
 import 'package:dv_max_easy/features/profiles/infrastructure/json_profile_store.dart';
@@ -20,6 +23,19 @@ final downloadControllerProvider =
 
 /// Fila já existente ao abrir. O app deixa vazia; o teste injeta um item.
 final initialDownloadsProvider = Provider<List<DownloadJob>>((ref) => const []);
+
+final duplicateNoticeProvider = NotifierProvider<DuplicateNotice, String?>(
+  DuplicateNotice.new,
+);
+
+final class DuplicateNotice extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  void show(String jobId) => state = jobId;
+
+  void clear() => state = null;
+}
 
 final class DownloadController extends Notifier<List<DownloadJob>> {
   final Map<String, Process> _processes = {};
@@ -37,6 +53,13 @@ final class DownloadController extends Notifier<List<DownloadJob>> {
     final url = raw.trim();
     if (!isHttpUrl(url)) {
       return;
+    }
+    final prior = earlierSuccess(state, url);
+    final notice = ref.read(duplicateNoticeProvider.notifier);
+    if (prior == null) {
+      notice.clear();
+    } else {
+      notice.show(prior.id);
     }
     final settings = ref.read(settingsControllerProvider).asData?.value;
     final ytDlp = settings?.settings.ytDlpPath;
@@ -161,6 +184,7 @@ final class DownloadController extends Notifier<List<DownloadJob>> {
           clearError: failure == null,
           detail: code == 0 ? 'done' : current.detail,
           clearErrorDetail: failure == null,
+          clearPurged: failure == null,
         ),
         immediate: true,
       );
@@ -192,6 +216,55 @@ final class DownloadController extends Notifier<List<DownloadJob>> {
 
   void cancel(String id) {
     _stop(id);
+  }
+
+  Future<int> purgeExpired() async {
+    final document = await ref.read(profileStoreProvider).ensureLoaded();
+    final now = ref.read(clockProvider).now();
+    final reader = ref.read(fileStampReaderProvider);
+    final due = dueJobs(
+      jobs: state,
+      profiles: document.profiles,
+      now: now,
+      stampOf: reader.stamp,
+    );
+    final purged = <String, DateTime>{};
+    for (final job in due) {
+      final path = job.outputPath;
+      if (path == null) {
+        continue;
+      }
+      try {
+        final file = File(path);
+        if (!file.existsSync() ||
+            FileSystemEntity.typeSync(path) != FileSystemEntityType.file) {
+          continue;
+        }
+        file.deleteSync();
+        if (file.existsSync()) {
+          continue;
+        }
+        purged[job.id] = now;
+      } on Object {
+        // O arquivo ficou no disco; o histórico também fica.
+      }
+    }
+    if (purged.isEmpty) {
+      return 0;
+    }
+    _set([
+      for (final job in state)
+        if (purged[job.id] case final at?) job.copyWith(purgedAt: at) else job,
+    ], immediate: true);
+    return purged.length;
+  }
+
+  void setKeepFile(String id, {required bool keep}) {
+    final current = _job(id);
+    if (current == null || current.keepFile == keep) {
+      return;
+    }
+    _replace(current.copyWith(keepFile: keep), immediate: true);
   }
 
   void clearFinished() {

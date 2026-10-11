@@ -170,6 +170,7 @@ class _EditorState extends ConsumerState<_Editor> {
   late final TextEditingController _rate;
   late final TextEditingController _fragments;
   late final TextEditingController _bitrate;
+  late final TextEditingController _days;
 
   @override
   void initState() {
@@ -183,6 +184,9 @@ class _EditorState extends ConsumerState<_Editor> {
     _bitrate = TextEditingController(
       text: _draft.maxBitrateKbps?.toString() ?? '',
     );
+    _days = TextEditingController(
+      text: _customDaysText(_draft.deleteAfterDays),
+    );
   }
 
   @override
@@ -194,6 +198,7 @@ class _EditorState extends ConsumerState<_Editor> {
       _rate.text = _draft.rateLimit ?? '';
       _fragments.text = _draft.concurrentFragments?.toString() ?? '';
       _bitrate.text = _draft.maxBitrateKbps?.toString() ?? '';
+      _days.text = _customDaysText(_draft.deleteAfterDays);
     }
   }
 
@@ -203,7 +208,13 @@ class _EditorState extends ConsumerState<_Editor> {
     _rate.dispose();
     _fragments.dispose();
     _bitrate.dispose();
+    _days.dispose();
     super.dispose();
+  }
+
+  bool get _customDays {
+    final days = _draft.deleteAfterDays;
+    return days != null && days != 2 && days != 30;
   }
 
   @override
@@ -338,6 +349,73 @@ class _EditorState extends ConsumerState<_Editor> {
         ],
       ),
     );
+    final retentionPanel = _Panel(
+      title: l10n.retentionLabel,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(l10n.retentionHint, style: text.bodySmall),
+          const SizedBox(height: AppSpacing.s),
+          Wrap(
+            spacing: AppSpacing.s,
+            runSpacing: AppSpacing.s,
+            children: [
+              ChoiceChip(
+                label: Text(l10n.retentionNever),
+                selected: _draft.deleteAfterDays == null,
+                onSelected: (_) => setState(
+                  () => _draft = _draft.copyWith(clearRetention: true),
+                ),
+              ),
+              ChoiceChip(
+                label: Text(l10n.retentionTwo),
+                selected: _draft.deleteAfterDays == 2,
+                onSelected: (_) => setState(
+                  () => _draft = _draft.copyWith(deleteAfterDays: 2),
+                ),
+              ),
+              ChoiceChip(
+                label: Text(l10n.retentionThirty),
+                selected: _draft.deleteAfterDays == 30,
+                onSelected: (_) => setState(
+                  () => _draft = _draft.copyWith(deleteAfterDays: 30),
+                ),
+              ),
+              ChoiceChip(
+                label: Text(l10n.retentionCustom),
+                selected: _customDays,
+                onSelected: (_) => setState(() {
+                  if (_customDays) {
+                    return;
+                  }
+                  _draft = _draft.copyWith(deleteAfterDays: 7);
+                  _days.text = '7';
+                }),
+              ),
+            ],
+          ),
+          if (_customDays) ...[
+            const SizedBox(height: AppSpacing.m),
+            TextField(
+              controller: _days,
+              decoration: InputDecoration(
+                labelText: l10n.retentionDays,
+                fillColor: fieldFill,
+                isDense: false,
+              ),
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              onChanged: (value) {
+                final parsed = int.tryParse(value);
+                setState(() {
+                  _draft = _draft.copyWith(deleteAfterDays: parsed ?? 0);
+                });
+              },
+            ),
+          ],
+        ],
+      ),
+    );
     final actions = Row(
       children: [
         FilledButton(
@@ -385,6 +463,8 @@ class _EditorState extends ConsumerState<_Editor> {
             ratePanel,
             const SizedBox(height: AppSpacing.m),
             folderPanel,
+            const SizedBox(height: AppSpacing.m),
+            retentionPanel,
             const SizedBox(height: AppSpacing.l),
             actions,
           ],
@@ -450,6 +530,13 @@ class _EditorState extends ConsumerState<_Editor> {
       },
     );
   }
+}
+
+String _customDaysText(int? days) {
+  if (days == null || days == 2 || days == 30) {
+    return '';
+  }
+  return '$days';
 }
 
 class _Panel extends StatelessWidget {

@@ -29,13 +29,15 @@ void main() {
         log: MemoryLog(),
       );
       await store.save([
-        const DownloadJob(
+        DownloadJob(
           id: 'done',
           url: 'https://example.com/a',
           profileName: 'Filmes',
           running: false,
           detail: 'done',
           outputPath: '/tmp/a.mkv',
+          keepFile: true,
+          purgedAt: DateTime.utc(2026, 10, 11, 12),
         ),
         const DownloadJob(
           id: 'live',
@@ -51,6 +53,8 @@ void main() {
       expect(loaded.last.running, isFalse);
       expect(loaded.last.error, 'interrupted');
       expect(loaded.first.outputPath, '/tmp/a.mkv');
+      expect(loaded.first.keepFile, isTrue);
+      expect(loaded.first.purgedAt, DateTime.utc(2026, 10, 11, 12));
     },
   );
 

@@ -77,13 +77,16 @@ final class FixedClipboard implements ClipboardReader {
 Widget appWithSettings(
   AppSettings settings, {
   List<DownloadJob> jobs = const [],
+  List<Profile>? profiles,
   String? clipboard,
 }) {
   return ProviderScope(
     overrides: [
       settingsStoreProvider.overrideWithValue(MemorySettingsStore(settings)),
       profileStoreProvider.overrideWithValue(
-        MemoryProfileStore(ProfileDocument([musicPreset(), filmsPreset()])),
+        MemoryProfileStore(
+          ProfileDocument(profiles ?? [musicPreset(), filmsPreset()]),
+        ),
       ),
       pathFactsProvider.overrideWithValue(const AcceptingPathFacts()),
       versionProbeProvider.overrideWithValue(

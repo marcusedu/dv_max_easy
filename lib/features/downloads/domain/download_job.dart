@@ -18,6 +18,8 @@ final class DownloadJob {
     this.speed,
     this.eta,
     this.thumbnailUrl,
+    this.keepFile = false,
+    this.purgedAt,
   });
 
   final String id;
@@ -38,6 +40,8 @@ final class DownloadJob {
   final double? speed;
   final int? eta;
   final String? thumbnailUrl;
+  final bool keepFile;
+  final DateTime? purgedAt;
 
   DownloadJob copyWith({
     bool? running,
@@ -54,6 +58,9 @@ final class DownloadJob {
     double? speed,
     int? eta,
     String? thumbnailUrl,
+    bool? keepFile,
+    DateTime? purgedAt,
+    bool clearPurged = false,
   }) {
     return DownloadJob(
       id: id,
@@ -74,6 +81,16 @@ final class DownloadJob {
       speed: speed ?? this.speed,
       eta: eta ?? this.eta,
       thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
+      keepFile: keepFile ?? this.keepFile,
+      purgedAt: clearPurged ? null : purgedAt ?? this.purgedAt,
     );
   }
+}
+
+bool downloadSucceeded(DownloadJob job) {
+  return !job.running &&
+      job.error == null &&
+      job.detail != 'cancelled' &&
+      job.outputPath != null &&
+      job.outputPath!.isNotEmpty;
 }

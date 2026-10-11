@@ -23,6 +23,7 @@ String profileMessage(AppLocalizations l10n, String code) {
     'rate_invalid' => l10n.errRate,
     'fragments_invalid' => l10n.errFragments,
     'template_escape' => l10n.errTemplate,
+    'retention_invalid' => l10n.errRetention,
     _ => l10n.errRate,
   };
 }

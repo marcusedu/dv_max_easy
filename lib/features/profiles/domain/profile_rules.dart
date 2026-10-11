@@ -51,6 +51,10 @@ List<String> validateProfile(Profile profile) {
   if (_templateEscapes(profile.filenameTemplate)) {
     errors.add('template_escape');
   }
+  final days = profile.deleteAfterDays;
+  if (days != null && days <= 0) {
+    errors.add('retention_invalid');
+  }
   return errors;
 }
 
@@ -75,7 +79,8 @@ bool _templateEscapes(String template) {
   if (template.contains('/') || template.contains(r'\')) {
     return true;
   }
-  return template.split(RegExp(r'\s+')).contains('..') || template.contains('..');
+  return template.split(RegExp(r'\s+')).contains('..') ||
+      template.contains('..');
 }
 
 Profile normalized(Profile profile) {

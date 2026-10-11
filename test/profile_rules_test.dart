@@ -9,7 +9,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('2m is stored as 2M and fragments stay inside 1 to 16', () {
-    final profile = filmsPreset().copyWith(rateLimit: '2m', concurrentFragments: 4);
+    final profile = filmsPreset().copyWith(
+      rateLimit: '2m',
+      concurrentFragments: 4,
+    );
     expect(validateProfile(profile), isEmpty);
     expect(normalized(profile).rateLimit, '2M');
 
@@ -22,7 +25,9 @@ void main() {
       contains('fragments_invalid'),
     );
     expect(
-      validateProfile(filmsPreset().copyWith(concurrentFragments: null, clearFragments: true)),
+      validateProfile(
+        filmsPreset().copyWith(concurrentFragments: null, clearFragments: true),
+      ),
       isEmpty,
     );
   });
@@ -40,30 +45,51 @@ void main() {
       validateProfile(filmsPreset().copyWith(filenameTemplate: '../fora.mkv')),
       contains('template_escape'),
     );
+    expect(
+      validateProfile(filmsPreset().copyWith(deleteAfterDays: 0)),
+      contains('retention_invalid'),
+    );
+    expect(
+      validateProfile(filmsPreset().copyWith(deleteAfterDays: 14)),
+      isEmpty,
+    );
+    final stored = Profile.fromJson(
+      filmsPreset().copyWith(deleteAfterDays: 14).toJson(),
+    );
+    expect(stored.deleteAfterDays, 14);
+    expect(Profile.fromJson(filmsPreset().toJson()).deleteAfterDays, isNull);
   });
 
-  test('missing file seeds music and films and does not recreate later', () async {
-    final directory = await Directory.systemTemp.createTemp('dv-max-profiles');
-    addTearDown(() => directory.delete(recursive: true));
-    final store = JsonProfileStore(
-      file: File('${directory.path}/profiles.json'),
-      clock: FixedClock(DateTime.utc(2026, 10, 10)),
-      log: MemoryLog(),
-    );
+  test(
+    'missing file seeds music and films and does not recreate later',
+    () async {
+      final directory = await Directory.systemTemp.createTemp(
+        'dv-max-profiles',
+      );
+      addTearDown(() => directory.delete(recursive: true));
+      final store = JsonProfileStore(
+        file: File('${directory.path}/profiles.json'),
+        clock: FixedClock(DateTime.utc(2026, 10, 10)),
+        log: MemoryLog(),
+      );
 
-    final seeded = await store.ensureLoaded();
-    expect(seeded.seeded, isTrue);
-    expect(seeded.profiles.map((profile) => profile.name), ['Música', 'Filmes']);
-    expect(preferredProfileId(seeded.profiles, null), Profile.filmsId);
+      final seeded = await store.ensureLoaded();
+      expect(seeded.seeded, isTrue);
+      expect(seeded.profiles.map((profile) => profile.name), [
+        'Música',
+        'Filmes',
+      ]);
+      expect(preferredProfileId(seeded.profiles, null), Profile.filmsId);
 
-    await store.save([seeded.byName('Música')!]);
-    final again = JsonProfileStore(
-      file: File('${directory.path}/profiles.json'),
-      clock: FixedClock(DateTime.utc(2026, 10, 10)),
-      log: MemoryLog(),
-    );
-    final loaded = await again.ensureLoaded();
-    expect(loaded.seeded, isFalse);
-    expect(loaded.profiles.map((profile) => profile.name), ['Música']);
-  });
+      await store.save([seeded.byName('Música')!]);
+      final again = JsonProfileStore(
+        file: File('${directory.path}/profiles.json'),
+        clock: FixedClock(DateTime.utc(2026, 10, 10)),
+        log: MemoryLog(),
+      );
+      final loaded = await again.ensureLoaded();
+      expect(loaded.seeded, isFalse);
+      expect(loaded.profiles.map((profile) => profile.name), ['Música']);
+    },
+  );
 }

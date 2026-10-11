@@ -1,4 +1,9 @@
 import 'package:dv_max_easy/design/app_theme.dart';
+import 'package:dv_max_easy/features/downloads/application/download_controller.dart';
+import 'package:dv_max_easy/features/downloads/domain/download_plan.dart';
+import 'package:dv_max_easy/features/downloads/domain/retention.dart';
+import 'package:dv_max_easy/features/downloads/infrastructure/io_file_stamp.dart';
+import 'package:dv_max_easy/features/profiles/application/profile_controller.dart';
 import 'package:dv_max_easy/features/settings/application/settings_controller.dart';
 import 'package:dv_max_easy/features/settings/domain/binary_path.dart';
 import 'package:dv_max_easy/features/settings/presentation/settings_copy.dart';
@@ -24,119 +29,124 @@ class SettingsForm extends ConsumerWidget {
         final text = Theme.of(context).textTheme;
         return Align(
           alignment: Alignment.topLeft,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 560),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (showIntro) ...[
-                  Text(l10n.setupTitle, style: text.titleMedium),
-                  const SizedBox(height: AppSpacing.s),
-                  Text(_hint(l10n), style: text.bodySmall),
-                  const SizedBox(height: AppSpacing.l),
-                ],
-                if (view.noticeCode != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.m),
-                    child: Text(
-                      settingsMessage(
-                        l10n,
-                        view.noticeCode!,
-                        detail: view.noticeDetail,
-                      ),
-                      style: text.bodyMedium,
-                    ),
-                  ),
-                if (view.errorCode != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.m),
-                    child: Text(
-                      settingsMessage(l10n, view.errorCode!),
-                      style: text.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                    ),
-                  ),
-                _BinaryRow(
-                  label: l10n.ytDlpPathLabel,
-                  path: view.settings.ytDlpPath,
-                  version: view.ytDlpVersion,
-                  pending: view.pendingKind == BinaryKind.ytDlp
-                      ? view.pendingPath
-                      : null,
-                  onChoose: () => _pickFile(ref, BinaryKind.ytDlp),
-                  onSearch: () => ref
-                      .read(settingsControllerProvider.notifier)
-                      .search(BinaryKind.ytDlp),
-                  onConfirm: () => ref
-                      .read(settingsControllerProvider.notifier)
-                      .acceptPending(),
-                ),
-                const SizedBox(height: AppSpacing.m),
-                _BinaryRow(
-                  label: l10n.ffmpegPathLabel,
-                  path: view.settings.ffmpegPath,
-                  version: view.ffmpegVersion,
-                  pending: view.pendingKind == BinaryKind.ffmpeg
-                      ? view.pendingPath
-                      : null,
-                  onChoose: () => _pickFile(ref, BinaryKind.ffmpeg),
-                  onSearch: () => ref
-                      .read(settingsControllerProvider.notifier)
-                      .search(BinaryKind.ffmpeg),
-                  onConfirm: () => ref
-                      .read(settingsControllerProvider.notifier)
-                      .acceptPending(),
-                ),
-                const SizedBox(height: AppSpacing.l),
-                Text(l10n.folderLabel, style: text.bodyMedium),
-                const SizedBox(height: AppSpacing.s),
-                Text(
-                  view.settings.defaultDownloadFolder ?? l10n.folderEmpty,
-                  style: text.bodySmall,
-                ),
-                const SizedBox(height: AppSpacing.s),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: OutlinedButton(
-                    onPressed: () => _pickFolder(ref),
-                    child: Text(l10n.chooseFolder),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.l),
-                Text(l10n.concurrentLabel, style: text.bodyMedium),
-                const SizedBox(height: AppSpacing.s),
-                Wrap(
-                  spacing: AppSpacing.s,
-                  children: [
-                    for (final value in [1, 2, 3, 4])
-                      ChoiceChip(
-                        label: Text('$value'),
-                        selected: view.settings.maxConcurrentDownloads == value,
-                        onSelected: (_) => ref
-                            .read(settingsControllerProvider.notifier)
-                            .setConcurrent(value),
-                      ),
+          child: SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (showIntro) ...[
+                    Text(l10n.setupTitle, style: text.titleMedium),
+                    const SizedBox(height: AppSpacing.s),
+                    Text(_hint(l10n), style: text.bodySmall),
+                    const SizedBox(height: AppSpacing.l),
                   ],
-                ),
-                const SizedBox(height: AppSpacing.m),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(l10n.clipboardLabel, style: text.bodyMedium),
-                  value: view.settings.clipboardPromptEnabled,
-                  onChanged: (value) => ref
-                      .read(settingsControllerProvider.notifier)
-                      .setClipboardPrompt(value),
-                ),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(l10n.redactLabel, style: text.bodyMedium),
-                  value: view.settings.redactUrlsInLog,
-                  onChanged: (value) => ref
-                      .read(settingsControllerProvider.notifier)
-                      .setRedactUrls(value),
-                ),
-              ],
+                  if (view.noticeCode != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.m),
+                      child: Text(
+                        settingsMessage(
+                          l10n,
+                          view.noticeCode!,
+                          detail: view.noticeDetail,
+                        ),
+                        style: text.bodyMedium,
+                      ),
+                    ),
+                  if (view.errorCode != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.m),
+                      child: Text(
+                        settingsMessage(l10n, view.errorCode!),
+                        style: text.bodyMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                    ),
+                  _BinaryRow(
+                    label: l10n.ytDlpPathLabel,
+                    path: view.settings.ytDlpPath,
+                    version: view.ytDlpVersion,
+                    pending: view.pendingKind == BinaryKind.ytDlp
+                        ? view.pendingPath
+                        : null,
+                    onChoose: () => _pickFile(ref, BinaryKind.ytDlp),
+                    onSearch: () => ref
+                        .read(settingsControllerProvider.notifier)
+                        .search(BinaryKind.ytDlp),
+                    onConfirm: () => ref
+                        .read(settingsControllerProvider.notifier)
+                        .acceptPending(),
+                  ),
+                  const SizedBox(height: AppSpacing.m),
+                  _BinaryRow(
+                    label: l10n.ffmpegPathLabel,
+                    path: view.settings.ffmpegPath,
+                    version: view.ffmpegVersion,
+                    pending: view.pendingKind == BinaryKind.ffmpeg
+                        ? view.pendingPath
+                        : null,
+                    onChoose: () => _pickFile(ref, BinaryKind.ffmpeg),
+                    onSearch: () => ref
+                        .read(settingsControllerProvider.notifier)
+                        .search(BinaryKind.ffmpeg),
+                    onConfirm: () => ref
+                        .read(settingsControllerProvider.notifier)
+                        .acceptPending(),
+                  ),
+                  const SizedBox(height: AppSpacing.l),
+                  Text(l10n.folderLabel, style: text.bodyMedium),
+                  const SizedBox(height: AppSpacing.s),
+                  Text(
+                    view.settings.defaultDownloadFolder ?? l10n.folderEmpty,
+                    style: text.bodySmall,
+                  ),
+                  const SizedBox(height: AppSpacing.s),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: OutlinedButton(
+                      onPressed: () => _pickFolder(ref),
+                      child: Text(l10n.chooseFolder),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.l),
+                  Text(l10n.concurrentLabel, style: text.bodyMedium),
+                  const SizedBox(height: AppSpacing.s),
+                  Wrap(
+                    spacing: AppSpacing.s,
+                    children: [
+                      for (final value in [1, 2, 3, 4])
+                        ChoiceChip(
+                          label: Text('$value'),
+                          selected:
+                              view.settings.maxConcurrentDownloads == value,
+                          onSelected: (_) => ref
+                              .read(settingsControllerProvider.notifier)
+                              .setConcurrent(value),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.m),
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(l10n.clipboardLabel, style: text.bodyMedium),
+                    value: view.settings.clipboardPromptEnabled,
+                    onChanged: (value) => ref
+                        .read(settingsControllerProvider.notifier)
+                        .setClipboardPrompt(value),
+                  ),
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(l10n.redactLabel, style: text.bodyMedium),
+                    value: view.settings.redactUrlsInLog,
+                    onChanged: (value) => ref
+                        .read(settingsControllerProvider.notifier)
+                        .setRedactUrls(value),
+                  ),
+                  const SizedBox(height: AppSpacing.l),
+                  const _StorageBlock(),
+                ],
+              ),
             ),
           ),
         );
@@ -157,7 +167,9 @@ class SettingsForm extends ConsumerWidget {
     if (file == null) {
       return;
     }
-    await ref.read(settingsControllerProvider.notifier).acceptBinary(kind, file.path);
+    await ref
+        .read(settingsControllerProvider.notifier)
+        .acceptBinary(kind, file.path);
   }
 
   Future<void> _pickFolder(WidgetRef ref) async {
@@ -166,6 +178,52 @@ class SettingsForm extends ConsumerWidget {
       return;
     }
     await ref.read(settingsControllerProvider.notifier).setFolder(folder);
+  }
+}
+
+class _StorageBlock extends ConsumerWidget {
+  const _StorageBlock();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final text = Theme.of(context).textTheme;
+    final jobs = ref.watch(downloadControllerProvider);
+    final profiles =
+        ref.watch(profileControllerProvider).asData?.value.profiles ?? const [];
+    final reader = ref.watch(fileStampReaderProvider);
+    final now = ref.watch(clockProvider).now();
+    final due = dueJobs(
+      jobs: jobs,
+      profiles: profiles,
+      now: now,
+      stampOf: reader.stamp,
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(l10n.storageTitle, style: text.bodyMedium),
+        const SizedBox(height: AppSpacing.s),
+        Text(l10n.storageHistory(jobs.length), style: text.bodySmall),
+        Text(
+          l10n.storageOnDisk(filesOnDisk(jobs, reader.stamp)),
+          style: text.bodySmall,
+        ),
+        Text(
+          l10n.storageSize(formatMegabytes(storedBytes(jobs, reader.stamp))),
+          style: text.bodySmall,
+        ),
+        const SizedBox(height: AppSpacing.s),
+        OutlinedButton(
+          onPressed: due.isEmpty
+              ? null
+              : () => ref
+                    .read(downloadControllerProvider.notifier)
+                    .purgeExpired(),
+          child: Text(l10n.purgeNow),
+        ),
+      ],
+    );
   }
 }
 
@@ -198,8 +256,7 @@ class _BinaryRow extends StatelessWidget {
         Text(label, style: text.bodyMedium),
         const SizedBox(height: AppSpacing.s),
         Text(path ?? l10n.binaryEmpty, style: text.bodySmall),
-        if (version != null)
-          Text(version!, style: text.bodySmall),
+        if (version != null) Text(version!, style: text.bodySmall),
         if (pending != null) ...[
           const SizedBox(height: AppSpacing.s),
           Text(l10n.foundPath(pending!), style: text.bodyMedium),

@@ -341,4 +341,147 @@ class AppLocalizationsPt extends AppLocalizations {
   String schemaReset(String name) {
     return 'As configurações antigas foram guardadas em $name e o app começou de novo.';
   }
+
+  @override
+  String get queuePreviewHint =>
+      'A fila mostra os 10 mais recentes. O restante está em Concluídos.';
+
+  @override
+  String get doneSearch => 'Pesquisar por nome ou link';
+
+  @override
+  String get filterSource => 'Fonte';
+
+  @override
+  String get filterProfile => 'Perfil';
+
+  @override
+  String get filterType => 'Tipo';
+
+  @override
+  String get filterDisk => 'Arquivo';
+
+  @override
+  String get filterAll => 'Todos';
+
+  @override
+  String get diskPresent => 'Na pasta';
+
+  @override
+  String get diskMissing => 'Fora da pasta';
+
+  @override
+  String get diskScheduled => 'Com prazo';
+
+  @override
+  String get diskPurged => 'Apagados';
+
+  @override
+  String get fileMissing =>
+      'O arquivo não está mais na pasta em que foi salvo.';
+
+  @override
+  String get filePurged => 'O app apagou este arquivo. O histórico fica.';
+
+  @override
+  String get downloadAgain => 'Baixar de novo';
+
+  @override
+  String get keepFile => 'Manter este arquivo';
+
+  @override
+  String get resumeRetention => 'Voltar a apagar no prazo';
+
+  @override
+  String deletesIn(String when) {
+    return 'Apaga em $when';
+  }
+
+  @override
+  String downloadedAt(String when) {
+    return 'Baixado em $when';
+  }
+
+  @override
+  String get whenMinute => '1 minuto';
+
+  @override
+  String whenMinutes(int count) {
+    return '$count minutos';
+  }
+
+  @override
+  String get whenHour => '1 hora';
+
+  @override
+  String whenHours(int count) {
+    return '$count horas';
+  }
+
+  @override
+  String get whenDay => '1 dia';
+
+  @override
+  String whenDays(int count) {
+    return '$count dias';
+  }
+
+  @override
+  String get alreadyDownloaded => 'Este link já foi baixado';
+
+  @override
+  String get seeCompleted => 'Ver nos concluídos';
+
+  @override
+  String get duplicateDismiss => 'Fechar';
+
+  @override
+  String get retentionLabel => 'Apagar o arquivo';
+
+  @override
+  String get retentionNever => 'Nunca';
+
+  @override
+  String get retentionTwo => '2 dias';
+
+  @override
+  String get retentionThirty => '30 dias';
+
+  @override
+  String get retentionCustom => 'Personalizado';
+
+  @override
+  String get retentionDays => 'Dias';
+
+  @override
+  String get retentionHint =>
+      'Ao abrir, o app apaga o arquivo depois desse prazo. O histórico permanece.';
+
+  @override
+  String get errRetention =>
+      'O prazo precisa ser um número de dias maior que zero.';
+
+  @override
+  String get storageTitle => 'Armazenamento';
+
+  @override
+  String storageHistory(int count) {
+    return '$count no histórico';
+  }
+
+  @override
+  String storageOnDisk(int count) {
+    return '$count arquivos ainda na pasta';
+  }
+
+  @override
+  String storageSize(String size) {
+    return '$size no disco';
+  }
+
+  @override
+  String get purgeNow => 'Apagar os que já venceram';
+
+  @override
+  String get doneEmptyFilter => 'Nenhum download combina com esses filtros.';
 }
