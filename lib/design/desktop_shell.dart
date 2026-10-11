@@ -1,6 +1,9 @@
 import 'package:dv_max_easy/app/app_identity.dart';
 import 'package:dv_max_easy/app/shell_section.dart';
 import 'package:dv_max_easy/design/app_theme.dart';
+import 'package:dv_max_easy/features/downloads/application/download_controller.dart';
+import 'package:dv_max_easy/features/downloads/domain/download_plan.dart';
+import 'package:dv_max_easy/features/downloads/presentation/queue_panel.dart';
 import 'package:dv_max_easy/features/profiles/presentation/profiles_page.dart';
 import 'package:dv_max_easy/features/settings/application/settings_controller.dart';
 import 'package:dv_max_easy/features/settings/presentation/settings_form.dart';
@@ -21,12 +24,41 @@ class DesktopShellState extends ConsumerState<DesktopShell> {
   ShellSection section = ShellSection.queue;
   final urlFocus = FocusNode();
   final urlController = TextEditingController();
+  String _urlBefore = '';
+
+  @override
+  void initState() {
+    super.initState();
+    urlController.addListener(_onUrlEdited);
+  }
 
   @override
   void dispose() {
+    urlController.removeListener(_onUrlEdited);
     urlFocus.dispose();
     urlController.dispose();
     super.dispose();
+  }
+
+  void _onUrlEdited() {
+    final next = urlController.text;
+    if (looksLikePastedUrl(_urlBefore, next)) {
+      _urlBefore = '';
+      final url = next.trim();
+      urlController.clear();
+      _start(url);
+      return;
+    }
+    _urlBefore = next;
+  }
+
+  void _start([String? raw]) {
+    final url = (raw ?? urlController.text).trim();
+    if (raw == null) {
+      _urlBefore = '';
+      urlController.clear();
+    }
+    ref.read(downloadControllerProvider.notifier).enqueue(url);
   }
 
   bool get _meta =>
@@ -76,10 +108,16 @@ class DesktopShellState extends ConsumerState<DesktopShell> {
             },
           ),
           DownloadIntent: CallbackAction<DownloadIntent>(
-            onInvoke: (_) => null,
+            onInvoke: (_) {
+              _start();
+              return null;
+            },
           ),
           CancelJobIntent: CallbackAction<CancelJobIntent>(
-            onInvoke: (_) => null,
+            onInvoke: (_) {
+              ref.read(downloadControllerProvider.notifier).cancelNewest();
+              return null;
+            },
           ),
           DismissBannerIntent: CallbackAction<DismissBannerIntent>(
             onInvoke: (_) => null,
@@ -132,9 +170,9 @@ class DesktopShellState extends ConsumerState<DesktopShell> {
                             key: ValueKey(section),
                             child: _SectionBody(
                               section: section,
-                              l10n: l10n,
                               urlFocus: urlFocus,
                               urlController: urlController,
+                              onSubmit: _start,
                             ),
                           ),
                         ),
@@ -282,46 +320,27 @@ class _NavButton extends StatelessWidget {
 class _SectionBody extends StatelessWidget {
   const _SectionBody({
     required this.section,
-    required this.l10n,
     required this.urlFocus,
     required this.urlController,
+    required this.onSubmit,
   });
 
   final ShellSection section;
-  final AppLocalizations l10n;
   final FocusNode urlFocus;
   final TextEditingController urlController;
+  final VoidCallback onSubmit;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     final text = Theme.of(context).textTheme;
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.l),
       child: switch (section) {
-        ShellSection.queue => Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(AppSpacing.panelRadius),
-                border: Border.all(color: scheme.outlineVariant),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.xl),
-                child: Text(l10n.dropHint, style: text.bodyMedium),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.m),
-            TextField(
-              controller: urlController,
-              focusNode: urlFocus,
-              decoration: InputDecoration(hintText: l10n.urlHint),
-              style: text.bodyMedium,
-            ),
-            const SizedBox(height: AppSpacing.m),
-            Text(l10n.queueEmpty, style: text.bodySmall),
-          ],
+        ShellSection.queue => QueuePanel(
+          urlController: urlController,
+          urlFocus: urlFocus,
+          onSubmit: onSubmit,
         ),
         ShellSection.done => Text(l10n.doneEmpty, style: text.bodyMedium),
         ShellSection.profiles => const ProfilesPage(),

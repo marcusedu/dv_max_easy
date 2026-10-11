@@ -28,6 +28,31 @@ class AppLocalizationsPt extends AppLocalizations {
   String get queueEmpty => 'Cole ou solte um link para baixar.';
 
   @override
+  String get downloadStart => 'Baixar';
+
+  @override
+  String get downloadStarting => 'Começando o download…';
+
+  @override
+  String get downloadDone => 'Download concluído.';
+
+  @override
+  String get downloadFailed => 'O yt-dlp não concluiu este item.';
+
+  @override
+  String get downloadCancelled => 'Download cancelado.';
+
+  @override
+  String get downloadCancel => 'Cancelar';
+
+  @override
+  String get downloadNeedFolder =>
+      'Escolha a pasta padrão em Ajustes antes de baixar.';
+
+  @override
+  String get downloadNeedBinary => 'Aponte o yt-dlp e o FFmpeg em Ajustes.';
+
+  @override
   String get urlHint => 'Cole um link';
 
   @override

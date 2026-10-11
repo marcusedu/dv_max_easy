@@ -130,6 +130,54 @@ abstract class AppLocalizations {
   /// **'Cole ou solte um link para baixar.'**
   String get queueEmpty;
 
+  /// No description provided for @downloadStart.
+  ///
+  /// In pt, this message translates to:
+  /// **'Baixar'**
+  String get downloadStart;
+
+  /// No description provided for @downloadStarting.
+  ///
+  /// In pt, this message translates to:
+  /// **'Começando o download…'**
+  String get downloadStarting;
+
+  /// No description provided for @downloadDone.
+  ///
+  /// In pt, this message translates to:
+  /// **'Download concluído.'**
+  String get downloadDone;
+
+  /// No description provided for @downloadFailed.
+  ///
+  /// In pt, this message translates to:
+  /// **'O yt-dlp não concluiu este item.'**
+  String get downloadFailed;
+
+  /// No description provided for @downloadCancelled.
+  ///
+  /// In pt, this message translates to:
+  /// **'Download cancelado.'**
+  String get downloadCancelled;
+
+  /// No description provided for @downloadCancel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Cancelar'**
+  String get downloadCancel;
+
+  /// No description provided for @downloadNeedFolder.
+  ///
+  /// In pt, this message translates to:
+  /// **'Escolha a pasta padrão em Ajustes antes de baixar.'**
+  String get downloadNeedFolder;
+
+  /// No description provided for @downloadNeedBinary.
+  ///
+  /// In pt, this message translates to:
+  /// **'Aponte o yt-dlp e o FFmpeg em Ajustes.'**
+  String get downloadNeedBinary;
+
   /// No description provided for @urlHint.
   ///
   /// In pt, this message translates to:
