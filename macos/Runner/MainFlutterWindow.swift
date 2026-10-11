@@ -14,7 +14,10 @@ class MainFlutterWindow: NSWindow {
     self.titlebarAppearsTransparent = true
     self.titlebarSeparatorStyle = .none
     self.styleMask.insert(.fullSizeContentView)
-    self.isMovableByWindowBackground = true
+    // The file-drag plugin makes FlutterView.mouseDownCanMoveWindow return
+    // YES. With this flag on, AppKit then drags the whole window from any
+    // point, and after a move or resize that region covers the cards.
+    self.isMovableByWindowBackground = false
     self.backgroundColor = NSColor(srgbRed: 16.0 / 255, green: 20.0 / 255, blue: 24.0 / 255, alpha: 1)
     self.contentMinSize = NSSize(width: 960, height: 640)
     self.setFrame(windowFrame, display: true)
@@ -44,7 +47,7 @@ class MainFlutterWindow: NSWindow {
         picker.show(relativeTo: rect, of: view, preferredEdge: .minY)
         result(nil)
       case "drag":
-        if let event = NSApp.currentEvent {
+        if let event = NSApp.currentEvent, self?.isTitleStripEvent(event) == true {
           self?.performDrag(with: event)
         }
         result(nil)
@@ -60,5 +63,17 @@ class MainFlutterWindow: NSWindow {
   override func becomeKey() {
     super.becomeKey()
     fileChannel?.invokeMethod("focus", arguments: nil)
+  }
+
+  /// The custom title strip is the top 40pt. Only that click may move the window.
+  private func isTitleStripEvent(_ event: NSEvent) -> Bool {
+    guard let content = contentView else {
+      return false
+    }
+    let point = content.convert(event.locationInWindow, from: nil)
+    if content.isFlipped {
+      return point.y <= 40
+    }
+    return point.y >= content.bounds.height - 40
   }
 }
