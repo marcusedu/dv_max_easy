@@ -28,7 +28,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get queueEmpty => 'Cole ou solte um link para baixar.';
 
   @override
-  String get downloadStart => 'Baixar';
+  String get downloadStart => 'Colar e baixar';
+
+  @override
+  String get activeProfile => 'Perfil ativo';
 
   @override
   String get downloadStarting => 'Começando o download…';

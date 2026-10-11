@@ -20,6 +20,9 @@ void main() {
     expect(find.text('Fila'), findsWidgets);
     expect(find.text('Concluídos'), findsOneWidget);
     expect(find.text('Cole ou solte um link para baixar.'), findsOneWidget);
+    expect(find.text('Perfil ativo'), findsOneWidget);
+    expect(find.text('Filmes'), findsOneWidget);
+    expect(find.text('Colar e baixar'), findsOneWidget);
 
     await tester.tap(find.text('Perfis'));
     await tester.pumpAndSettle();

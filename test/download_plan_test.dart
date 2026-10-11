@@ -3,13 +3,31 @@ import 'package:dv_max_easy/features/profiles/domain/profile.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('paste and download prefers the clipboard link', () {
+    expect(
+      downloadUrl(
+        field: 'https://example.com/typed',
+        clipboard: 'https://example.com/copied',
+      ),
+      'https://example.com/copied',
+    );
+    expect(
+      downloadUrl(field: 'https://example.com/typed', clipboard: 'nota'),
+      'https://example.com/typed',
+    );
+    expect(downloadUrl(field: '', clipboard: 'nota'), isNull);
+  });
+
   test('paste of a whole URL starts, typing one letter does not', () {
     expect(
       looksLikePastedUrl('', 'https://www.youtube.com/watch?v=abcdefghijk'),
       isTrue,
     );
     expect(
-      looksLikePastedUrl('https://www.youtube.com/watch?v=abcdefghij', 'https://www.youtube.com/watch?v=abcdefghijk'),
+      looksLikePastedUrl(
+        'https://www.youtube.com/watch?v=abcdefghij',
+        'https://www.youtube.com/watch?v=abcdefghijk',
+      ),
       isFalse,
     );
   });

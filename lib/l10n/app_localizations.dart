@@ -133,8 +133,14 @@ abstract class AppLocalizations {
   /// No description provided for @downloadStart.
   ///
   /// In pt, this message translates to:
-  /// **'Baixar'**
+  /// **'Colar e baixar'**
   String get downloadStart;
+
+  /// No description provided for @activeProfile.
+  ///
+  /// In pt, this message translates to:
+  /// **'Perfil ativo'**
+  String get activeProfile;
 
   /// No description provided for @downloadStarting.
   ///

@@ -1,6 +1,7 @@
 import 'package:dv_max_easy/design/app_theme.dart';
 import 'package:dv_max_easy/features/downloads/application/download_controller.dart';
 import 'package:dv_max_easy/features/downloads/presentation/job_card.dart';
+import 'package:dv_max_easy/features/profiles/application/profile_controller.dart';
 import 'package:dv_max_easy/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,12 +11,14 @@ class QueuePanel extends ConsumerWidget {
     required this.urlController,
     required this.urlFocus,
     required this.onSubmit,
+    required this.onPaste,
     super.key,
   });
 
   final TextEditingController urlController;
   final FocusNode urlFocus;
   final VoidCallback onSubmit;
+  final Future<void> Function() onPaste;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -23,6 +26,12 @@ class QueuePanel extends ConsumerWidget {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
     final jobs = ref.watch(downloadControllerProvider);
+    final profileName = ref
+        .watch(profileControllerProvider)
+        .asData
+        ?.value
+        .selected
+        ?.name;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -37,6 +46,15 @@ class QueuePanel extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Text(l10n.activeProfile, style: text.bodySmall),
+                const SizedBox(height: 2),
+                Text(
+                  profileName ?? '…',
+                  style: text.titleMedium?.copyWith(color: scheme.primary),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: AppSpacing.m),
                 Text(l10n.dropHint, style: text.bodySmall),
                 const SizedBox(height: AppSpacing.s),
                 Row(
@@ -52,7 +70,9 @@ class QueuePanel extends ConsumerWidget {
                     ),
                     const SizedBox(width: AppSpacing.s),
                     FilledButton(
-                      onPressed: onSubmit,
+                      onPressed: () {
+                        onPaste();
+                      },
                       child: Text(l10n.downloadStart),
                     ),
                   ],

@@ -61,6 +61,17 @@ class DesktopShellState extends ConsumerState<DesktopShell> {
     ref.read(downloadControllerProvider.notifier).enqueue(url);
   }
 
+  Future<void> _pasteAndStart() async {
+    final data = await Clipboard.getData(Clipboard.kTextPlain);
+    final url = downloadUrl(field: urlController.text, clipboard: data?.text);
+    if (url == null) {
+      return;
+    }
+    _urlBefore = '';
+    urlController.clear();
+    _start(url);
+  }
+
   bool get _meta =>
       defaultTargetPlatform == TargetPlatform.macOS ||
       defaultTargetPlatform == TargetPlatform.iOS;
@@ -178,6 +189,7 @@ class DesktopShellState extends ConsumerState<DesktopShell> {
                               urlFocus: urlFocus,
                               urlController: urlController,
                               onSubmit: _start,
+                              onPaste: _pasteAndStart,
                             ),
                           ),
                         ),
@@ -369,12 +381,14 @@ class _SectionBody extends StatelessWidget {
     required this.urlFocus,
     required this.urlController,
     required this.onSubmit,
+    required this.onPaste,
   });
 
   final ShellSection section;
   final FocusNode urlFocus;
   final TextEditingController urlController;
   final VoidCallback onSubmit;
+  final Future<void> Function() onPaste;
 
   @override
   Widget build(BuildContext context) {
@@ -385,6 +399,7 @@ class _SectionBody extends StatelessWidget {
           urlController: urlController,
           urlFocus: urlFocus,
           onSubmit: onSubmit,
+          onPaste: onPaste,
         ),
         ShellSection.done => const CompletedPanel(),
         ShellSection.profiles => const ProfilesPage(),

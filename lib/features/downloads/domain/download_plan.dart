@@ -7,6 +7,19 @@ bool isHttpUrl(String raw) {
   return _urlPattern.hasMatch(text);
 }
 
+/// O botão usa o link copiado. Se a área de transferência não tiver um, usa o campo.
+String? downloadUrl({required String field, String? clipboard}) {
+  final clip = clipboard?.trim() ?? '';
+  if (isHttpUrl(clip)) {
+    return clip;
+  }
+  final typed = field.trim();
+  if (isHttpUrl(typed)) {
+    return typed;
+  }
+  return null;
+}
+
 /// Colar entra de uma vez. Digitar letra por letra não dispara.
 bool looksLikePastedUrl(String before, String after) {
   if (!isHttpUrl(after)) {
@@ -128,9 +141,13 @@ void _addSubtitles(List<String> args, Profile profile) {
     return;
   }
   args.add(
-    profile.subtitleMode == SubtitleMode.embed ? '--embed-subs' : '--write-subs',
+    profile.subtitleMode == SubtitleMode.embed
+        ? '--embed-subs'
+        : '--write-subs',
   );
-  final codes = profile.subtitleLanguages.map((code) => '${code.trim()}.*').join(',');
+  final codes = profile.subtitleLanguages
+      .map((code) => '${code.trim()}.*')
+      .join(',');
   final liveChat = profile.includeAutoSubtitles ? '' : ',-live_chat';
   args.addAll(['--sub-langs', '$codes$liveChat', '--convert-subs', 'srt']);
 }
@@ -169,7 +186,8 @@ DownloadProgress? parseDownloadLine(String line) {
 
 DownloadProgress? _parseEvent(String jsonText) {
   final downloaded = _jsonNumber(jsonText, 'downloaded');
-  final total = _jsonNumber(jsonText, 'total') ?? _jsonNumber(jsonText, 'total_estimate');
+  final total =
+      _jsonNumber(jsonText, 'total') ?? _jsonNumber(jsonText, 'total_estimate');
   final status = _jsonString(jsonText, 'status');
   final speed = _jsonNumber(jsonText, 'speed');
   final eta = _jsonNumber(jsonText, 'eta');
@@ -189,13 +207,16 @@ String? _detail(double? speed, double? eta) {
   if (speed == null && eta == null) {
     return null;
   }
-  final speedText = speed == null ? '' : '${(speed / 1000000).toStringAsFixed(1)} MB/s';
+  final speedText = speed == null
+      ? ''
+      : '${(speed / 1000000).toStringAsFixed(1)} MB/s';
   final etaText = eta == null ? '' : ' ETA ${eta.round()}s';
   return '$speedText$etaText'.trim();
 }
 
 double? _jsonNumber(String jsonText, String key) {
-  final match = RegExp('"$key"\\s*:\\s*"?(-?\\d+(?:\\.\\d+)?)"?').firstMatch(jsonText);
+  final match = RegExp('"$key"\\s*:\\s*"?(-?\\d+(?:\\.\\d+)?)"?')
+      .firstMatch(jsonText);
   if (match == null) {
     return null;
   }
