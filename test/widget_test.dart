@@ -67,6 +67,7 @@ void main() {
       findsNothing,
     );
     expect(find.text('Abrir pasta'), findsOneWidget);
+    expect(find.byTooltip('Abrir'), findsOneWidget);
     expect(find.text('Vídeo'), findsOneWidget);
     expect(find.text('mkv'), findsOneWidget);
 

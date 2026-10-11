@@ -105,7 +105,13 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _Thumb(url: job.thumbnailUrl),
+            _Thumb(
+              url: job.thumbnailUrl,
+              playLabel: l10n.fileOpen,
+              onPlay: hasFile && path != null
+                  ? () => _run(_actions.open(path))
+                  : null,
+            ),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
@@ -324,9 +330,11 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
 }
 
 class _Thumb extends StatelessWidget {
-  const _Thumb({required this.url});
+  const _Thumb({required this.url, required this.playLabel, this.onPlay});
 
   final String? url;
+  final String playLabel;
+  final VoidCallback? onPlay;
 
   @override
   Widget build(BuildContext context) {
@@ -350,23 +358,21 @@ class _Thumb extends StatelessWidget {
           children: [
             ColoredBox(color: scheme.surfaceContainerLow),
             ?image,
-            Center(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.45),
-                  shape: BoxShape.circle,
-                ),
-                child: const SizedBox(
-                  width: 28,
-                  height: 28,
-                  child: Icon(
-                    Icons.play_arrow_rounded,
-                    color: Colors.white,
-                    size: 18,
+            if (onPlay != null)
+              Center(
+                child: IconButton(
+                  tooltip: playLabel,
+                  onPressed: onPlay,
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.black.withValues(alpha: 0.45),
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(32, 32),
+                    padding: EdgeInsets.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
+                  icon: const Icon(Icons.play_arrow_rounded, size: 20),
                 ),
               ),
-            ),
           ],
         ),
       ),
