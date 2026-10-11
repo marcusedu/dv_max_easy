@@ -1,19 +1,22 @@
 import 'package:dv_max_easy/app/app_identity.dart';
 import 'package:dv_max_easy/app/shell_section.dart';
 import 'package:dv_max_easy/design/app_theme.dart';
+import 'package:dv_max_easy/features/settings/application/settings_controller.dart';
+import 'package:dv_max_easy/features/settings/presentation/settings_form.dart';
 import 'package:dv_max_easy/l10n/app_localizations.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class DesktopShell extends StatefulWidget {
+class DesktopShell extends ConsumerStatefulWidget {
   const DesktopShell({super.key});
 
   @override
-  State<DesktopShell> createState() => DesktopShellState();
+  ConsumerState<DesktopShell> createState() => DesktopShellState();
 }
 
-class DesktopShellState extends State<DesktopShell> {
+class DesktopShellState extends ConsumerState<DesktopShell> {
   ShellSection section = ShellSection.queue;
   final urlFocus = FocusNode();
   final urlController = TextEditingController();
@@ -41,6 +44,7 @@ class DesktopShellState extends State<DesktopShell> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
+    final version = ref.watch(settingsControllerProvider).asData?.value.ytDlpVersion;
     return Shortcuts(
       shortcuts: {
         _mod(LogicalKeyboardKey.keyL): const FocusUrlIntent(),
@@ -100,7 +104,9 @@ class DesktopShellState extends State<DesktopShell> {
               children: [
                 _Toolbar(
                   title: _sectionTitle(l10n),
-                  status: l10n.binariesPending,
+                  status: version == null
+                      ? l10n.binariesPending
+                      : l10n.binariesReady(version),
                 ),
                 Expanded(
                   child: Row(
@@ -321,10 +327,7 @@ class _SectionBody extends StatelessWidget {
           l10n.profilesEmpty,
           style: text.bodyMedium,
         ),
-        ShellSection.settings => Text(
-          l10n.settingsEmpty,
-          style: text.bodyMedium,
-        ),
+        ShellSection.settings => const SettingsForm(),
       },
     );
   }

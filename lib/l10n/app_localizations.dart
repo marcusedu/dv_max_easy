@@ -165,6 +165,156 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'yt-dlp e FFmpeg ainda não foram verificados.'**
   String get binariesPending;
+
+  /// No description provided for @binariesReady.
+  ///
+  /// In pt, this message translates to:
+  /// **'yt-dlp {version}'**
+  String binariesReady(String version);
+
+  /// No description provided for @setupTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Para baixar, aponte o yt-dlp e o FFmpeg.'**
+  String get setupTitle;
+
+  /// No description provided for @setupHintMac.
+  ///
+  /// In pt, this message translates to:
+  /// **'No macOS: brew install yt-dlp ffmpeg'**
+  String get setupHintMac;
+
+  /// No description provided for @setupHintWindows.
+  ///
+  /// In pt, this message translates to:
+  /// **'No Windows: winget install yt-dlp.yt-dlp Gyan.FFmpeg'**
+  String get setupHintWindows;
+
+  /// No description provided for @setupHintLinux.
+  ///
+  /// In pt, this message translates to:
+  /// **'No Linux: instale yt-dlp e ffmpeg pelo pacote da distro.'**
+  String get setupHintLinux;
+
+  /// No description provided for @ytDlpPathLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'yt-dlp'**
+  String get ytDlpPathLabel;
+
+  /// No description provided for @ffmpegPathLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'FFmpeg'**
+  String get ffmpegPathLabel;
+
+  /// No description provided for @folderLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pasta padrão'**
+  String get folderLabel;
+
+  /// No description provided for @folderEmpty.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhuma pasta escolhida'**
+  String get folderEmpty;
+
+  /// No description provided for @chooseFile.
+  ///
+  /// In pt, this message translates to:
+  /// **'Escolher arquivo'**
+  String get chooseFile;
+
+  /// No description provided for @chooseFolder.
+  ///
+  /// In pt, this message translates to:
+  /// **'Escolher pasta'**
+  String get chooseFolder;
+
+  /// No description provided for @searchPath.
+  ///
+  /// In pt, this message translates to:
+  /// **'Procurar'**
+  String get searchPath;
+
+  /// No description provided for @confirmPath.
+  ///
+  /// In pt, this message translates to:
+  /// **'Usar este caminho'**
+  String get confirmPath;
+
+  /// No description provided for @foundPath.
+  ///
+  /// In pt, this message translates to:
+  /// **'Encontrado: {path}'**
+  String foundPath(String path);
+
+  /// No description provided for @concurrentLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Downloads ao mesmo tempo'**
+  String get concurrentLabel;
+
+  /// No description provided for @clipboardLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Avisar quando houver um link copiado'**
+  String get clipboardLabel;
+
+  /// No description provided for @redactLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ocultar endereços no log'**
+  String get redactLabel;
+
+  /// No description provided for @errBrokenLink.
+  ///
+  /// In pt, this message translates to:
+  /// **'O caminho é um atalho quebrado.'**
+  String get errBrokenLink;
+
+  /// No description provided for @errNotFile.
+  ///
+  /// In pt, this message translates to:
+  /// **'O caminho não é um arquivo.'**
+  String get errNotFile;
+
+  /// No description provided for @errNotExecutable.
+  ///
+  /// In pt, this message translates to:
+  /// **'O arquivo não tem permissão de execução.'**
+  String get errNotExecutable;
+
+  /// No description provided for @errForbiddenDir.
+  ///
+  /// In pt, this message translates to:
+  /// **'Esse arquivo está numa pasta que o app não executa.'**
+  String get errForbiddenDir;
+
+  /// No description provided for @errVersion.
+  ///
+  /// In pt, this message translates to:
+  /// **'O programa não respondeu a --version.'**
+  String get errVersion;
+
+  /// No description provided for @errFfprobe.
+  ///
+  /// In pt, this message translates to:
+  /// **'Falta o ffprobe na mesma pasta do ffmpeg. Sem ele o yt-dlp não fecha o arquivo e a união não roda.'**
+  String get errFfprobe;
+
+  /// No description provided for @errNotFound.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não encontrei o programa nesses caminhos.'**
+  String get errNotFound;
+
+  /// No description provided for @schemaReset.
+  ///
+  /// In pt, this message translates to:
+  /// **'As configurações antigas foram guardadas em {name} e o app começou de novo.'**
+  String schemaReset(String name);
 }
 
 class _AppLocalizationsDelegate

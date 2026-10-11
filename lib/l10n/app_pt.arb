@@ -14,5 +14,45 @@
   "doneEmpty": "Nada concluído ainda.",
   "profilesEmpty": "Os perfis entram no próximo passo.",
   "settingsEmpty": "Os ajustes entram no próximo passo.",
-  "binariesPending": "yt-dlp e FFmpeg ainda não foram verificados."
+  "binariesPending": "yt-dlp e FFmpeg ainda não foram verificados.",
+  "binariesReady": "yt-dlp {version}",
+  "@binariesReady": {
+    "placeholders": {
+      "version": {"type": "String"}
+    }
+  },
+  "setupTitle": "Para baixar, aponte o yt-dlp e o FFmpeg.",
+  "setupHintMac": "No macOS: brew install yt-dlp ffmpeg",
+  "setupHintWindows": "No Windows: winget install yt-dlp.yt-dlp Gyan.FFmpeg",
+  "setupHintLinux": "No Linux: instale yt-dlp e ffmpeg pelo pacote da distro.",
+  "ytDlpPathLabel": "yt-dlp",
+  "ffmpegPathLabel": "FFmpeg",
+  "folderLabel": "Pasta padrão",
+  "folderEmpty": "Nenhuma pasta escolhida",
+  "chooseFile": "Escolher arquivo",
+  "chooseFolder": "Escolher pasta",
+  "searchPath": "Procurar",
+  "confirmPath": "Usar este caminho",
+  "foundPath": "Encontrado: {path}",
+  "@foundPath": {
+    "placeholders": {
+      "path": {"type": "String"}
+    }
+  },
+  "concurrentLabel": "Downloads ao mesmo tempo",
+  "clipboardLabel": "Avisar quando houver um link copiado",
+  "redactLabel": "Ocultar endereços no log",
+  "errBrokenLink": "O caminho é um atalho quebrado.",
+  "errNotFile": "O caminho não é um arquivo.",
+  "errNotExecutable": "O arquivo não tem permissão de execução.",
+  "errForbiddenDir": "Esse arquivo está numa pasta que o app não executa.",
+  "errVersion": "O programa não respondeu a --version.",
+  "errFfprobe": "Falta o ffprobe na mesma pasta do ffmpeg. Sem ele o yt-dlp não fecha o arquivo e a união não roda.",
+  "errNotFound": "Não encontrei o programa nesses caminhos.",
+  "schemaReset": "As configurações antigas foram guardadas em {name} e o app começou de novo.",
+  "@schemaReset": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  }
 }
