@@ -5,6 +5,7 @@ import 'package:dv_max_easy/features/downloads/application/download_controller.d
 import 'package:dv_max_easy/features/downloads/domain/download_failure.dart';
 import 'package:dv_max_easy/features/downloads/domain/download_plan.dart';
 import 'package:dv_max_easy/features/downloads/infrastructure/file_actions.dart';
+import 'package:dv_max_easy/features/downloads/presentation/source_favicon.dart';
 import 'package:dv_max_easy/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -118,11 +119,21 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    job.url,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: text.bodyMedium?.copyWith(color: scheme.primary),
+                  Row(
+                    children: [
+                      SourceFavicon(url: job.url),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          job.url,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: text.bodyMedium?.copyWith(
+                            color: scheme.primary,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   if (showFileName) ...[
                     const SizedBox(height: 4),

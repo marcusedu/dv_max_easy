@@ -18,6 +18,18 @@ void main() {
     expect(downloadUrl(field: '', clipboard: 'nota'), isNull);
   });
 
+  test('favicon url is the host of the download', () {
+    expect(
+      sourceFaviconUrl('https://www.youtube.com/watch?v=abcdefghijk'),
+      'https://www.google.com/s2/favicons?sz=64&domain=www.youtube.com',
+    );
+    expect(
+      sourceFaviconUrl('https://x.com/a/status/1'),
+      'https://www.google.com/s2/favicons?sz=64&domain=x.com',
+    );
+    expect(sourceFaviconUrl('nota'), isNull);
+  });
+
   test('paste of a whole URL starts, typing one letter does not', () {
     expect(
       looksLikePastedUrl('', 'https://www.youtube.com/watch?v=abcdefghijk'),

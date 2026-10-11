@@ -2,6 +2,7 @@ import 'package:dv_max_easy/design/app_theme.dart';
 import 'package:dv_max_easy/features/downloads/application/clipboard_offer.dart';
 import 'package:dv_max_easy/features/downloads/application/download_controller.dart';
 import 'package:dv_max_easy/features/downloads/presentation/job_card.dart';
+import 'package:dv_max_easy/features/downloads/presentation/source_favicon.dart';
 import 'package:dv_max_easy/features/profiles/application/profile_controller.dart';
 import 'package:dv_max_easy/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -184,7 +185,7 @@ class _LinkField extends StatelessWidget {
           onSubmitted: (_) => onSubmit(),
           decoration: InputDecoration(
             hintText: l10n.urlHint,
-            prefixIcon: const Icon(Icons.link_rounded, size: 18),
+            prefixIcon: SourceFavicon(url: controller.text, size: 18),
             prefixIconConstraints: const BoxConstraints(
               minWidth: 40,
               minHeight: 40,
@@ -230,7 +231,7 @@ class _ClipboardBanner extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         child: Row(
           children: [
-            Icon(Icons.link_rounded, size: 18, color: scheme.primary),
+            SourceFavicon(url: url, size: 18),
             const SizedBox(width: 10),
             Expanded(
               child: Column(

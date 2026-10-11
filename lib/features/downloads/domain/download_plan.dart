@@ -7,6 +7,21 @@ bool isHttpUrl(String raw) {
   return _urlPattern.hasMatch(text);
 }
 
+/// PNG do favicon do host. O arquivo /favicon.ico costuma ser ICO, que o Flutter não desenha.
+String? sourceFaviconUrl(String raw) {
+  final uri = Uri.tryParse(raw.trim());
+  final scheme = uri?.scheme.toLowerCase();
+  if (uri == null ||
+      uri.host.isEmpty ||
+      (scheme != 'http' && scheme != 'https')) {
+    return null;
+  }
+  return Uri.https('www.google.com', '/s2/favicons', {
+    'sz': '64',
+    'domain': uri.host,
+  }).toString();
+}
+
 /// O botão usa o link copiado. Se a área de transferência não tiver um, usa o campo.
 String? downloadUrl({required String field, String? clipboard}) {
   final clip = clipboard?.trim() ?? '';
