@@ -77,6 +77,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get folderEmpty => 'Nenhuma pasta escolhida';
 
   @override
+  String get binaryEmpty => 'Nenhum arquivo escolhido';
+
+  @override
   String get chooseFile => 'Escolher arquivo';
 
   @override
@@ -116,7 +119,7 @@ class AppLocalizationsPt extends AppLocalizations {
       'Esse arquivo está numa pasta que o app não executa.';
 
   @override
-  String get errVersion => 'O programa não respondeu a --version.';
+  String get errVersion => 'O programa não respondeu com a versão.';
 
   @override
   String get errFfprobe =>

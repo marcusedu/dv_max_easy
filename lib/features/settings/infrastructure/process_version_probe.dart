@@ -3,12 +3,22 @@ import 'dart:io';
 
 import 'package:dv_max_easy/features/settings/domain/settings_ports.dart';
 
+/// yt-dlp responde a `--version`. O ffmpeg e o ffprobe recusam esse
+/// argumento (saem com erro) e só imprimem a versão com `-version`.
 final class ProcessVersionProbe implements VersionProbe {
   @override
   Future<String?> readVersion(String executable) async {
+    final gnu = await _once(executable, '--version');
+    if (gnu != null) {
+      return gnu;
+    }
+    return _once(executable, '-version');
+  }
+
+  Future<String?> _once(String executable, String flag) async {
     Process? process;
     try {
-      process = await Process.start(executable, const ['--version']);
+      process = await Process.start(executable, [flag]);
       final finished = process.exitCode.timeout(
         const Duration(seconds: 5),
         onTimeout: () {

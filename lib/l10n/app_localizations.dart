@@ -220,6 +220,12 @@ abstract class AppLocalizations {
   /// **'Nenhuma pasta escolhida'**
   String get folderEmpty;
 
+  /// No description provided for @binaryEmpty.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhum arquivo escolhido'**
+  String get binaryEmpty;
+
   /// No description provided for @chooseFile.
   ///
   /// In pt, this message translates to:
@@ -295,7 +301,7 @@ abstract class AppLocalizations {
   /// No description provided for @errVersion.
   ///
   /// In pt, this message translates to:
-  /// **'O programa não respondeu a --version.'**
+  /// **'O programa não respondeu com a versão.'**
   String get errVersion;
 
   /// No description provided for @errFfprobe.

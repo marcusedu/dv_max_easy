@@ -197,7 +197,7 @@ class _BinaryRow extends StatelessWidget {
       children: [
         Text(label, style: text.bodyMedium),
         const SizedBox(height: AppSpacing.s),
-        Text(path ?? l10n.folderEmpty, style: text.bodySmall),
+        Text(path ?? l10n.binaryEmpty, style: text.bodySmall),
         if (version != null)
           Text(version!, style: text.bodySmall),
         if (pending != null) ...[
