@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dv_max_easy/design/app_theme.dart';
 import 'package:dv_max_easy/features/downloads/application/download_controller.dart';
 import 'package:dv_max_easy/features/downloads/domain/download_failure.dart';
@@ -6,6 +8,7 @@ import 'package:dv_max_easy/features/downloads/infrastructure/file_actions.dart'
 import 'package:dv_max_easy/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:super_drag_and_drop/super_drag_and_drop.dart';
 
 bool jobHasFile(DownloadJob job) {
   return !job.running &&
@@ -94,7 +97,7 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
       if (job.qualityLabel != null) job.qualityLabel!,
       if (container.isNotEmpty) container,
     ].join(' • ');
-    return DecoratedBox(
+    final card = DecoratedBox(
       decoration: BoxDecoration(
         color: scheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppSpacing.panelRadius),
@@ -108,9 +111,7 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
             _Thumb(
               url: job.thumbnailUrl,
               playLabel: l10n.fileOpen,
-              onPlay: hasFile && path != null
-                  ? () => _run(_actions.open(path))
-                  : null,
+              onPlay: hasFile ? () => _run(_actions.open(path)) : null,
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -281,6 +282,22 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
             ),
           ],
         ),
+      ),
+    );
+    if (!hasFile || !fileDragOutEnabled) {
+      return card;
+    }
+    return DragItemWidget(
+      allowedOperations: () => [DropOperation.copy],
+      dragItemProvider: (_) {
+        final item = DragItem(suggestedName: fileName);
+        item.add(
+          Formats.fileUri(fileDragUri(path, windows: Platform.isWindows)),
+        );
+        return item;
+      },
+      child: DraggableWidget(
+        child: MouseRegion(cursor: SystemMouseCursors.grab, child: card),
       ),
     );
   }

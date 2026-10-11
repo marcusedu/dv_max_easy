@@ -54,6 +54,15 @@ String fileTitle(String? outputPath, String url) {
   return normalized.substring(index + 1);
 }
 
+/// File URI a desktop drop target reads as public.file-url, CF_HDROP, or text/uri-list.
+Uri fileDragUri(String path, {required bool windows}) {
+  return Uri.file(path, windows: windows);
+}
+
+/// The drag plugin registers with the desktop embedder on first build.
+bool get fileDragOutEnabled =>
+    !Platform.environment.containsKey('FLUTTER_TEST');
+
 final class FileActions {
   const FileActions({this.channel = fileActionChannel});
 
@@ -65,7 +74,10 @@ final class FileActions {
   }
 
   Future<void> reveal(String path) {
-    final args = revealArguments(path, operatingSystem: Platform.operatingSystem);
+    final args = revealArguments(
+      path,
+      operatingSystem: Platform.operatingSystem,
+    );
     return Process.run(args.first, args.sublist(1));
   }
 
@@ -74,7 +86,12 @@ final class FileActions {
       final args = macCopyArguments(path);
       final result = await Process.run(args.first, args.sublist(1));
       if (result.exitCode != 0) {
-        throw ProcessException(args.first, args.sublist(1), '${result.stderr}', result.exitCode);
+        throw ProcessException(
+          args.first,
+          args.sublist(1),
+          '${result.stderr}',
+          result.exitCode,
+        );
       }
       return;
     }
@@ -100,7 +117,12 @@ final class FileActions {
     await process.stdin.close();
     final code = await process.exitCode;
     if (code != 0) {
-      throw ProcessException('xclip', const [], 'não foi possível copiar', code);
+      throw ProcessException(
+        'xclip',
+        const [],
+        'não foi possível copiar',
+        code,
+      );
     }
   }
 

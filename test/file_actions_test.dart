@@ -10,6 +10,23 @@ void main() {
     expect(fileTitle(null, 'https://x.com/a'), 'https://x.com/a');
   });
 
+  test(
+    'file drag uri is a file url on posix and a windows path on windows',
+    () {
+      expect(
+        fileDragUri('/Users/me/Downloads/Biri.mkv', windows: false).toString(),
+        'file:///Users/me/Downloads/Biri.mkv',
+      );
+      expect(
+        fileDragUri(
+          r'C:\Users\me\Downloads\Biri.mkv',
+          windows: true,
+        ).toFilePath(windows: true),
+        r'C:\Users\me\Downloads\Biri.mkv',
+      );
+    },
+  );
+
   test('reveal and open stay off the shell', () {
     expect(revealArguments('/tmp/a.mkv', operatingSystem: 'macos'), [
       'open',
