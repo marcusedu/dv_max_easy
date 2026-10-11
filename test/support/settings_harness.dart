@@ -1,5 +1,6 @@
 import 'package:dv_max_easy/app/dv_max_app.dart';
 import 'package:dv_max_easy/features/downloads/application/download_controller.dart';
+import 'package:dv_max_easy/features/downloads/infrastructure/disk_space.dart';
 import 'package:dv_max_easy/features/downloads/infrastructure/system_clipboard.dart';
 import 'package:dv_max_easy/features/profiles/domain/profile.dart';
 import 'package:dv_max_easy/features/profiles/infrastructure/json_profile_store.dart';
@@ -74,6 +75,15 @@ final class FixedClipboard implements ClipboardReader {
   Future<String?> readText() async => text;
 }
 
+final class FixedDiskSpace implements DiskSpaceReader {
+  const FixedDiskSpace(this.bytes);
+
+  final int? bytes;
+
+  @override
+  Future<int?> freeBytes(String path) async => bytes;
+}
+
 Widget appWithSettings(
   AppSettings settings, {
   List<DownloadJob> jobs = const [],
@@ -93,6 +103,9 @@ Widget appWithSettings(
         const FixedVersionProbe('yt-dlp 2026.1.1'),
       ),
       clipboardReaderProvider.overrideWithValue(FixedClipboard(clipboard)),
+      diskSpaceReaderProvider.overrideWithValue(
+        const FixedDiskSpace(50 * 1000000000),
+      ),
       if (jobs.isNotEmpty) initialDownloadsProvider.overrideWithValue(jobs),
     ],
     child: const DvMaxApp(),

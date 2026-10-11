@@ -20,6 +20,10 @@ List<String> openArguments(String path, {required String operatingSystem}) {
   };
 }
 
+List<String> browserArguments(String url, {required String operatingSystem}) {
+  return openArguments(url, operatingSystem: operatingSystem);
+}
+
 List<String> macCopyArguments(String path) {
   return [
     'osascript',
@@ -70,6 +74,14 @@ final class FileActions {
 
   Future<void> open(String path) {
     final args = openArguments(path, operatingSystem: Platform.operatingSystem);
+    return Process.run(args.first, args.sublist(1));
+  }
+
+  Future<void> openUrl(String url) {
+    final args = browserArguments(
+      url,
+      operatingSystem: Platform.operatingSystem,
+    );
     return Process.run(args.first, args.sublist(1));
   }
 

@@ -2,10 +2,12 @@ import 'dart:io';
 
 import 'package:dv_max_easy/design/app_theme.dart';
 import 'package:dv_max_easy/features/downloads/application/download_controller.dart';
+import 'package:dv_max_easy/features/downloads/domain/cut_plan.dart';
 import 'package:dv_max_easy/features/downloads/domain/download_failure.dart';
 import 'package:dv_max_easy/features/downloads/domain/download_plan.dart';
 import 'package:dv_max_easy/features/downloads/domain/retention.dart';
 import 'package:dv_max_easy/features/downloads/infrastructure/file_actions.dart';
+import 'package:dv_max_easy/features/downloads/presentation/cut_editor.dart';
 import 'package:dv_max_easy/features/downloads/infrastructure/io_file_stamp.dart';
 import 'package:dv_max_easy/features/downloads/presentation/source_favicon.dart';
 import 'package:dv_max_easy/features/profiles/application/profile_controller.dart';
@@ -68,6 +70,20 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
     }
   }
 
+  bool _canCut(_CardFacts facts, String? path) {
+    return facts.onDisk &&
+        !job.audio &&
+        path != null &&
+        path.isNotEmpty &&
+        isVideoFile(path);
+  }
+
+  void _openCut(String path) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => CutEditorPage(path: path)));
+  }
+
   void _openFolder() {
     final path = job.outputPath;
     if (path != null && path.isNotEmpty) {
@@ -119,8 +135,9 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
                 url: job.thumbnailUrl,
                 playLabel: l10n.fileOpen,
                 onPlay: switch (path) {
-                  final String saved when hasFile =>
-                    () => _run(_actions.open(saved)),
+                  final String saved when hasFile => () => _run(
+                    _actions.open(saved),
+                  ),
                   _ => null,
                 },
               ),
@@ -143,6 +160,22 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
                             ),
                           ),
                         ),
+                        if (isHttpUrl(job.url))
+                          IconButton(
+                            tooltip: l10n.openLink,
+                            onPressed: () => _run(_actions.openUrl(job.url)),
+                            visualDensity: VisualDensity.compact,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(
+                              minWidth: 28,
+                              minHeight: 28,
+                            ),
+                            icon: Icon(
+                              Icons.open_in_new,
+                              size: 16,
+                              color: scheme.primary,
+                            ),
+                          ),
                       ],
                     ),
                     if (showFileName) ...[
@@ -316,6 +349,15 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
                         ],
                       ],
                     ),
+                    if (_canCut(facts, path))
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton.icon(
+                          onPressed: () => _openCut(path!),
+                          icon: const Icon(Icons.content_cut, size: 16),
+                          label: Text(l10n.cutOpen),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -389,6 +431,8 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
       if (folder != null)
         PopupMenuItem(value: 'reveal', child: Text(l10n.fileReveal)),
       if (open) PopupMenuItem(value: 'share', child: Text(l10n.fileShare)),
+      if (_canCut(facts, job.outputPath))
+        PopupMenuItem(value: 'cut', child: Text(l10n.cutOpen)),
       if (scheduled) PopupMenuItem(value: 'keep', child: Text(l10n.keepFile)),
       if (facts.canResume)
         PopupMenuItem(value: 'resume', child: Text(l10n.resumeRetention)),
@@ -412,6 +456,8 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
         _openFolder();
       case 'share' when path != null:
         _run(_actions.share(path));
+      case 'cut' when path != null:
+        _openCut(path);
       case 'retry':
         ref.read(downloadControllerProvider.notifier).retry(job.id);
       case 'keep':

@@ -7,6 +7,7 @@ import 'package:dv_max_easy/features/downloads/application/download_controller.d
 import 'package:dv_max_easy/features/downloads/application/library_query.dart';
 import 'package:dv_max_easy/features/downloads/domain/download_plan.dart';
 import 'package:dv_max_easy/features/downloads/infrastructure/system_clipboard.dart';
+import 'package:dv_max_easy/features/downloads/presentation/download_status_bar.dart';
 import 'package:dv_max_easy/features/downloads/presentation/queue_panel.dart';
 import 'package:dv_max_easy/features/profiles/presentation/profiles_page.dart';
 import 'package:dv_max_easy/features/settings/application/settings_controller.dart';
@@ -249,6 +250,7 @@ class DesktopShellState extends ConsumerState<DesktopShell>
                     ],
                   ),
                 ),
+                const DownloadStatusBar(),
               ],
             ),
           ),

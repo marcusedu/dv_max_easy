@@ -213,5 +213,53 @@
     }
   },
   "purgeNow": "Apagar os que já venceram",
-  "doneEmptyFilter": "Nenhum download combina com esses filtros."
+  "doneEmptyFilter": "Nenhum download combina com esses filtros.",
+  "openLink": "Abrir no navegador",
+  "statusIdle": "Nada baixando",
+  "statusFileCount": "{count, plural, =0{0 arquivos} =1{1 arquivo} other{{count} arquivos}}",
+  "@statusFileCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "statusRunningCount": "{count, plural, =1{1 baixando} other{{count} baixando}}",
+  "@statusRunningCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "statusFree": "{size} livres",
+  "@statusFree": {
+    "placeholders": {
+      "size": {"type": "String"}
+    }
+  },
+  "statusUsed": "{size} usados",
+  "@statusUsed": {
+    "placeholders": {
+      "size": {"type": "String"}
+    }
+  },
+  "cutTitle": "Cortar vídeo",
+  "cutOpen": "Cortar",
+  "cutHelp": "Tire um trecho do começo, do fim ou do meio. O que sobrar é juntado na ordem. Ou marque um pedaço e fique só com ele.",
+  "cutRemove": "Tirar trecho",
+  "cutFrom": "De",
+  "cutTo": "Até",
+  "cutKeepOnly": "Ficar só com este pedaço",
+  "cutKept": "Vai ficar: {parts}",
+  "@cutKept": {
+    "placeholders": {
+      "parts": {"type": "String"}
+    }
+  },
+  "cutSave": "Juntar e salvar",
+  "cutSaving": "Juntando…",
+  "cutSaved": "Corte salvo ao lado do original.",
+  "cutNeedRange": "Informe um início e um fim. O fim precisa ser depois do início.",
+  "cutNothing": "Nada muda se o vídeo ficar inteiro.",
+  "cutEmpty": "Esse corte apaga o vídeo inteiro.",
+  "cutFailed": "Não foi possível cortar o vídeo.",
+  "cutNoProbe": "O ffprobe não está ao lado do FFmpeg, então a duração não foi lida.",
+  "timeHint": "5, 0:20 ou 1:02:03"
 }

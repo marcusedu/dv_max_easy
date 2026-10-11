@@ -33,6 +33,9 @@ void main() {
     expect(find.text('Perfil ativo'), findsOneWidget);
     expect(find.text('Filmes'), findsOneWidget);
     expect(find.text('Baixar'), findsOneWidget);
+    expect(find.text('Nada baixando'), findsOneWidget);
+    expect(find.textContaining('0 arquivos'), findsOneWidget);
+    expect(find.textContaining('50,0 GB livres'), findsOneWidget);
 
     await tester.tap(find.text('Filmes'));
     await tester.pumpAndSettle();
@@ -103,6 +106,8 @@ void main() {
     expect(find.text(file.path), findsNothing);
     expect(find.text('Abrir pasta'), findsOneWidget);
     expect(find.byTooltip('Abrir'), findsOneWidget);
+    expect(find.byTooltip('Abrir no navegador'), findsOneWidget);
+    expect(find.text('Cortar'), findsOneWidget);
     expect(find.text('Vídeo'), findsOneWidget);
     expect(find.text('mkv'), findsOneWidget);
 

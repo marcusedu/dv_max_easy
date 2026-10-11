@@ -46,4 +46,20 @@ void main() {
     ]);
     expect(macCopyArguments('/tmp/a.mkv').first, 'osascript');
   });
+
+  test('a link opens with the same argv as a file', () {
+    const url = 'https://x.com/birinaite80/status/1';
+    expect(
+      browserArguments(url, operatingSystem: 'macos'),
+      openArguments(url, operatingSystem: 'macos'),
+    );
+    expect(
+      browserArguments(url, operatingSystem: 'windows'),
+      openArguments(url, operatingSystem: 'windows'),
+    );
+    expect(
+      browserArguments(url, operatingSystem: 'linux'),
+      openArguments(url, operatingSystem: 'linux'),
+    );
+  });
 }

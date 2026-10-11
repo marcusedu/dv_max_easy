@@ -484,4 +484,99 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get doneEmptyFilter => 'Nenhum download combina com esses filtros.';
+
+  @override
+  String get openLink => 'Abrir no navegador';
+
+  @override
+  String get statusIdle => 'Nada baixando';
+
+  @override
+  String statusFileCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count arquivos',
+      one: '1 arquivo',
+      zero: '0 arquivos',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statusRunningCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count baixando',
+      one: '1 baixando',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statusFree(String size) {
+    return '$size livres';
+  }
+
+  @override
+  String statusUsed(String size) {
+    return '$size usados';
+  }
+
+  @override
+  String get cutTitle => 'Cortar vídeo';
+
+  @override
+  String get cutOpen => 'Cortar';
+
+  @override
+  String get cutHelp =>
+      'Tire um trecho do começo, do fim ou do meio. O que sobrar é juntado na ordem. Ou marque um pedaço e fique só com ele.';
+
+  @override
+  String get cutRemove => 'Tirar trecho';
+
+  @override
+  String get cutFrom => 'De';
+
+  @override
+  String get cutTo => 'Até';
+
+  @override
+  String get cutKeepOnly => 'Ficar só com este pedaço';
+
+  @override
+  String cutKept(String parts) {
+    return 'Vai ficar: $parts';
+  }
+
+  @override
+  String get cutSave => 'Juntar e salvar';
+
+  @override
+  String get cutSaving => 'Juntando…';
+
+  @override
+  String get cutSaved => 'Corte salvo ao lado do original.';
+
+  @override
+  String get cutNeedRange =>
+      'Informe um início e um fim. O fim precisa ser depois do início.';
+
+  @override
+  String get cutNothing => 'Nada muda se o vídeo ficar inteiro.';
+
+  @override
+  String get cutEmpty => 'Esse corte apaga o vídeo inteiro.';
+
+  @override
+  String get cutFailed => 'Não foi possível cortar o vídeo.';
+
+  @override
+  String get cutNoProbe =>
+      'O ffprobe não está ao lado do FFmpeg, então a duração não foi lida.';
+
+  @override
+  String get timeHint => '5, 0:20 ou 1:02:03';
 }

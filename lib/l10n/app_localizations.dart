@@ -969,6 +969,144 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Nenhum download combina com esses filtros.'**
   String get doneEmptyFilter;
+
+  /// No description provided for @openLink.
+  ///
+  /// In pt, this message translates to:
+  /// **'Abrir no navegador'**
+  String get openLink;
+
+  /// No description provided for @statusIdle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nada baixando'**
+  String get statusIdle;
+
+  /// No description provided for @statusFileCount.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =0{0 arquivos} =1{1 arquivo} other{{count} arquivos}}'**
+  String statusFileCount(int count);
+
+  /// No description provided for @statusRunningCount.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =1{1 baixando} other{{count} baixando}}'**
+  String statusRunningCount(int count);
+
+  /// No description provided for @statusFree.
+  ///
+  /// In pt, this message translates to:
+  /// **'{size} livres'**
+  String statusFree(String size);
+
+  /// No description provided for @statusUsed.
+  ///
+  /// In pt, this message translates to:
+  /// **'{size} usados'**
+  String statusUsed(String size);
+
+  /// No description provided for @cutTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Cortar vídeo'**
+  String get cutTitle;
+
+  /// No description provided for @cutOpen.
+  ///
+  /// In pt, this message translates to:
+  /// **'Cortar'**
+  String get cutOpen;
+
+  /// No description provided for @cutHelp.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tire um trecho do começo, do fim ou do meio. O que sobrar é juntado na ordem. Ou marque um pedaço e fique só com ele.'**
+  String get cutHelp;
+
+  /// No description provided for @cutRemove.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tirar trecho'**
+  String get cutRemove;
+
+  /// No description provided for @cutFrom.
+  ///
+  /// In pt, this message translates to:
+  /// **'De'**
+  String get cutFrom;
+
+  /// No description provided for @cutTo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Até'**
+  String get cutTo;
+
+  /// No description provided for @cutKeepOnly.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ficar só com este pedaço'**
+  String get cutKeepOnly;
+
+  /// No description provided for @cutKept.
+  ///
+  /// In pt, this message translates to:
+  /// **'Vai ficar: {parts}'**
+  String cutKept(String parts);
+
+  /// No description provided for @cutSave.
+  ///
+  /// In pt, this message translates to:
+  /// **'Juntar e salvar'**
+  String get cutSave;
+
+  /// No description provided for @cutSaving.
+  ///
+  /// In pt, this message translates to:
+  /// **'Juntando…'**
+  String get cutSaving;
+
+  /// No description provided for @cutSaved.
+  ///
+  /// In pt, this message translates to:
+  /// **'Corte salvo ao lado do original.'**
+  String get cutSaved;
+
+  /// No description provided for @cutNeedRange.
+  ///
+  /// In pt, this message translates to:
+  /// **'Informe um início e um fim. O fim precisa ser depois do início.'**
+  String get cutNeedRange;
+
+  /// No description provided for @cutNothing.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nada muda se o vídeo ficar inteiro.'**
+  String get cutNothing;
+
+  /// No description provided for @cutEmpty.
+  ///
+  /// In pt, this message translates to:
+  /// **'Esse corte apaga o vídeo inteiro.'**
+  String get cutEmpty;
+
+  /// No description provided for @cutFailed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não foi possível cortar o vídeo.'**
+  String get cutFailed;
+
+  /// No description provided for @cutNoProbe.
+  ///
+  /// In pt, this message translates to:
+  /// **'O ffprobe não está ao lado do FFmpeg, então a duração não foi lida.'**
+  String get cutNoProbe;
+
+  /// No description provided for @timeHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'5, 0:20 ou 1:02:03'**
+  String get timeHint;
 }
 
 class _AppLocalizationsDelegate
