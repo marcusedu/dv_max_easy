@@ -30,6 +30,13 @@ void main() {
     expect(find.text('Filmes'), findsOneWidget);
     expect(find.text('Baixar'), findsOneWidget);
 
+    await tester.tap(find.text('Filmes'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Música').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Música'), findsOneWidget);
+    expect(find.text('Filmes'), findsNothing);
+
     await tester.tap(find.text('Perfis'));
     await tester.pumpAndSettle();
 

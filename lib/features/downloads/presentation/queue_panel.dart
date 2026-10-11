@@ -47,25 +47,7 @@ class QueuePanel extends ConsumerWidget {
             const Spacer(),
             Text(l10n.activeProfile, style: text.bodySmall),
             const SizedBox(width: 8),
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: scheme.primary.withValues(alpha: 0.16),
-                borderRadius: BorderRadius.circular(999),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                child: Text(
-                  profileName ?? '…',
-                  style: text.bodyMedium?.copyWith(
-                    color: scheme.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
+            _ActiveProfileMenu(name: profileName),
           ],
         ),
         const SizedBox(height: 6),
@@ -156,6 +138,53 @@ class CompletedPanel extends ConsumerWidget {
       itemCount: jobs.length,
       separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.s),
       itemBuilder: (_, index) => DownloadJobCard(job: jobs[index]),
+    );
+  }
+}
+
+class _ActiveProfileMenu extends ConsumerWidget {
+  const _ActiveProfileMenu({required this.name});
+
+  final String? name;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    final profiles =
+        ref.watch(profileControllerProvider).asData?.value.profiles ?? const [];
+    return PopupMenuButton<String>(
+      tooltip: l10n.activeProfile,
+      padding: EdgeInsets.zero,
+      onSelected: (id) =>
+          ref.read(profileControllerProvider.notifier).select(id),
+      itemBuilder: (context) => [
+        for (final profile in profiles)
+          PopupMenuItem(value: profile.id, child: Text(profile.name)),
+      ],
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: scheme.primary.withValues(alpha: 0.16),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(10, 4, 6, 4),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                name ?? '…',
+                style: text.bodyMedium?.copyWith(
+                  color: scheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Icon(Icons.expand_more, size: 18, color: scheme.primary),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
