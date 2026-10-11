@@ -69,6 +69,13 @@ void main() {
       'download:{"event":"download","status":"downloading","downloaded":"50","total":"100","speed":"2000000","eta":"3"}',
     );
     expect(progress?.fraction, 0.5);
+    expect(progress?.downloaded, 50);
+    expect(progress?.total, 100);
+    expect(progress?.speed, 2000000);
+    expect(progress?.eta, 3);
+    expect(formatMegabytes(12400000), '12,4 MB');
+    expect(formatSpeed(5100000), '5,1 MB/s');
+    expect(formatClock(5), '00:00:05');
 
     final dest = parseDownloadLine('dest:/Users/me/Movies/Filme [abc].mkv');
     expect(dest?.outputPath, '/Users/me/Movies/Filme [abc].mkv');

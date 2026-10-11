@@ -9,8 +9,28 @@
   "navProfiles": "Perfis",
   "navSettings": "Ajustes",
   "queueEmpty": "Cole ou solte um link para baixar.",
-  "downloadStart": "Colar e baixar",
+  "downloadStart": "Baixar",
   "activeProfile": "Perfil ativo",
+  "queueSubtitle": "Baixe vídeos e áudios de redes sociais com facilidade.",
+  "dropTitle": "Arraste um link ou cole aqui",
+  "dropSupport": "Suporta YouTube, Instagram, TikTok, X (Twitter) e mais.",
+  "downloadsHeading": "Downloads",
+  "clearFinished": "Limpar concluídos",
+  "mediaVideo": "Vídeo",
+  "mediaAudio": "Áudio",
+  "moreActions": "Mais",
+  "statusDownloading": "Baixando… {detail}",
+  "@statusDownloading": {
+    "placeholders": {
+      "detail": {"type": "String"}
+    }
+  },
+  "statusRemaining": "{time} restante",
+  "@statusRemaining": {
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
   "downloadStarting": "Começando o download…",
   "downloadDone": "Download concluído.",
   "downloadFailed": "O yt-dlp não concluiu este item.",
@@ -21,12 +41,12 @@
   "statusCancelled": "Cancelado",
   "fileOpen": "Abrir",
   "fileCopy": "Copiar",
-  "fileReveal": "Mostrar na pasta",
+  "fileReveal": "Abrir pasta",
   "fileShare": "Compartilhar",
   "fileCopied": "Arquivo copiado",
   "downloadNeedFolder": "Escolha a pasta padrão em Ajustes antes de baixar.",
   "downloadNeedBinary": "Aponte o yt-dlp e o FFmpeg em Ajustes.",
-  "urlHint": "Cole um link",
+  "urlHint": "Cole um link de vídeo ou publicação",
   "dropHint": "Solte um link aqui",
   "doneEmpty": "Nada concluído ainda.",
   "profilesEmpty": "Os perfis entram no próximo passo.",

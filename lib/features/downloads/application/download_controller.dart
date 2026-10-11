@@ -13,9 +13,7 @@ final downloadControllerProvider =
     );
 
 /// Fila já existente ao abrir. O app deixa vazia; o teste injeta um item.
-final initialDownloadsProvider = Provider<List<DownloadJob>>(
-  (ref) => const [],
-);
+final initialDownloadsProvider = Provider<List<DownloadJob>>((ref) => const []);
 
 final class DownloadJob {
   const DownloadJob({
@@ -27,6 +25,15 @@ final class DownloadJob {
     this.detail,
     this.outputPath,
     this.error,
+    this.audio = false,
+    this.qualityLabel,
+    this.containerLabel = '',
+    this.destination,
+    this.downloaded,
+    this.total,
+    this.speed,
+    this.eta,
+    this.thumbnailUrl,
   });
 
   final String id;
@@ -37,6 +44,15 @@ final class DownloadJob {
   final String? detail;
   final String? outputPath;
   final String? error;
+  final bool audio;
+  final String? qualityLabel;
+  final String containerLabel;
+  final String? destination;
+  final int? downloaded;
+  final int? total;
+  final double? speed;
+  final int? eta;
+  final String? thumbnailUrl;
 
   DownloadJob copyWith({
     bool? running,
@@ -46,6 +62,11 @@ final class DownloadJob {
     String? outputPath,
     String? error,
     bool clearError = false,
+    int? downloaded,
+    int? total,
+    double? speed,
+    int? eta,
+    String? thumbnailUrl,
   }) {
     return DownloadJob(
       id: id,
@@ -56,6 +77,15 @@ final class DownloadJob {
       detail: detail ?? this.detail,
       outputPath: outputPath ?? this.outputPath,
       error: clearError ? null : error ?? this.error,
+      audio: audio,
+      qualityLabel: qualityLabel,
+      containerLabel: containerLabel,
+      destination: destination,
+      downloaded: downloaded ?? this.downloaded,
+      total: total ?? this.total,
+      speed: speed ?? this.speed,
+      eta: eta ?? this.eta,
+      thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
     );
   }
 }
@@ -84,7 +114,10 @@ final class DownloadController extends Notifier<List<DownloadJob>> {
       return;
     }
     final document = await ref.read(profileStoreProvider).ensureLoaded();
-    final profile = _profile(document.profiles, settings.settings.selectedProfileId);
+    final profile = _profile(
+      document.profiles,
+      settings.settings.selectedProfileId,
+    );
     final destination = profile.destinationFolder ?? folder;
     await Directory(destination).create(recursive: true);
     final id = DateTime.now().microsecondsSinceEpoch.toString();
@@ -94,6 +127,10 @@ final class DownloadController extends Notifier<List<DownloadJob>> {
       profileName: profile.name,
       running: true,
       detail: 'starting',
+      audio: profile.isAudio,
+      qualityLabel: _quality(profile),
+      containerLabel: profile.container.name,
+      destination: destination,
     );
     state = [job, ...state];
     final args = downloadArguments(
@@ -144,6 +181,21 @@ final class DownloadController extends Notifier<List<DownloadJob>> {
     _stop(id);
   }
 
+  void clearFinished() {
+    state = [
+      for (final job in state)
+        if (job.running || job.error != null) job,
+    ];
+  }
+
+  String? _quality(Profile profile) {
+    return switch (profile.preset) {
+      QualityPreset.h1080 => '1080p',
+      QualityPreset.h720 => '720p',
+      _ => null,
+    };
+  }
+
   Future<String?> _folder(String? folder) async {
     if (folder == null || folder.isEmpty) {
       return null;
@@ -188,6 +240,11 @@ final class DownloadController extends Notifier<List<DownloadJob>> {
             ? current.detail
             : progress.detail ?? current.detail,
         outputPath: progress.outputPath,
+        downloaded: progress.downloaded,
+        total: progress.total,
+        speed: progress.speed,
+        eta: progress.eta,
+        thumbnailUrl: progress.thumbnailUrl,
       ),
     );
   }

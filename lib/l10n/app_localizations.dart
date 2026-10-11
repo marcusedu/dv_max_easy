@@ -133,7 +133,7 @@ abstract class AppLocalizations {
   /// No description provided for @downloadStart.
   ///
   /// In pt, this message translates to:
-  /// **'Colar e baixar'**
+  /// **'Baixar'**
   String get downloadStart;
 
   /// No description provided for @activeProfile.
@@ -141,6 +141,66 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Perfil ativo'**
   String get activeProfile;
+
+  /// No description provided for @queueSubtitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Baixe vídeos e áudios de redes sociais com facilidade.'**
+  String get queueSubtitle;
+
+  /// No description provided for @dropTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Arraste um link ou cole aqui'**
+  String get dropTitle;
+
+  /// No description provided for @dropSupport.
+  ///
+  /// In pt, this message translates to:
+  /// **'Suporta YouTube, Instagram, TikTok, X (Twitter) e mais.'**
+  String get dropSupport;
+
+  /// No description provided for @downloadsHeading.
+  ///
+  /// In pt, this message translates to:
+  /// **'Downloads'**
+  String get downloadsHeading;
+
+  /// No description provided for @clearFinished.
+  ///
+  /// In pt, this message translates to:
+  /// **'Limpar concluídos'**
+  String get clearFinished;
+
+  /// No description provided for @mediaVideo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Vídeo'**
+  String get mediaVideo;
+
+  /// No description provided for @mediaAudio.
+  ///
+  /// In pt, this message translates to:
+  /// **'Áudio'**
+  String get mediaAudio;
+
+  /// No description provided for @moreActions.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mais'**
+  String get moreActions;
+
+  /// No description provided for @statusDownloading.
+  ///
+  /// In pt, this message translates to:
+  /// **'Baixando… {detail}'**
+  String statusDownloading(String detail);
+
+  /// No description provided for @statusRemaining.
+  ///
+  /// In pt, this message translates to:
+  /// **'{time} restante'**
+  String statusRemaining(String time);
 
   /// No description provided for @downloadStarting.
   ///
@@ -205,7 +265,7 @@ abstract class AppLocalizations {
   /// No description provided for @fileReveal.
   ///
   /// In pt, this message translates to:
-  /// **'Mostrar na pasta'**
+  /// **'Abrir pasta'**
   String get fileReveal;
 
   /// No description provided for @fileShare.
@@ -235,7 +295,7 @@ abstract class AppLocalizations {
   /// No description provided for @urlHint.
   ///
   /// In pt, this message translates to:
-  /// **'Cole um link'**
+  /// **'Cole um link de vídeo ou publicação'**
   String get urlHint;
 
   /// No description provided for @dropHint.

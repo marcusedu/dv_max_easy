@@ -16,7 +16,7 @@ abstract final class AppSpacing {
 
 abstract final class AppTheme {
   static const lightAccent = Color(0xFF1F6F8B);
-  static const darkAccent = Color(0xFF7FCBE0);
+  static const darkAccent = Color(0xFF5ED4F5);
 
   static ThemeData light() => _build(Brightness.light, lightAccent);
 
@@ -30,19 +30,19 @@ abstract final class AppTheme {
           brightness: brightness,
         ).copyWith(
           primary: accent,
-          surface: dark ? const Color(0xFF1C1C1E) : const Color(0xFFF4F4F6),
-          onSurface: dark ? const Color(0xFFF5F5F7) : const Color(0xFF1D1D1F),
+          surface: dark ? const Color(0xFF101418) : const Color(0xFFF4F4F6),
+          onSurface: dark ? const Color(0xFFF2F4F8) : const Color(0xFF1D1D1F),
           onSurfaceVariant: dark
-              ? const Color(0xFF98989D)
+              ? const Color(0xFF9AA3B2)
               : const Color(0xFF6E6E73),
           surfaceContainerLow: dark
-              ? const Color(0xFF141416)
+              ? const Color(0xFF0C1016)
               : const Color(0xFFE7E7EC),
           surfaceContainerHighest: dark
-              ? const Color(0xFF2C2C2E)
+              ? const Color(0xFF171C24)
               : const Color(0xFFFFFFFF),
           outlineVariant: dark
-              ? const Color(0x1FFFFFFF)
+              ? const Color(0x1AFFFFFF)
               : const Color(0x14000000),
         );
     final family = defaultTargetPlatform == TargetPlatform.macOS

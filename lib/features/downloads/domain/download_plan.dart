@@ -65,6 +65,8 @@ List<String> downloadArguments({
     profile.filenameTemplate,
     '--no-mtime',
     '--print',
+    'before_dl:thumb:%(thumbnail)s',
+    '--print',
     'after_move:dest:%(filepath)s',
   ];
   if (!isPlaylistPage(url)) {
@@ -153,11 +155,42 @@ void _addSubtitles(List<String> args, Profile profile) {
 }
 
 final class DownloadProgress {
-  const DownloadProgress({this.fraction, this.detail, this.outputPath});
+  const DownloadProgress({
+    this.fraction,
+    this.detail,
+    this.outputPath,
+    this.thumbnailUrl,
+    this.downloaded,
+    this.total,
+    this.speed,
+    this.eta,
+  });
 
   final double? fraction;
   final String? detail;
   final String? outputPath;
+  final String? thumbnailUrl;
+  final int? downloaded;
+  final int? total;
+  final double? speed;
+  final int? eta;
+}
+
+String formatMegabytes(num bytes) {
+  return '${(bytes / 1000000).toStringAsFixed(1).replaceAll('.', ',')} MB';
+}
+
+String formatSpeed(num bytesPerSecond) {
+  return '${(bytesPerSecond / 1000000).toStringAsFixed(1).replaceAll('.', ',')} MB/s';
+}
+
+String formatClock(int seconds) {
+  final safe = seconds < 0 ? 0 : seconds;
+  final hours = safe ~/ 3600;
+  final minutes = (safe % 3600) ~/ 60;
+  final remain = safe % 60;
+  String two(int value) => value.toString().padLeft(2, '0');
+  return '${two(hours)}:${two(minutes)}:${two(remain)}';
 }
 
 DownloadProgress? parseDownloadLine(String line) {
@@ -171,6 +204,13 @@ DownloadProgress? parseDownloadLine(String line) {
       return null;
     }
     return DownloadProgress(outputPath: path, detail: path);
+  }
+  if (text.startsWith('thumb:')) {
+    final url = text.substring('thumb:'.length).trim();
+    if (!url.startsWith('http')) {
+      return null;
+    }
+    return DownloadProgress(thumbnailUrl: url);
   }
   final brace = text.indexOf('{');
   if (brace >= 0 && text.contains('"event"')) {
@@ -197,10 +237,22 @@ DownloadProgress? _parseEvent(String jsonText) {
   }
   final post = _jsonString(jsonText, 'postprocessor');
   final detail = post ?? status ?? _detail(speed, eta);
-  if (fraction == null && detail == null) {
+  final downloadedBytes = downloaded?.round();
+  final totalBytes = total?.round();
+  if (fraction == null &&
+      detail == null &&
+      downloadedBytes == null &&
+      totalBytes == null) {
     return null;
   }
-  return DownloadProgress(fraction: fraction, detail: detail);
+  return DownloadProgress(
+    fraction: fraction,
+    detail: detail,
+    downloaded: downloadedBytes,
+    total: totalBytes,
+    speed: speed,
+    eta: eta?.round(),
+  );
 }
 
 String? _detail(double? speed, double? eta) {

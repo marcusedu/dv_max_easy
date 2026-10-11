@@ -28,10 +28,46 @@ class AppLocalizationsPt extends AppLocalizations {
   String get queueEmpty => 'Cole ou solte um link para baixar.';
 
   @override
-  String get downloadStart => 'Colar e baixar';
+  String get downloadStart => 'Baixar';
 
   @override
   String get activeProfile => 'Perfil ativo';
+
+  @override
+  String get queueSubtitle =>
+      'Baixe vídeos e áudios de redes sociais com facilidade.';
+
+  @override
+  String get dropTitle => 'Arraste um link ou cole aqui';
+
+  @override
+  String get dropSupport =>
+      'Suporta YouTube, Instagram, TikTok, X (Twitter) e mais.';
+
+  @override
+  String get downloadsHeading => 'Downloads';
+
+  @override
+  String get clearFinished => 'Limpar concluídos';
+
+  @override
+  String get mediaVideo => 'Vídeo';
+
+  @override
+  String get mediaAudio => 'Áudio';
+
+  @override
+  String get moreActions => 'Mais';
+
+  @override
+  String statusDownloading(String detail) {
+    return 'Baixando… $detail';
+  }
+
+  @override
+  String statusRemaining(String time) {
+    return '$time restante';
+  }
 
   @override
   String get downloadStarting => 'Começando o download…';
@@ -64,7 +100,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get fileCopy => 'Copiar';
 
   @override
-  String get fileReveal => 'Mostrar na pasta';
+  String get fileReveal => 'Abrir pasta';
 
   @override
   String get fileShare => 'Compartilhar';
@@ -80,7 +116,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get downloadNeedBinary => 'Aponte o yt-dlp e o FFmpeg em Ajustes.';
 
   @override
-  String get urlHint => 'Cole um link';
+  String get urlHint => 'Cole um link de vídeo ou publicação';
 
   @override
   String get dropHint => 'Solte um link aqui';

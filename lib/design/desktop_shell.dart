@@ -1,5 +1,6 @@
 import 'package:dv_max_easy/app/app_identity.dart';
 import 'package:dv_max_easy/app/shell_section.dart';
+import 'package:dv_max_easy/app/window_drag.dart';
 import 'package:dv_max_easy/design/app_theme.dart';
 import 'package:dv_max_easy/features/downloads/application/download_controller.dart';
 import 'package:dv_max_easy/features/downloads/domain/download_plan.dart';
@@ -154,28 +155,27 @@ class DesktopShellState extends ConsumerState<DesktopShell> {
           autofocus: true,
           child: Scaffold(
             backgroundColor: scheme.surface,
-            body: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+            body: Column(
               children: [
-                _Sidebar(
-                  section: section,
-                  onSelect: _select,
-                  labels: [
-                    l10n.navQueue,
-                    l10n.navDone,
-                    l10n.navProfiles,
-                    l10n.navSettings,
-                  ],
+                _TitleBar(
+                  status: version == null
+                      ? l10n.binariesPending
+                      : l10n.binariesReady(version),
+                  onSettings: () => _select(ShellSection.settings),
                 ),
                 Expanded(
-                  child: Column(
+                  child: Row(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      _Toolbar(
-                        title: _sectionTitle(l10n),
-                        status: version == null
-                            ? l10n.binariesPending
-                            : l10n.binariesReady(version),
+                      _Sidebar(
+                        section: section,
+                        onSelect: _select,
+                        labels: [
+                          l10n.navQueue,
+                          l10n.navDone,
+                          l10n.navProfiles,
+                          l10n.navSettings,
+                        ],
                       ),
                       Expanded(
                         child: AnimatedSwitcher(
@@ -204,51 +204,53 @@ class DesktopShellState extends ConsumerState<DesktopShell> {
       ),
     );
   }
-
-  String _sectionTitle(AppLocalizations l10n) {
-    return switch (section) {
-      ShellSection.queue => l10n.navQueue,
-      ShellSection.done => l10n.navDone,
-      ShellSection.profiles => l10n.navProfiles,
-      ShellSection.settings => l10n.navSettings,
-    };
-  }
 }
 
-class _Toolbar extends StatelessWidget {
-  const _Toolbar({required this.title, required this.status});
+class _TitleBar extends StatelessWidget {
+  const _TitleBar({required this.status, required this.onSettings});
 
-  final String title;
   final String status;
+  final VoidCallback onSettings;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context);
+    final mac = defaultTargetPlatform == TargetPlatform.macOS;
     return DecoratedBox(
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: scheme.outlineVariant)),
       ),
       child: SizedBox(
-        height: 56,
+        height: mac ? 40 : 48,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+          padding: EdgeInsets.only(left: mac ? 78 : 16, right: 4),
           child: Row(
             children: [
-              Text(title, style: text.titleMedium),
-              const Spacer(),
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  color: scheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: scheme.outlineVariant),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
+              Expanded(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onPanStart: (_) => beginWindowDrag(),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      AppIdentity.displayName,
+                      style: text.bodyMedium?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
                   ),
-                  child: Text(status, style: text.bodySmall),
+                ),
+              ),
+              Text(status, style: text.bodySmall),
+              IconButton(
+                tooltip: l10n.navSettings,
+                onPressed: onSettings,
+                icon: Icon(
+                  Icons.settings_outlined,
+                  size: 18,
+                  color: scheme.onSurfaceVariant,
                 ),
               ),
             ],
@@ -297,7 +299,7 @@ class _Sidebar extends StatelessWidget {
                 ),
                 child: Text(
                   AppIdentity.displayName,
-                  style: Theme.of(context).textTheme.titleMedium,
+                  style: pageTitle(scheme.onSurface).copyWith(fontSize: 22),
                 ),
               ),
               for (final (index, value) in ShellSection.values.indexed)
@@ -317,9 +319,9 @@ class _Sidebar extends StatelessWidget {
 
 const _navIcons = [
   Icons.download_rounded,
-  Icons.check_rounded,
-  Icons.tune_rounded,
-  Icons.settings_rounded,
+  Icons.check_circle_outline,
+  Icons.layers_outlined,
+  Icons.settings_outlined,
 ];
 
 class _NavButton extends StatelessWidget {
@@ -338,12 +340,15 @@ class _NavButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final dark = scheme.brightness == Brightness.dark;
     final color = selected ? scheme.onSurface : scheme.onSurfaceVariant;
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
       child: Material(
         color: selected
-            ? scheme.primary.withValues(alpha: 0.16)
+            ? (dark
+                  ? const Color(0xFF143844)
+                  : scheme.primary.withValues(alpha: 0.14))
             : Colors.transparent,
         borderRadius: BorderRadius.circular(AppSpacing.controlRadius),
         child: InkWell(
@@ -351,12 +356,16 @@ class _NavButton extends StatelessWidget {
           hoverColor: scheme.onSurface.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(AppSpacing.controlRadius),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 36),
+            constraints: const BoxConstraints(minHeight: 40),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Row(
                 children: [
-                  Icon(icon, size: 16, color: color),
+                  Icon(
+                    icon,
+                    size: 18,
+                    color: selected ? scheme.primary : color,
+                  ),
                   const SizedBox(width: 10),
                   Text(
                     label,
@@ -392,6 +401,7 @@ class _SectionBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.l),
       child: switch (section) {
@@ -401,10 +411,38 @@ class _SectionBody extends StatelessWidget {
           onSubmit: onSubmit,
           onPaste: onPaste,
         ),
-        ShellSection.done => const CompletedPanel(),
-        ShellSection.profiles => const ProfilesPage(),
-        ShellSection.settings => const SettingsForm(),
+        ShellSection.done => _Page(
+          title: l10n.navDone,
+          child: const CompletedPanel(),
+        ),
+        ShellSection.profiles => _Page(
+          title: l10n.navProfiles,
+          child: const ProfilesPage(),
+        ),
+        ShellSection.settings => _Page(
+          title: l10n.navSettings,
+          child: const SettingsForm(),
+        ),
       },
+    );
+  }
+}
+
+class _Page extends StatelessWidget {
+  const _Page({required this.title, required this.child});
+
+  final String title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(title, style: pageTitle(Theme.of(context).colorScheme.onSurface)),
+        const SizedBox(height: AppSpacing.l),
+        Expanded(child: child),
+      ],
     );
   }
 }
