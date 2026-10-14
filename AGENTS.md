@@ -30,17 +30,56 @@ Exploração posterior, sem código:
 
 - UI web falando com um serviço em `127.0.0.1` que reutiliza os mesmos casos de uso. Sem servidor remoto de download.
 
-## Filosofia de interface
+## Filosofia de interface e Diretrizes de Design / UI/UX (Design Engineering)
 
-Aparência no espírito do HIG da Apple, em desktop, nos três sistemas. Isso significa hierarquia calma, muito espaço, barra lateral e barra de ferramentas, atalhos de teclado, movimento curto e um acento só.
+Aparência no espírito do HIG da Apple, em desktop, nos três sistemas operacionais (macOS, Windows e Linux), com a sensibilidade de **Design Engineering** de Emil Kowalski: *o acabamento invisível composto cria uma experiência que as pessoas amam sem saber explicar o porquê*.
 
-Não usar `CupertinoApp` nem controles de iPhone. Eles quebram densidade de ponteiro, menu e janela no Windows e no Linux.
+### 1. Princípios Fundamentais de Design Engineering
+- **Gosto apurado e intenção (*Taste is trained*)**: A beleza e o polimento são alavancas de produto. Não faça apenas funcionar; estude o porquê de os melhores apps de desktop parecerem naturais e refinados.
+- **Detalhes invisíveis compõem o todo**: Cada milissegundo de atraso evitado, cada curva de transição afinada e cada estado `:active` reativo somam-se na percepção de qualidade superior.
+- **Hierarquia calma e foco no conteúdo**: Muito respiro, tipografia neutra e legível, barra lateral e barra de ferramentas integradas, atalhos de teclado de primeira classe, movimento curto e acento de cor único.
 
-SF Pro não pode ser redistribuída. No macOS, fonte do sistema. Nos outros, uma fonte neutra empacotada (Inter ou equivalente), com a mesma escala.
+### 2. Movimento, Curvas de Easing e Física
+- **Curvas de Easing intencionais**:
+  - **Nunca usar `ease-in` para UI**: Ele retarda a partida da animação exatamente no instante em que o olho do usuário está observando mais atentamente, transmitindo sensação de lentidão.
+  - **Usar strong ease-out**: `AppMotion.easeOut = Cubic(0.23, 1.0, 0.32, 1.0)`. Inicia veloz e desacelera suavemente.
+  - **Transições de tela**: Duração máxima de 200–220ms com fade combinado a leve deslocamento vertical (1.2% a 1.5%), evitando crossfade puramente estático.
+- **Limites estritos de duração**:
+  - Feedback de clique/pressão: 100–140ms.
+  - Tooltips e popovers compactos: 150–240ms.
+  - Dropdowns e menus: 160–220ms.
+  - Transições de seções e modais: 200–260ms.
+  - Ações repetidas centenas de vezes ao dia (como atalhos de teclado) não devem ter animações bloqueantes.
+- **Nunca animar a partir de `scale(0)`**:
+  - Nada no mundo real surge a partir do nada absoluto. Elementos que entram devem partir de `scale(0.95)` a `scale(0.97)` combinados com opacidade (`0 -> 1`), proporcionando entrada física natural.
 
-Tema claro e escuro seguem o sistema. Grade de 8. Raio dos painéis entre 10 e 12. Estado vazio explica o que fazer. Erro do yt-dlp aparece em linguagem simples, com o log copiável.
+### 3. Feedback Tátil e Estados de Pressão (`:active`)
+- **Resposta imediata à pressão física**:
+  - Botões (`FilledButton`, `OutlinedButton`, `IconButton`), chips de filtro e cards interativos devem implementar feedback de compressão tátil (`scale: 0.97` a `scale: 0.98`) sob clique/pressão via `PressableScale`.
+  - O recuo na pressão é instantâneo e o retorno na liberação é elástico e suave, confirmando que a interface ouviu a ação do usuário.
 
-Um link na área de transferência gera uma faixa no topo, não um diálogo que trava a janela. Download silencioso ao abrir fica desligado. Playlists grandes pedem confirmação da quantidade antes de entrar na fila.
+### 4. Zero Saltos Estruturais de Layout (*No Layout Shifts*)
+- **Inserção e remoção orgânicas**:
+  - Banners (aviso de link no clipboard, alerta de duplicata ou arquivo local) nunca devem surgir com corte abrupto de 0ms, empurrando o formulário e a lista de downloads violentamente.
+  - Devem ser orquestrados com `AnimatedSize` e `AnimatedOpacity`/`FadeTransition`, expandindo e retraindo a altura com suavidade contínua.
+
+### 5. Desempenho Percebido e Fluidez Contínua
+- **Barras de progresso com física contínua**:
+  - Eventos de stdout do processo chegam em rajadas espaçadas. `LinearProgressIndicator` cru salta em trancos mecânicos desconfortáveis.
+  - Usar `SmoothProgressIndicator` (interpolação por `TweenAnimationBuilder` sobre `AppMotion.fast`), convertendo atualizações discretas em um fluxo visual contínuo e orgânico.
+
+### 6. Densidade Desktop e Ergonomia (Apple HIG)
+- **Não usar `CupertinoApp` nem controles de telefone**: Eles degradam a densidade de ponteiro e menus no Windows e no Linux.
+- **Densidade de ponteiro em desktop**:
+  - Menus de contexto e popups devem ser compactos (itens de 28 a 32px de altura), com atalhos de teclado alinhados à direita em tom neutro.
+  - `TooltipTheme` desktop com espera curta (240ms em vez dos 500ms lentos do padrão mobile).
+- **Tipografia e Tokens**:
+  - No macOS: fonte nativa do sistema. Nos outros: fonte neutra de alta legibilidade (Inter ou equivalente), com a mesma escala.
+  - Grade de 8 (AppSpacing: s=8, m=16, l=24, xl=32). Raio dos painéis entre 10 e 12 (`panelRadius = 12`, `controlRadius = 10`).
+
+### 7. Estados Vazios (*Empty States*) Orientadores
+- Um estado vazio nunca deve ser um espaço em branco deserto nem uma linha isolada de texto no canto.
+- Deve apresentar um arranjo centrado e equilibrado com ícone sutil em baixa opacidade, orientação clara do que fazer e menção aos atalhos rápidos (`⌘L`, `⌘V`).
 
 ## Arquitetura
 
