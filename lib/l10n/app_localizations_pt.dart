@@ -542,7 +542,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get cutHelp =>
-      'Tire um trecho do começo, do fim ou do meio. O que sobrar é juntado na ordem. Ou marque um pedaço e fique só com ele.';
+      'Selecione trechos na linha do tempo para remover ou isolar. O que sobrar é unido na ordem sem perda desnecessária.';
 
   @override
   String get cutRemove => 'Tirar trecho';
@@ -554,7 +554,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get cutTo => 'Até';
 
   @override
-  String get cutKeepOnly => 'Ficar só com este pedaço';
+  String get cutKeepOnly => 'Ficar só com este trecho';
 
   @override
   String cutKept(String parts) {
@@ -562,33 +562,131 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get cutSave => 'Juntar e salvar';
+  String get cutSave => 'Salvar novo vídeo';
 
   @override
-  String get cutSaving => 'Juntando…';
+  String get cutSaving => 'Processando corte com FFmpeg…';
 
   @override
-  String get cutSaved => 'Corte salvo ao lado do original.';
+  String get cutSaved => 'Corte salvo com sucesso ao lado do original.';
 
   @override
   String get cutNeedRange =>
-      'Informe um início e um fim. O fim precisa ser depois do início.';
+      'Informe um início e um fim válidos. O fim precisa ser depois do início.';
 
   @override
   String get cutNothing => 'Nada muda se o vídeo ficar inteiro.';
 
   @override
-  String get cutEmpty => 'Esse corte apaga o vídeo inteiro.';
+  String get cutEmpty => 'Esse corte remove o vídeo inteiro.';
 
   @override
   String get cutFailed => 'Não foi possível cortar o vídeo.';
 
   @override
   String get cutNoProbe =>
-      'O ffprobe não está ao lado do FFmpeg, então a duração não foi lida.';
+      'O ffprobe não está ao lado do FFmpeg, então a duração não pôde ser identificada.';
 
   @override
-  String get timeHint => '5, 0:20 ou 1:02:03';
+  String get timeHint => '00:00 ou 01:23:45';
+
+  @override
+  String get cutOriginalDuration => 'Duração original';
+
+  @override
+  String get cutFinalDuration => 'Duração final';
+
+  @override
+  String get cutRemovedDuration => 'Removido';
+
+  @override
+  String get cutClearAll => 'Limpar cortes';
+
+  @override
+  String get cutPreserveOriginal => 'O arquivo original permanecerá intacto.';
+
+  @override
+  String get cutSelection => 'Trecho selecionado';
+
+  @override
+  String get cutQuickStart => 'Início';
+
+  @override
+  String get cutQuickEnd => 'Fim';
+
+  @override
+  String get cutWithAudio => 'Com áudio';
+
+  @override
+  String get cutWithoutAudio => 'Sem áudio';
+
+  @override
+  String get cutTimelineTitle => 'Linha do tempo';
+
+  @override
+  String get cutTimelineLegendKept => 'Mantido';
+
+  @override
+  String get cutTimelineLegendRemoved => 'Removido';
+
+  @override
+  String get cutTimelineLegendSelection => 'Seleção';
+
+  @override
+  String cutRemovedSegmentsTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count trechos a remover',
+      one: '1 trecho a remover',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cutNoCutsAdded => 'Nenhum trecho marcado para remoção.';
+
+  @override
+  String cutSummaryParts(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count partes unidas',
+      one: '1 parte resultante',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cutOutputLabel => 'Salvar como';
+
+  @override
+  String get cutPlay => 'Reproduzir';
+
+  @override
+  String get cutPause => 'Pausar';
+
+  @override
+  String get cutPlaySelection => 'Ouvir trecho';
+
+  @override
+  String get cutMute => 'Silenciar';
+
+  @override
+  String get cutUnmute => 'Ativar som';
+
+  @override
+  String get cutSetStartHere => 'Marcar início aqui';
+
+  @override
+  String get cutSetEndHere => 'Marcar fim aqui';
+
+  @override
+  String get cutKeyboardHelp =>
+      'Espaço: Play/Pause  ·  I: Marcar início  ·  O: Marcar fim  ·  ← / →: ±1s';
+
+  @override
+  String get cutPlayerTitle => 'Pré-visualização';
 
   @override
   String get listsEmpty =>

@@ -1039,7 +1039,7 @@ abstract class AppLocalizations {
   /// No description provided for @cutHelp.
   ///
   /// In pt, this message translates to:
-  /// **'Tire um trecho do começo, do fim ou do meio. O que sobrar é juntado na ordem. Ou marque um pedaço e fique só com ele.'**
+  /// **'Selecione trechos na linha do tempo para remover ou isolar. O que sobrar é unido na ordem sem perda desnecessária.'**
   String get cutHelp;
 
   /// No description provided for @cutRemove.
@@ -1063,7 +1063,7 @@ abstract class AppLocalizations {
   /// No description provided for @cutKeepOnly.
   ///
   /// In pt, this message translates to:
-  /// **'Ficar só com este pedaço'**
+  /// **'Ficar só com este trecho'**
   String get cutKeepOnly;
 
   /// No description provided for @cutKept.
@@ -1075,25 +1075,25 @@ abstract class AppLocalizations {
   /// No description provided for @cutSave.
   ///
   /// In pt, this message translates to:
-  /// **'Juntar e salvar'**
+  /// **'Salvar novo vídeo'**
   String get cutSave;
 
   /// No description provided for @cutSaving.
   ///
   /// In pt, this message translates to:
-  /// **'Juntando…'**
+  /// **'Processando corte com FFmpeg…'**
   String get cutSaving;
 
   /// No description provided for @cutSaved.
   ///
   /// In pt, this message translates to:
-  /// **'Corte salvo ao lado do original.'**
+  /// **'Corte salvo com sucesso ao lado do original.'**
   String get cutSaved;
 
   /// No description provided for @cutNeedRange.
   ///
   /// In pt, this message translates to:
-  /// **'Informe um início e um fim. O fim precisa ser depois do início.'**
+  /// **'Informe um início e um fim válidos. O fim precisa ser depois do início.'**
   String get cutNeedRange;
 
   /// No description provided for @cutNothing.
@@ -1105,7 +1105,7 @@ abstract class AppLocalizations {
   /// No description provided for @cutEmpty.
   ///
   /// In pt, this message translates to:
-  /// **'Esse corte apaga o vídeo inteiro.'**
+  /// **'Esse corte remove o vídeo inteiro.'**
   String get cutEmpty;
 
   /// No description provided for @cutFailed.
@@ -1117,14 +1117,176 @@ abstract class AppLocalizations {
   /// No description provided for @cutNoProbe.
   ///
   /// In pt, this message translates to:
-  /// **'O ffprobe não está ao lado do FFmpeg, então a duração não foi lida.'**
+  /// **'O ffprobe não está ao lado do FFmpeg, então a duração não pôde ser identificada.'**
   String get cutNoProbe;
 
   /// No description provided for @timeHint.
   ///
   /// In pt, this message translates to:
-  /// **'5, 0:20 ou 1:02:03'**
+  /// **'00:00 ou 01:23:45'**
   String get timeHint;
+
+  /// No description provided for @cutOriginalDuration.
+  ///
+  /// In pt, this message translates to:
+  /// **'Duração original'**
+  String get cutOriginalDuration;
+
+  /// No description provided for @cutFinalDuration.
+  ///
+  /// In pt, this message translates to:
+  /// **'Duração final'**
+  String get cutFinalDuration;
+
+  /// No description provided for @cutRemovedDuration.
+  ///
+  /// In pt, this message translates to:
+  /// **'Removido'**
+  String get cutRemovedDuration;
+
+  /// No description provided for @cutClearAll.
+  ///
+  /// In pt, this message translates to:
+  /// **'Limpar cortes'**
+  String get cutClearAll;
+
+  /// No description provided for @cutPreserveOriginal.
+  ///
+  /// In pt, this message translates to:
+  /// **'O arquivo original permanecerá intacto.'**
+  String get cutPreserveOriginal;
+
+  /// No description provided for @cutSelection.
+  ///
+  /// In pt, this message translates to:
+  /// **'Trecho selecionado'**
+  String get cutSelection;
+
+  /// No description provided for @cutQuickStart.
+  ///
+  /// In pt, this message translates to:
+  /// **'Início'**
+  String get cutQuickStart;
+
+  /// No description provided for @cutQuickEnd.
+  ///
+  /// In pt, this message translates to:
+  /// **'Fim'**
+  String get cutQuickEnd;
+
+  /// No description provided for @cutWithAudio.
+  ///
+  /// In pt, this message translates to:
+  /// **'Com áudio'**
+  String get cutWithAudio;
+
+  /// No description provided for @cutWithoutAudio.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sem áudio'**
+  String get cutWithoutAudio;
+
+  /// No description provided for @cutTimelineTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Linha do tempo'**
+  String get cutTimelineTitle;
+
+  /// No description provided for @cutTimelineLegendKept.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mantido'**
+  String get cutTimelineLegendKept;
+
+  /// No description provided for @cutTimelineLegendRemoved.
+  ///
+  /// In pt, this message translates to:
+  /// **'Removido'**
+  String get cutTimelineLegendRemoved;
+
+  /// No description provided for @cutTimelineLegendSelection.
+  ///
+  /// In pt, this message translates to:
+  /// **'Seleção'**
+  String get cutTimelineLegendSelection;
+
+  /// No description provided for @cutRemovedSegmentsTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =1{1 trecho a remover} other{{count} trechos a remover}}'**
+  String cutRemovedSegmentsTitle(int count);
+
+  /// No description provided for @cutNoCutsAdded.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhum trecho marcado para remoção.'**
+  String get cutNoCutsAdded;
+
+  /// No description provided for @cutSummaryParts.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =1{1 parte resultante} other{{count} partes unidas}}'**
+  String cutSummaryParts(int count);
+
+  /// No description provided for @cutOutputLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Salvar como'**
+  String get cutOutputLabel;
+
+  /// No description provided for @cutPlay.
+  ///
+  /// In pt, this message translates to:
+  /// **'Reproduzir'**
+  String get cutPlay;
+
+  /// No description provided for @cutPause.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pausar'**
+  String get cutPause;
+
+  /// No description provided for @cutPlaySelection.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ouvir trecho'**
+  String get cutPlaySelection;
+
+  /// No description provided for @cutMute.
+  ///
+  /// In pt, this message translates to:
+  /// **'Silenciar'**
+  String get cutMute;
+
+  /// No description provided for @cutUnmute.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ativar som'**
+  String get cutUnmute;
+
+  /// No description provided for @cutSetStartHere.
+  ///
+  /// In pt, this message translates to:
+  /// **'Marcar início aqui'**
+  String get cutSetStartHere;
+
+  /// No description provided for @cutSetEndHere.
+  ///
+  /// In pt, this message translates to:
+  /// **'Marcar fim aqui'**
+  String get cutSetEndHere;
+
+  /// No description provided for @cutKeyboardHelp.
+  ///
+  /// In pt, this message translates to:
+  /// **'Espaço: Play/Pause  ·  I: Marcar início  ·  O: Marcar fim  ·  ← / →: ±1s'**
+  String get cutKeyboardHelp;
+
+  /// No description provided for @cutPlayerTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pré-visualização'**
+  String get cutPlayerTitle;
 
   /// No description provided for @listsEmpty.
   ///

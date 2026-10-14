@@ -15,6 +15,7 @@ void main() {
     ]);
     expect(describeKept(kept), '00:05–00:20 + 00:40–01:00');
     expect(cutsChangeTheFile(duration, kept), isTrue);
+    expect(totalSpanDuration(kept), const Duration(seconds: 35));
   });
 
   test('clock text accepts seconds and colon times', () {

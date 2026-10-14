@@ -110,6 +110,13 @@ List<Span> keepOnly(Duration duration, Span keep) {
   ];
 }
 
+Duration totalSpanDuration(List<Span> spans) {
+  return spans.fold<Duration>(
+    Duration.zero,
+    (sum, span) => sum + (span.end - span.start),
+  );
+}
+
 String describeKept(List<Span> kept) {
   return kept
       .map((span) => '${formatSpan(span.start)}–${formatSpan(span.end)}')
