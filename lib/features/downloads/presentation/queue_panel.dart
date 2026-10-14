@@ -1,8 +1,12 @@
+import 'dart:io';
+
 import 'package:dv_max_easy/design/app_theme.dart';
 import 'package:dv_max_easy/features/downloads/application/clipboard_offer.dart';
 import 'package:dv_max_easy/features/downloads/application/download_controller.dart';
 import 'package:dv_max_easy/features/downloads/application/library_query.dart';
+import 'package:dv_max_easy/features/downloads/domain/batch_file.dart';
 import 'package:dv_max_easy/features/downloads/domain/download_plan.dart';
+import 'package:file_selector/file_selector.dart';
 import 'package:dv_max_easy/features/downloads/domain/file_stamp.dart';
 import 'package:dv_max_easy/features/downloads/domain/library.dart';
 import 'package:dv_max_easy/features/downloads/domain/retention.dart';
@@ -75,35 +79,81 @@ class QueuePanel extends ConsumerWidget {
         ),
         const SizedBox(height: 6),
         Text(l10n.queueSubtitle, style: text.bodySmall),
-        if (offer != null && isHttpUrl(offer)) ...[
-          const SizedBox(height: AppSpacing.m),
-          _ClipboardBanner(
-            url: offer,
-            onDownload: () => onDownload(offer),
-            onDismiss: () =>
-                ref.read(clipboardOfferProvider.notifier).dismiss(),
+        AnimatedSize(
+          duration: AppMotion.medium,
+          curve: AppMotion.easeOut,
+          alignment: Alignment.topCenter,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (offer != null && isHttpUrl(offer)) ...[
+                const SizedBox(height: AppSpacing.m),
+                _ClipboardBanner(
+                  url: offer,
+                  onDownload: () => onDownload(offer),
+                  onDismiss: () =>
+                      ref.read(clipboardOfferProvider.notifier).dismiss(),
+                ),
+              ],
+              if (offer != null &&
+                  !isHttpUrl(offer) &&
+                  offer.toLowerCase().endsWith('.txt')) ...[
+                const SizedBox(height: AppSpacing.m),
+                _BatchFileBanner(
+                  path: offer,
+                  onImport: () async {
+                    ref.read(clipboardOfferProvider.notifier).dismiss();
+                    final urls = await readBatchFile(File(offer));
+                    if (!context.mounted) return;
+                    final l10n = AppLocalizations.of(context);
+                    final messenger = ScaffoldMessenger.of(context);
+                    messenger.clearSnackBars();
+                    if (urls.isEmpty) {
+                      messenger.showSnackBar(
+                        SnackBar(content: Text(l10n.batchImportEmpty)),
+                      );
+                      return;
+                    }
+                    await ref
+                        .read(downloadControllerProvider.notifier)
+                        .enqueueAll(urls);
+                    if (!context.mounted) return;
+                    messenger.showSnackBar(
+                      SnackBar(
+                        content: Text(l10n.batchImportSuccess(urls.length)),
+                      ),
+                    );
+                  },
+                  onDismiss: () =>
+                      ref.read(clipboardOfferProvider.notifier).dismiss(),
+                ),
+              ],
+              if (offer != null &&
+                  !isHttpUrl(offer) &&
+                  !offer.toLowerCase().endsWith('.txt')) ...[
+                const SizedBox(height: AppSpacing.m),
+                _LocalFileBanner(
+                  path: offer,
+                  onConvert: () => onConvert(offer),
+                  onDismiss: () =>
+                      ref.read(clipboardOfferProvider.notifier).dismiss(),
+                ),
+              ],
+              if (prior != null) ...[
+                const SizedBox(height: AppSpacing.m),
+                _DuplicateBanner(
+                  onOpen: () {
+                    final url = prior!.url;
+                    ref.read(duplicateNoticeProvider.notifier).clear();
+                    onOpenCompleted(url);
+                  },
+                  onDismiss: () =>
+                      ref.read(duplicateNoticeProvider.notifier).clear(),
+                ),
+              ],
+            ],
           ),
-        ],
-        if (offer != null && !isHttpUrl(offer)) ...[
-          const SizedBox(height: AppSpacing.m),
-          _LocalFileBanner(
-            path: offer,
-            onConvert: () => onConvert(offer),
-            onDismiss: () =>
-                ref.read(clipboardOfferProvider.notifier).dismiss(),
-          ),
-        ],
-        if (prior != null) ...[
-          const SizedBox(height: AppSpacing.m),
-          _DuplicateBanner(
-            onOpen: () {
-              final url = prior!.url;
-              ref.read(duplicateNoticeProvider.notifier).clear();
-              onOpenCompleted(url);
-            },
-            onDismiss: () => ref.read(duplicateNoticeProvider.notifier).clear(),
-          ),
-        ],
+        ),
         const SizedBox(height: AppSpacing.m),
         Row(
           children: [
@@ -115,13 +165,29 @@ class QueuePanel extends ConsumerWidget {
               ),
             ),
             const SizedBox(width: AppSpacing.s),
-            FilledButton.icon(
-              style: FilledButton.styleFrom(minimumSize: const Size(0, 44)),
-              onPressed: () {
-                onPaste();
-              },
-              icon: const Icon(Icons.download_rounded, size: 18),
-              label: Text(l10n.downloadStart),
+            PressableScale(
+              child: Tooltip(
+                message: l10n.batchImportTooltip,
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(0, 44),
+                  ),
+                  onPressed: () => _pickAndImport(context, ref),
+                  icon: const Icon(Icons.file_open_outlined, size: 18),
+                  label: Text(l10n.batchImport),
+                ),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.s),
+            PressableScale(
+              child: FilledButton.icon(
+                style: FilledButton.styleFrom(minimumSize: const Size(0, 44)),
+                onPressed: () {
+                  onPaste();
+                },
+                icon: const Icon(Icons.download_rounded, size: 18),
+                label: Text(l10n.downloadStart),
+              ),
             ),
           ],
         ),
@@ -136,14 +202,16 @@ class QueuePanel extends ConsumerWidget {
               const SizedBox(width: 8),
               _Count(value: visible.length),
               const Spacer(),
-              OutlinedButton.icon(
-                onPressed: finished.isEmpty
-                    ? null
-                    : () => ref
-                          .read(downloadControllerProvider.notifier)
-                          .clearFinished(),
-                icon: const Icon(Icons.delete_outline, size: 16),
-                label: Text(l10n.clearFinished),
+              PressableScale(
+                child: OutlinedButton.icon(
+                  onPressed: finished.isEmpty
+                      ? null
+                      : () => ref
+                            .read(downloadControllerProvider.notifier)
+                            .clearFinished(),
+                  icon: const Icon(Icons.delete_outline, size: 16),
+                  label: Text(l10n.clearFinished),
+                ),
               ),
             ],
           ),
@@ -157,6 +225,43 @@ class QueuePanel extends ConsumerWidget {
               itemCount: visible.length,
               separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.s),
               itemBuilder: (_, index) => DownloadJobCard(job: visible[index]),
+            ),
+          ),
+        ] else ...[
+          const SizedBox(height: AppSpacing.xl),
+          Expanded(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: scheme.surfaceContainerHighest,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: scheme.outlineVariant),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppSpacing.l),
+                        child: Icon(
+                          Icons.arrow_downward_rounded,
+                          size: 32,
+                          color: scheme.onSurfaceVariant.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.m),
+                    Text(
+                      l10n.queueEmpty,
+                      textAlign: TextAlign.center,
+                      style: text.bodyMedium?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ],
@@ -203,7 +308,24 @@ class _CompletedPanelState extends ConsumerState<CompletedPanel> {
         if (!job.running) job,
     ];
     if (history.isEmpty) {
-      return Text(l10n.doneEmpty, style: text.bodyMedium);
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.library_books_outlined,
+                size: 36,
+                color: text.bodyMedium?.color?.withValues(alpha: 0.45) ??
+                    Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(height: AppSpacing.m),
+              Text(l10n.doneEmpty, style: text.bodyMedium),
+            ],
+          ),
+        ),
+      );
     }
     final profiles =
         ref.watch(profileControllerProvider).asData?.value.profiles ??
@@ -371,32 +493,36 @@ class _FilterFace extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: active ? scheme.primary.withValues(alpha: 0.16) : scheme.surface,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: active ? scheme.primary : scheme.outlineVariant,
+    return PressableScale(
+      scaleDown: 0.98,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color:
+              active ? scheme.primary.withValues(alpha: 0.16) : scheme.surface,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: active ? scheme.primary : scheme.outlineVariant,
+          ),
         ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 6, 8, 6),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              text,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: active ? scheme.primary : scheme.onSurface,
-                fontWeight: FontWeight.w600,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 6, 8, 6),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                text,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: active ? scheme.primary : scheme.onSurface,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-            Icon(
-              Icons.expand_more,
-              size: 16,
-              color: active ? scheme.primary : scheme.onSurfaceVariant,
-            ),
-          ],
+              Icon(
+                Icons.expand_more,
+                size: 16,
+                color: active ? scheme.primary : scheme.onSurfaceVariant,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -466,25 +592,28 @@ class _ActiveProfileMenu extends ConsumerWidget {
         for (final profile in profiles)
           PopupMenuItem(value: profile.id, child: Text(profile.name)),
       ],
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: scheme.primary.withValues(alpha: 0.16),
-          borderRadius: BorderRadius.circular(999),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(10, 4, 6, 4),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                name ?? '…',
-                style: text.bodyMedium?.copyWith(
-                  color: scheme.primary,
-                  fontWeight: FontWeight.w600,
+      child: PressableScale(
+        scaleDown: 0.98,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: scheme.primary.withValues(alpha: 0.16),
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(10, 4, 6, 4),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  name ?? '…',
+                  style: text.bodyMedium?.copyWith(
+                    color: scheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-              Icon(Icons.expand_more, size: 18, color: scheme.primary),
-            ],
+                Icon(Icons.expand_more, size: 18, color: scheme.primary),
+              ],
+            ),
           ),
         ),
       ),
@@ -653,6 +782,96 @@ class _LocalFileBanner extends StatelessWidget {
             ),
             const SizedBox(width: 4),
             FilledButton(onPressed: onConvert, child: Text(l10n.navConvert)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+Future<void> _pickAndImport(BuildContext context, WidgetRef ref) async {
+  const group = XTypeGroup(label: 'txt', extensions: ['txt']);
+  final file = await openFile(acceptedTypeGroups: [group]);
+  if (file == null) {
+    return;
+  }
+  final content = await file.readAsString();
+  final urls = parseBatchFileContent(content);
+  if (!context.mounted) {
+    return;
+  }
+  final l10n = AppLocalizations.of(context);
+  final messenger = ScaffoldMessenger.of(context);
+  messenger.clearSnackBars();
+  if (urls.isEmpty) {
+    messenger.showSnackBar(SnackBar(content: Text(l10n.batchImportEmpty)));
+    return;
+  }
+  await ref.read(downloadControllerProvider.notifier).enqueueAll(urls);
+  if (!context.mounted) {
+    return;
+  }
+  messenger.showSnackBar(
+    SnackBar(content: Text(l10n.batchImportSuccess(urls.length))),
+  );
+}
+
+class _BatchFileBanner extends StatelessWidget {
+  const _BatchFileBanner({
+    required this.path,
+    required this.onImport,
+    required this.onDismiss,
+  });
+
+  final String path;
+  final VoidCallback onImport;
+  final VoidCallback onDismiss;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: scheme.primary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppSpacing.panelRadius),
+        border: Border.all(color: scheme.primary.withValues(alpha: 0.35)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        child: Row(
+          children: [
+            Icon(Icons.description_outlined, size: 18, color: scheme.primary),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.batchFileOffer,
+                    style: text.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    path,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: text.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+            TextButton(
+              onPressed: onDismiss,
+              child: Text(l10n.clipboardDismiss),
+            ),
+            const SizedBox(width: 4),
+            FilledButton(
+              onPressed: onImport,
+              child: Text(l10n.batchFileImport),
+            ),
           ],
         ),
       ),
