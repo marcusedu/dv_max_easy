@@ -12,11 +12,13 @@ import 'package:dv_max_easy/features/settings/domain/standard_folders.dart';
 import 'package:dv_max_easy/features/settings/infrastructure/json_settings_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  MediaKit.ensureInitialized();
   final support = await getApplicationSupportDirectory();
   final clock = SystemClock();
   final log = MemoryLog();

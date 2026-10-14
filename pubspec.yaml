@@ -35,6 +35,9 @@ dependencies:
     sdk: flutter
   flutter_riverpod: ^3.4.3
   intl: any
+  media_kit: ^1.2.6
+  media_kit_libs_video: ^1.0.7
+  media_kit_video: ^2.0.1
   path: ^1.9.1
   path_provider: ^2.1.6
   super_drag_and_drop: ^0.9.1
