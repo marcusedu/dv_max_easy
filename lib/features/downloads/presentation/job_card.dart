@@ -1,6 +1,8 @@
 import 'dart:io';
 
+import 'package:dv_max_easy/app/shell_section.dart';
 import 'package:dv_max_easy/design/app_theme.dart';
+import 'package:dv_max_easy/features/convert/application/convert_request.dart';
 import 'package:dv_max_easy/features/downloads/application/download_controller.dart';
 import 'package:dv_max_easy/features/downloads/domain/cut_plan.dart';
 import 'package:dv_max_easy/features/downloads/domain/download_failure.dart';
@@ -150,7 +152,7 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
                       children: [
                         SourceFavicon(url: job.url),
                         const SizedBox(width: 8),
-                        Expanded(
+                        Flexible(
                           child: Text(
                             job.url,
                             maxLines: 1,
@@ -166,9 +168,14 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
                             onPressed: () => _run(_actions.openUrl(job.url)),
                             visualDensity: VisualDensity.compact,
                             padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(
-                              minWidth: 28,
-                              minHeight: 28,
+                            constraints: const BoxConstraints.tightFor(
+                              width: 28,
+                              height: 28,
+                            ),
+                            style: IconButton.styleFrom(
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              padding: EdgeInsets.zero,
+                              minimumSize: const Size(28, 28),
                             ),
                             icon: Icon(
                               Icons.open_in_new,
@@ -267,99 +274,103 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
                       ),
                     if (job.running) ...[
                       const SizedBox(height: 10),
-                      LinearProgressIndicator(value: job.fraction),
+                      SmoothProgressIndicator(value: job.fraction),
                     ],
                   ],
                 ),
               ),
               const SizedBox(width: 16),
-              SizedBox(
-                width: 250,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        _KindChip(
-                          audio: job.audio,
-                          label: job.audio ? l10n.mediaAudio : l10n.mediaVideo,
-                        ),
-                        if (quality.isNotEmpty) ...[
-                          const SizedBox(width: 8),
-                          Flexible(
-                            child: Text(
-                              quality,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: text.bodySmall?.copyWith(
-                                color: scheme.onSurface,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    if (folder != null) ...[
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.folder_outlined,
-                            size: 15,
-                            color: scheme.primary,
-                          ),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: Text(
-                              folder,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.right,
-                              style: text.bodySmall,
-                            ),
-                          ),
-                        ],
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _KindChip(
+                        audio: job.audio,
+                        label: job.audio ? l10n.mediaAudio : l10n.mediaVideo,
                       ),
+                      if (quality.isNotEmpty) ...[
+                        const SizedBox(width: 8),
+                        Text(
+                          quality,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: text.bodySmall?.copyWith(
+                            color: scheme.onSurface,
+                          ),
+                        ),
+                      ],
                     ],
-                    const SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        if (folder != null)
-                          OutlinedButton.icon(
-                            onPressed: _openFolder,
-                            icon: const Icon(
-                              Icons.folder_open_outlined,
-                              size: 16,
-                            ),
-                            label: Text(l10n.fileReveal),
+                  ),
+                  if (folder != null) ...[
+                    const SizedBox(height: 8),
+                    Tooltip(
+                      message: l10n.fileReveal,
+                      child: MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: _openFolder,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.folder_outlined,
+                                size: 15,
+                                color: scheme.primary,
+                              ),
+                              const SizedBox(width: 6),
+                              ConstrainedBox(
+                                constraints: const BoxConstraints(maxWidth: 220),
+                                child: Text(
+                                  folder,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: text.bodySmall,
+                                ),
+                              ),
+                            ],
                           ),
-                        if (hasMenu) ...[
-                          const SizedBox(width: 6),
-                          PopupMenuButton<String>(
-                            tooltip: l10n.moreActions,
-                            icon: Icon(
-                              Icons.more_horiz,
-                              color: scheme.onSurfaceVariant,
-                            ),
-                            onSelected: _onMenu,
-                            itemBuilder: (context) => _menuItems(l10n, facts),
-                          ),
-                        ],
-                      ],
-                    ),
-                    if (_canCut(facts, path))
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton.icon(
-                          onPressed: () => _openCut(path!),
-                          icon: const Icon(Icons.content_cut, size: 16),
-                          label: Text(l10n.cutOpen),
                         ),
                       ),
+                    ),
                   ],
-                ),
+                  if (hasMenu) ...[
+                    const SizedBox(height: 8),
+                    PressableScale(
+                      child: SizedBox(
+                        width: 32,
+                        height: 32,
+                        child: PopupMenuButton<String>(
+                          tooltip: l10n.moreActions,
+                          padding: EdgeInsets.zero,
+                          iconSize: 18,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            side: BorderSide(color: scheme.outlineVariant),
+                          ),
+                          elevation: 4,
+                          constraints: const BoxConstraints(
+                            minWidth: 180,
+                            maxWidth: 320,
+                          ),
+                          style: IconButton.styleFrom(
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            minimumSize: const Size(32, 32),
+                            padding: EdgeInsets.zero,
+                          ),
+                          icon: Icon(
+                            Icons.more_horiz,
+                            color: scheme.onSurfaceVariant,
+                          ),
+                          onSelected: _onMenu,
+                          itemBuilder: (context) => _menuItems(l10n, facts),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ],
           ),
@@ -412,6 +423,36 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
     );
   }
 
+  PopupMenuItem<String> _menuItem({
+    required String value,
+    required IconData icon,
+    required String label,
+    Color? color,
+  }) {
+    return PopupMenuItem<String>(
+      value: value,
+      height: 32,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 13,
+                color: color,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   List<PopupMenuEntry<String>> _menuItems(
     AppLocalizations l10n,
     _CardFacts facts,
@@ -423,24 +464,81 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
         facts.deleteAt != null &&
         facts.onDisk &&
         facts.deleteAt!.isAfter(facts.now);
+    final scheme = Theme.of(context).colorScheme;
     return [
       if (open) ...[
-        PopupMenuItem(value: 'open', child: Text(l10n.fileOpen)),
-        PopupMenuItem(value: 'copy', child: Text(l10n.fileCopy)),
+        _menuItem(
+          value: 'open',
+          icon: Icons.play_arrow_outlined,
+          label: l10n.fileOpen,
+        ),
+        _menuItem(
+          value: 'copy',
+          icon: Icons.content_copy_outlined,
+          label: l10n.fileCopy,
+        ),
       ],
       if (folder != null)
-        PopupMenuItem(value: 'reveal', child: Text(l10n.fileReveal)),
-      if (open) PopupMenuItem(value: 'share', child: Text(l10n.fileShare)),
+        _menuItem(
+          value: 'reveal',
+          icon: Icons.folder_open_outlined,
+          label: l10n.fileReveal,
+        ),
+      if (open)
+        _menuItem(
+          value: 'share',
+          icon: Icons.share_outlined,
+          label: l10n.fileShare,
+        ),
+      if (open)
+        _menuItem(
+          value: 'convert',
+          icon: Icons.transform_rounded,
+          label: l10n.convertAction,
+        ),
       if (_canCut(facts, job.outputPath))
-        PopupMenuItem(value: 'cut', child: Text(l10n.cutOpen)),
-      if (scheduled) PopupMenuItem(value: 'keep', child: Text(l10n.keepFile)),
+        _menuItem(
+          value: 'cut',
+          icon: Icons.content_cut_outlined,
+          label: l10n.cutOpen,
+        ),
+      if (scheduled)
+        _menuItem(
+          value: 'keep',
+          icon: Icons.bookmark_border_rounded,
+          label: l10n.keepFile,
+        ),
       if (facts.canResume)
-        PopupMenuItem(value: 'resume', child: Text(l10n.resumeRetention)),
+        _menuItem(
+          value: 'resume',
+          icon: Icons.schedule_rounded,
+          label: l10n.resumeRetention,
+        ),
       if (job.error != null && !job.running)
-        PopupMenuItem(value: 'retry', child: Text(l10n.downloadRetry)),
-      if (again) PopupMenuItem(value: 'retry', child: Text(l10n.downloadAgain)),
+        _menuItem(
+          value: 'retry',
+          icon: Icons.refresh_rounded,
+          label: l10n.downloadRetry,
+        ),
+      if (again)
+        _menuItem(
+          value: 'retry',
+          icon: Icons.refresh_rounded,
+          label: l10n.downloadAgain,
+        ),
       if (job.running)
-        PopupMenuItem(value: 'cancel', child: Text(l10n.downloadCancel)),
+        _menuItem(
+          value: 'cancel',
+          icon: Icons.close_rounded,
+          label: l10n.downloadCancel,
+        ),
+      const PopupMenuDivider(height: 8),
+      _menuItem(
+        value: 'remove',
+        icon: Icons.delete_outline_rounded,
+        label: l10n.jobRemove,
+        color: scheme.error,
+      ),
     ];
   }
 
@@ -456,6 +554,9 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
         _openFolder();
       case 'share' when path != null:
         _run(_actions.share(path));
+      case 'convert' when path != null:
+        ref.read(convertRequestProvider.notifier).open(path);
+        ref.read(shellSectionProvider.notifier).select(ShellSection.convert);
       case 'cut' when path != null:
         _openCut(path);
       case 'retry':
@@ -470,7 +571,77 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
             .setKeepFile(job.id, keep: false);
       case 'cancel':
         ref.read(downloadControllerProvider.notifier).cancel(job.id);
+      case 'remove':
+        _confirmRemove();
     }
+  }
+
+  Future<void> _confirmRemove() async {
+    final l10n = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.panelRadius),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.delete_outline_rounded, color: scheme.error, size: 22),
+              const SizedBox(width: 10),
+              Text(l10n.jobRemoveTitle),
+            ],
+          ),
+          content: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Text(
+              l10n.jobRemoveMessage,
+              style: text.bodyMedium?.copyWith(
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          actionsOverflowAlignment: OverflowBarAlignment.end,
+          actions: [
+            PressableScale(
+              child: TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: Text(l10n.downloadCancel),
+              ),
+            ),
+            PressableScale(
+              child: OutlinedButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                  ref
+                      .read(downloadControllerProvider.notifier)
+                      .remove(job.id, deleteFile: false);
+                },
+                child: Text(l10n.jobRemoveOnlyList),
+              ),
+            ),
+            PressableScale(
+              child: FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: scheme.error,
+                  foregroundColor: scheme.onError,
+                ),
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                  ref
+                      .read(downloadControllerProvider.notifier)
+                      .remove(job.id, deleteFile: true);
+                },
+                child: Text(l10n.jobDeleteFile),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _showContextMenu(Offset global) async {
@@ -487,6 +658,14 @@ class _DownloadJobCardState extends ConsumerState<DownloadJobCard> {
         Rect.fromLTWH(global.dx, global.dy, 0, 0),
         Offset.zero & overlay.size,
       ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+        side: BorderSide(
+          color: Theme.of(context).colorScheme.outlineVariant,
+        ),
+      ),
+      elevation: 4,
+      constraints: const BoxConstraints(minWidth: 180, maxWidth: 320),
       items: items,
     );
     if (!mounted || selected == null) {
@@ -633,17 +812,19 @@ class _Thumb extends StatelessWidget {
             ?image,
             if (onPlay != null)
               Center(
-                child: IconButton(
-                  tooltip: playLabel,
-                  onPressed: onPlay,
-                  style: IconButton.styleFrom(
-                    backgroundColor: Colors.black.withValues(alpha: 0.45),
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size(32, 32),
-                    padding: EdgeInsets.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                child: PressableScale(
+                  child: IconButton(
+                    tooltip: playLabel,
+                    onPressed: onPlay,
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.black.withValues(alpha: 0.45),
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(32, 32),
+                      padding: EdgeInsets.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    icon: const Icon(Icons.play_arrow_rounded, size: 20),
                   ),
-                  icon: const Icon(Icons.play_arrow_rounded, size: 20),
                 ),
               ),
           ],

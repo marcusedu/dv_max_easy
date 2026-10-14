@@ -40,6 +40,7 @@ final class DuplicateNotice extends Notifier<String?> {
 final class DownloadController extends Notifier<List<DownloadJob>> {
   final Map<String, Process> _processes = {};
   Timer? _saveTimer;
+  int _seq = 0;
 
   @override
   List<DownloadJob> build() {
@@ -47,6 +48,19 @@ final class DownloadController extends Notifier<List<DownloadJob>> {
       _saveTimer?.cancel();
     });
     return ref.watch(initialDownloadsProvider);
+  }
+
+  Future<int> enqueueAll(Iterable<String> rawUrls) async {
+    var count = 0;
+    for (final raw in rawUrls) {
+      final url = raw.trim();
+      if (!isHttpUrl(url)) {
+        continue;
+      }
+      await enqueue(url);
+      count++;
+    }
+    return count;
   }
 
   Future<void> enqueue(String raw) async {
@@ -80,7 +94,7 @@ final class DownloadController extends Notifier<List<DownloadJob>> {
     );
     final destination = profile.destinationFolder ?? folder;
     await Directory(destination).create(recursive: true);
-    final id = DateTime.now().microsecondsSinceEpoch.toString();
+    final id = '${DateTime.now().microsecondsSinceEpoch}_${_seq++}';
     final job = DownloadJob(
       id: id,
       url: url,
@@ -216,6 +230,37 @@ final class DownloadController extends Notifier<List<DownloadJob>> {
 
   void cancel(String id) {
     _stop(id);
+  }
+
+  Future<void> remove(String id, {bool deleteFile = false}) async {
+    final current = _job(id);
+    if (current == null) {
+      return;
+    }
+    if (current.running) {
+      _stop(id);
+    }
+    if (deleteFile) {
+      final path = current.outputPath;
+      if (path != null && path.isNotEmpty) {
+        try {
+          final file = File(path);
+          if (file.existsSync() &&
+              FileSystemEntity.typeSync(path) == FileSystemEntityType.file) {
+            file.deleteSync();
+          }
+        } on Object {
+          // File might not exist or permission denied
+        }
+      }
+    }
+    if (ref.read(duplicateNoticeProvider) == id) {
+      ref.read(duplicateNoticeProvider.notifier).clear();
+    }
+    _set([
+      for (final job in state)
+        if (job.id != id) job,
+    ], immediate: true);
   }
 
   Future<int> purgeExpired() async {
