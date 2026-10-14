@@ -1,3 +1,4 @@
+import 'package:dv_max_easy/design/app_theme.dart';
 import 'package:dv_max_easy/features/downloads/application/download_controller.dart';
 import 'package:dv_max_easy/features/downloads/domain/activity.dart';
 import 'package:dv_max_easy/features/downloads/domain/download_plan.dart';
@@ -40,7 +41,7 @@ class DownloadStatusBar extends ConsumerWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (activity.fraction != null)
-          LinearProgressIndicator(
+          SmoothProgressIndicator(
             value: activity.fraction,
             minHeight: 3,
             backgroundColor: scheme.surfaceContainerLow,

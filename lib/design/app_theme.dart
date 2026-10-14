@@ -1,6 +1,14 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+abstract final class AppMotion {
+  static const Duration fast = Duration(milliseconds: 140);
+  static const Duration medium = Duration(milliseconds: 200);
+  static const Duration pageTransition = Duration(milliseconds: 220);
+  static const Cubic easeOut = Cubic(0.23, 1.0, 0.32, 1.0);
+  static const Cubic easeInOut = Cubic(0.77, 0.0, 0.175, 1.0);
+}
+
 abstract final class AppSpacing {
   static const double unit = 8;
   static const double s = 8;
@@ -11,7 +19,7 @@ abstract final class AppSpacing {
   static const double panelRadius = 12;
   static const double controlRadius = 10;
   static const double hit = 28;
-  static const Duration motion = Duration(milliseconds: 160);
+  static const Duration motion = AppMotion.fast;
 }
 
 abstract final class AppTheme {
@@ -107,6 +115,24 @@ abstract final class AppTheme {
         linearMinHeight: 4,
         borderRadius: BorderRadius.circular(4),
       ),
+      tooltipTheme: TooltipThemeData(
+        waitDuration: const Duration(milliseconds: 240),
+        showDuration: const Duration(milliseconds: 1600),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        textStyle: text.bodySmall?.copyWith(color: scheme.onSurface),
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(AppSpacing.controlRadius - 2),
+          border: Border.all(color: scheme.outlineVariant),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: dark ? 0.35 : 0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+      ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         isDense: true,
@@ -163,3 +189,93 @@ abstract final class AppTheme {
     );
   }
 }
+
+class PressableScale extends StatefulWidget {
+  const PressableScale({
+    required this.child,
+    this.scaleDown = 0.97,
+    this.duration = AppMotion.fast,
+    this.curve = AppMotion.easeOut,
+    this.enabled = true,
+    super.key,
+  });
+
+  final Widget child;
+  final double scaleDown;
+  final Duration duration;
+  final Curve curve;
+  final bool enabled;
+
+  @override
+  State<PressableScale> createState() => _PressableScaleState();
+}
+
+class _PressableScaleState extends State<PressableScale> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.enabled) {
+      return widget.child;
+    }
+    return Listener(
+      behavior: HitTestBehavior.translucent,
+      onPointerDown: (_) {
+        if (mounted && !_pressed) setState(() => _pressed = true);
+      },
+      onPointerUp: (_) {
+        if (mounted && _pressed) setState(() => _pressed = false);
+      },
+      onPointerCancel: (_) {
+        if (mounted && _pressed) setState(() => _pressed = false);
+      },
+      child: AnimatedScale(
+        scale: _pressed ? widget.scaleDown : 1.0,
+        duration: widget.duration,
+        curve: widget.curve,
+        child: widget.child,
+      ),
+    );
+  }
+}
+
+class SmoothProgressIndicator extends StatelessWidget {
+  const SmoothProgressIndicator({
+    this.value,
+    this.minHeight = 4,
+    this.backgroundColor,
+    this.color,
+    super.key,
+  });
+
+  final double? value;
+  final double minHeight;
+  final Color? backgroundColor;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final target = value;
+    if (target == null) {
+      return LinearProgressIndicator(
+        minHeight: minHeight,
+        backgroundColor: backgroundColor,
+        color: color,
+      );
+    }
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0.0, end: target.clamp(0.0, 1.0)),
+      duration: AppMotion.fast,
+      curve: AppMotion.easeOut,
+      builder: (context, animatedValue, _) {
+        return LinearProgressIndicator(
+          value: animatedValue,
+          minHeight: minHeight,
+          backgroundColor: backgroundColor,
+          color: color,
+        );
+      },
+    );
+  }
+}
+

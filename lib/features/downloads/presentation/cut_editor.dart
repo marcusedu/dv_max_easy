@@ -338,14 +338,18 @@ class _CutEditorPageState extends ConsumerState<CutEditorPage> {
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      OutlinedButton.icon(
-                        onPressed: _saving ? null : _addRemoval,
-                        icon: const Icon(Icons.content_cut, size: 16),
-                        label: Text(l10n.cutRemove),
+                      PressableScale(
+                        child: OutlinedButton.icon(
+                          onPressed: _saving ? null : _addRemoval,
+                          icon: const Icon(Icons.content_cut, size: 16),
+                          label: Text(l10n.cutRemove),
+                        ),
                       ),
-                      OutlinedButton(
-                        onPressed: _saving ? null : _keepOnly,
-                        child: Text(l10n.cutKeepOnly),
+                      PressableScale(
+                        child: OutlinedButton(
+                          onPressed: _saving ? null : _keepOnly,
+                          child: Text(l10n.cutKeepOnly),
+                        ),
                       ),
                     ],
                   ),
@@ -381,21 +385,23 @@ class _CutEditorPageState extends ConsumerState<CutEditorPage> {
                   ],
                   const SizedBox(height: 20),
                   if (_saving) ...[
-                    LinearProgressIndicator(value: _progress),
+                    SmoothProgressIndicator(value: _progress),
                     const SizedBox(height: 8),
                     Text(l10n.cutSaving, style: text.bodySmall),
                     const SizedBox(height: 12),
                   ],
                   Align(
                     alignment: Alignment.centerLeft,
-                    child: FilledButton(
-                      onPressed:
-                          _saving ||
-                              kept == null ||
-                              !cutsChangeTheFile(duration, kept)
-                          ? null
-                          : _save,
-                      child: Text(l10n.cutSave),
+                    child: PressableScale(
+                      child: FilledButton(
+                        onPressed:
+                            _saving ||
+                                kept == null ||
+                                !cutsChangeTheFile(duration, kept)
+                            ? null
+                            : _save,
+                        child: Text(l10n.cutSave),
+                      ),
                     ),
                   ),
                 ],
