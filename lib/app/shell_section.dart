@@ -1,6 +1,19 @@
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-enum ShellSection { queue, done, lists, convert, profiles, settings }
+enum ShellSection { queue, done, convert, profiles, settings }
+
+final shellSectionProvider =
+    NotifierProvider<ShellSectionNotifier, ShellSection>(
+      ShellSectionNotifier.new,
+    );
+
+final class ShellSectionNotifier extends Notifier<ShellSection> {
+  @override
+  ShellSection build() => ShellSection.queue;
+
+  void select(ShellSection section) => state = section;
+}
 
 class FocusUrlIntent extends Intent {
   const FocusUrlIntent();

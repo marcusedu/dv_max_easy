@@ -12,9 +12,10 @@ import 'package:dv_max_easy/features/downloads/application/download_controller.d
 import 'package:dv_max_easy/features/downloads/application/library_query.dart';
 import 'package:dv_max_easy/features/downloads/domain/download_plan.dart';
 import 'package:dv_max_easy/features/downloads/infrastructure/system_clipboard.dart';
+import 'package:dv_max_easy/features/downloads/domain/batch_file.dart';
+import 'package:dv_max_easy/features/downloads/presentation/clipboard_toast.dart';
 import 'package:dv_max_easy/features/downloads/presentation/download_status_bar.dart';
 import 'package:dv_max_easy/features/downloads/presentation/queue_panel.dart';
-import 'package:dv_max_easy/features/lists/presentation/lists_page.dart';
 import 'package:dv_max_easy/features/profiles/presentation/profiles_page.dart';
 import 'package:dv_max_easy/features/settings/application/settings_controller.dart';
 import 'package:dv_max_easy/features/settings/presentation/settings_form.dart';
@@ -33,7 +34,7 @@ class DesktopShell extends ConsumerStatefulWidget {
 
 class DesktopShellState extends ConsumerState<DesktopShell>
     with WidgetsBindingObserver {
-  ShellSection section = ShellSection.queue;
+  ShellSection get section => ref.watch(shellSectionProvider);
   final urlFocus = FocusNode();
   final urlController = TextEditingController();
   String _urlBefore = '';
@@ -88,6 +89,13 @@ class DesktopShellState extends ConsumerState<DesktopShell>
           .offerLocal(local, enabled: enabled);
       return;
     }
+    final batch = localBatchFilePath(text ?? '', home: _home);
+    if (batch != null && File(batch).existsSync()) {
+      ref
+          .read(clipboardOfferProvider.notifier)
+          .offerLocal(batch, enabled: enabled);
+      return;
+    }
     ref.read(clipboardOfferProvider.notifier).offer(text, enabled: enabled);
   }
 
@@ -99,6 +107,29 @@ class DesktopShellState extends ConsumerState<DesktopShell>
     _select(ShellSection.convert);
   }
 
+  Future<void> _importBatch(String path) async {
+    final urls = await readBatchFile(File(path));
+    if (!mounted) {
+      return;
+    }
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = AppLocalizations.of(context);
+    messenger.clearSnackBars();
+    if (urls.isEmpty) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.batchImportEmpty)),
+      );
+      return;
+    }
+    await ref.read(downloadControllerProvider.notifier).enqueueAll(urls);
+    if (!mounted) {
+      return;
+    }
+    messenger.showSnackBar(
+      SnackBar(content: Text(l10n.batchImportSuccess(urls.length))),
+    );
+  }
+
   void _onUrlEdited() {
     final next = urlController.text;
     final local = localMediaPath(next, home: _home);
@@ -108,6 +139,15 @@ class DesktopShellState extends ConsumerState<DesktopShell>
       _urlBefore = '';
       urlController.clear();
       _openConvert(local);
+      return;
+    }
+    final batch = localBatchFilePath(next, home: _home);
+    if (looksLikePastedLocal(_urlBefore, next, home: _home) &&
+        batch != null &&
+        File(batch).existsSync()) {
+      _urlBefore = '';
+      urlController.clear();
+      _importBatch(batch);
       return;
     }
     if (looksLikePastedUrl(_urlBefore, next)) {
@@ -140,6 +180,15 @@ class DesktopShellState extends ConsumerState<DesktopShell>
       _openConvert(local);
       return;
     }
+    final batch = localBatchFilePath(data ?? '', home: _home);
+    if (batch != null &&
+        File(batch).existsSync() &&
+        !isHttpUrl(urlController.text)) {
+      _urlBefore = '';
+      urlController.clear();
+      await _importBatch(batch);
+      return;
+    }
     final url = downloadUrl(field: urlController.text, clipboard: data);
     if (url == null) {
       return;
@@ -158,7 +207,7 @@ class DesktopShellState extends ConsumerState<DesktopShell>
   }
 
   void _select(ShellSection next) {
-    setState(() => section = next);
+    ref.read(shellSectionProvider.notifier).select(next);
   }
 
   @override
@@ -170,6 +219,9 @@ class DesktopShellState extends ConsumerState<DesktopShell>
     });
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
+    final offer = ref.watch(clipboardOfferProvider);
+    final showClipboardToast =
+        section != ShellSection.queue && offer != null && isHttpUrl(offer);
     final version = ref
         .watch(settingsControllerProvider)
         .asData
@@ -187,13 +239,13 @@ class DesktopShellState extends ConsumerState<DesktopShell>
           ShellSection.done,
         ),
         _mod(LogicalKeyboardKey.digit3): const SelectSectionIntent(
-          ShellSection.lists,
-        ),
-        _mod(LogicalKeyboardKey.digit4): const SelectSectionIntent(
           ShellSection.convert,
         ),
-        _mod(LogicalKeyboardKey.digit5): const SelectSectionIntent(
+        _mod(LogicalKeyboardKey.digit4): const SelectSectionIntent(
           ShellSection.profiles,
+        ),
+        _mod(LogicalKeyboardKey.digit5): const SelectSectionIntent(
+          ShellSection.settings,
         ),
         _mod(LogicalKeyboardKey.digit6): const SelectSectionIntent(
           ShellSection.settings,
@@ -263,36 +315,130 @@ class DesktopShellState extends ConsumerState<DesktopShell>
                         labels: [
                           l10n.navQueue,
                           l10n.navDone,
-                          l10n.navLists,
                           l10n.navConvert,
                           l10n.navProfiles,
                           l10n.navSettings,
                         ],
                       ),
                       Expanded(
-                        child: AnimatedSwitcher(
-                          duration: AppSpacing.motion,
-                          switchInCurve: Curves.easeOut,
-                          switchOutCurve: Curves.easeOut,
-                          child: KeyedSubtree(
-                            key: ValueKey(section),
-                            child: _SectionBody(
-                              section: section,
-                              urlFocus: urlFocus,
-                              urlController: urlController,
-                              onSubmit: _start,
-                              onPaste: _pasteAndStart,
-                              onDownload: _start,
-                              onConvert: _openConvert,
-                              onQueued: () => _select(ShellSection.queue),
-                              onOpenCompleted: (url) {
-                                ref
-                                    .read(libraryQueryProvider.notifier)
-                                    .focusUrl(url);
-                                _select(ShellSection.done);
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            AnimatedSwitcher(
+                              duration: AppMotion.pageTransition,
+                              switchInCurve: AppMotion.easeOut,
+                              switchOutCurve: AppMotion.easeOut,
+                              transitionBuilder: (child, animation) {
+                                return FadeTransition(
+                                  opacity: animation,
+                                  child: SlideTransition(
+                                    position: Tween<Offset>(
+                                      begin: const Offset(0, 0.012),
+                                      end: Offset.zero,
+                                    ).animate(
+                                      CurvedAnimation(
+                                        parent: animation,
+                                        curve: AppMotion.easeOut,
+                                      ),
+                                    ),
+                                    child: child,
+                                  ),
+                                );
                               },
+                              child: KeyedSubtree(
+                                key: ValueKey(section),
+                                child: _SectionBody(
+                                  section: section,
+                                  urlFocus: urlFocus,
+                                  urlController: urlController,
+                                  onSubmit: _start,
+                                  onPaste: _pasteAndStart,
+                                  onDownload: _start,
+                                  onConvert: _openConvert,
+                                  onOpenCompleted: (url) {
+                                    ref
+                                        .read(libraryQueryProvider.notifier)
+                                        .focusUrl(url);
+                                    _select(ShellSection.done);
+                                  },
+                                ),
+                              ),
                             ),
-                          ),
+                            Positioned(
+                              right: AppSpacing.l,
+                              bottom: AppSpacing.m,
+                              child: AnimatedSwitcher(
+                                duration: AppMotion.medium,
+                                switchInCurve: AppMotion.easeOut,
+                                switchOutCurve: AppMotion.easeOut,
+                                transitionBuilder: (child, animation) {
+                                  return FadeTransition(
+                                    opacity: animation,
+                                    child: SlideTransition(
+                                      position: Tween<Offset>(
+                                        begin: const Offset(0, 0.08),
+                                        end: Offset.zero,
+                                      ).animate(
+                                        CurvedAnimation(
+                                          parent: animation,
+                                          curve: AppMotion.easeOut,
+                                        ),
+                                      ),
+                                      child: ScaleTransition(
+                                        scale: Tween<double>(
+                                          begin: 0.96,
+                                          end: 1.0,
+                                        ).animate(
+                                          CurvedAnimation(
+                                            parent: animation,
+                                            curve: AppMotion.easeOut,
+                                          ),
+                                        ),
+                                        child: child,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: showClipboardToast
+                                    ? ClipboardToast(
+                                        key: ValueKey(offer),
+                                        url: offer,
+                                        onDownload: () {
+                                          _start(offer);
+                                          ref
+                                              .read(
+                                                clipboardOfferProvider.notifier,
+                                              )
+                                              .dismiss();
+                                          final messenger =
+                                              ScaffoldMessenger.of(context);
+                                          messenger.clearSnackBars();
+                                          messenger.showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                l10n.downloadStarting,
+                                              ),
+                                              action: SnackBarAction(
+                                                label: l10n.navQueue,
+                                                onPressed: () => _select(
+                                                  ShellSection.queue,
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                        onDismiss: () => ref
+                                            .read(
+                                              clipboardOfferProvider.notifier,
+                                            )
+                                            .dismiss(),
+                                      )
+                                    : const SizedBox.shrink(
+                                        key: ValueKey('empty_toast'),
+                                      ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -320,20 +466,20 @@ class _TitleBar extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context);
     final mac = defaultTargetPlatform == TargetPlatform.macOS;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: scheme.outlineVariant)),
-      ),
-      child: SizedBox(
-        height: mac ? 40 : 48,
-        child: Padding(
-          padding: EdgeInsets.only(left: mac ? 78 : 16, right: 4),
-          child: Row(
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onPanStart: (_) => beginWindowDrag(),
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onPanStart: (_) => beginWindowDrag(),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: scheme.outlineVariant)),
+        ),
+        child: SizedBox(
+          height: mac ? 40 : 48,
+          child: Padding(
+            padding: EdgeInsets.only(left: mac ? 78 : 16, right: 4),
+            child: Row(
+              children: [
+                Expanded(
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Row(
@@ -351,18 +497,20 @@ class _TitleBar extends StatelessWidget {
                     ),
                   ),
                 ),
-              ),
-              Text(status, style: text.bodySmall),
-              IconButton(
-                tooltip: l10n.navSettings,
-                onPressed: onSettings,
-                icon: Icon(
-                  Icons.settings_outlined,
-                  size: 18,
-                  color: scheme.onSurfaceVariant,
+                Text(status, style: text.bodySmall),
+                PressableScale(
+                  child: IconButton(
+                    tooltip: l10n.navSettings,
+                    onPressed: onSettings,
+                    icon: Icon(
+                      Icons.settings_outlined,
+                      size: 18,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -460,7 +608,6 @@ class _Mark extends StatelessWidget {
 const _navIcons = [
   Icons.download_rounded,
   Icons.check_circle_outline,
-  Icons.bookmarks_outlined,
   Icons.movie_filter_outlined,
   Icons.layers_outlined,
   Icons.settings_outlined,
@@ -486,37 +633,49 @@ class _NavButton extends StatelessWidget {
     final color = selected ? scheme.onSurface : scheme.onSurfaceVariant;
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
-      child: Material(
-        color: selected
-            ? (dark
-                  ? const Color(0xFF143844)
-                  : scheme.primary.withValues(alpha: 0.14))
-            : Colors.transparent,
-        borderRadius: BorderRadius.circular(AppSpacing.controlRadius),
-        child: InkWell(
-          onTap: onPressed,
-          hoverColor: scheme.onSurface.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(AppSpacing.controlRadius),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 40),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Row(
-                children: [
-                  Icon(
-                    icon,
-                    size: 18,
-                    color: selected ? scheme.primary : color,
+      child: PressableScale(
+        scaleDown: 0.98,
+        child: AnimatedContainer(
+          duration: AppMotion.fast,
+          curve: AppMotion.easeOut,
+          decoration: BoxDecoration(
+            color: selected
+                ? (dark
+                      ? const Color(0xFF143844)
+                      : scheme.primary.withValues(alpha: 0.14))
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(AppSpacing.controlRadius),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(AppSpacing.controlRadius),
+            child: InkWell(
+              onTap: onPressed,
+              hoverColor: scheme.onSurface.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(AppSpacing.controlRadius),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 40),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Row(
+                    children: [
+                      Icon(
+                        icon,
+                        size: 18,
+                        color: selected ? scheme.primary : color,
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        label,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: color,
+                          fontWeight:
+                              selected ? FontWeight.w600 : FontWeight.w400,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 10),
-                  Text(
-                    label,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: color,
-                      fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
@@ -535,7 +694,6 @@ class _SectionBody extends StatelessWidget {
     required this.onPaste,
     required this.onDownload,
     required this.onConvert,
-    required this.onQueued,
     required this.onOpenCompleted,
   });
 
@@ -546,7 +704,6 @@ class _SectionBody extends StatelessWidget {
   final Future<void> Function() onPaste;
   final ValueChanged<String> onDownload;
   final ValueChanged<String> onConvert;
-  final VoidCallback onQueued;
   final ValueChanged<String> onOpenCompleted;
 
   @override
@@ -563,10 +720,6 @@ class _SectionBody extends StatelessWidget {
           onDownload: onDownload,
           onOpenCompleted: onOpenCompleted,
           onConvert: onConvert,
-        ),
-        ShellSection.lists => _Page(
-          title: l10n.navLists,
-          child: ListsPage(onQueued: onQueued),
         ),
         ShellSection.convert => _Page(
           title: l10n.navConvert,

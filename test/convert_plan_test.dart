@@ -82,4 +82,50 @@ void main() {
     expect(facts?.duration, const Duration(seconds: 12));
     expect(convertFactsFromProbe('nope'), isNull);
   });
+
+  test('join arguments generate concat commands and list content', () {
+    final list = generateConcatListContent([
+      '/tmp/part1.mp4',
+      "/tmp/part 2's.mp4",
+    ]);
+    expect(list, contains("file '/tmp/part1.mp4'"));
+    expect(list, contains(r"file '/tmp/part 2'\''s.mp4'"));
+
+    final copy = joinArguments(
+      listFilePath: '/tmp/list.txt',
+      output: '/tmp/unido.mp4',
+      target: ConvertTarget.mp4,
+      reencode: false,
+    ).join(' ');
+    expect(copy, contains('-c copy'));
+    expect(copy, contains('-f concat'));
+    expect(copy, contains('/tmp/unido.mp4'));
+
+    final reencode = joinArguments(
+      listFilePath: '/tmp/list.txt',
+      output: '/tmp/unido.mp4',
+      target: ConvertTarget.mp4,
+      reencode: true,
+    ).join(' ');
+    expect(reencode, contains('libx264'));
+    expect(reencode, contains('aac'));
+
+    final audioJoin = joinArguments(
+      listFilePath: '/tmp/list.txt',
+      output: '/tmp/unido.mp3',
+      target: ConvertTarget.mp3,
+      reencode: true,
+    ).join(' ');
+    expect(audioJoin, contains('-vn'));
+    expect(audioJoin, contains('libmp3lame'));
+
+    expect(
+      suggestJoinPath(
+        ['/tmp/a.mp4', '/tmp/b.mp4'],
+        ConvertTarget.mp4,
+        (_) => false,
+      ),
+      '/tmp/unido.mp4',
+    );
+  });
 }

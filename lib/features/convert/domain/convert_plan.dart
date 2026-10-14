@@ -2,7 +2,40 @@ import 'dart:convert';
 
 import 'package:dv_max_easy/features/downloads/domain/download_plan.dart';
 
-enum ConvertTarget { mp4, mkv, webm, mp3, m4a }
+enum ConvertMode { convert, extractAudio, join }
+
+enum VideoPreset { balanced, highQuality, web, light }
+
+enum ConvertTarget {
+  mp4,
+  mkv,
+  mov,
+  webm,
+  avi,
+  gif,
+  mp3,
+  m4a,
+  wav,
+  flac,
+  ogg,
+}
+
+const videoTargets = [
+  ConvertTarget.mp4,
+  ConvertTarget.mkv,
+  ConvertTarget.mov,
+  ConvertTarget.webm,
+  ConvertTarget.avi,
+  ConvertTarget.gif,
+];
+
+const audioTargets = [
+  ConvertTarget.mp3,
+  ConvertTarget.m4a,
+  ConvertTarget.wav,
+  ConvertTarget.flac,
+  ConvertTarget.ogg,
+];
 
 const convertibleExtensions = {
   'mp4',
@@ -22,7 +55,14 @@ const convertibleExtensions = {
 };
 
 bool targetIsAudio(ConvertTarget target) {
-  return target == ConvertTarget.mp3 || target == ConvertTarget.m4a;
+  return switch (target) {
+    ConvertTarget.mp3 ||
+    ConvertTarget.m4a ||
+    ConvertTarget.wav ||
+    ConvertTarget.flac ||
+    ConvertTarget.ogg => true,
+    _ => false,
+  };
 }
 
 /// Caminho absoluto de mídia, ou null quando o texto é URL ou não é arquivo.
@@ -154,9 +194,15 @@ List<String> convertArguments({
   required String output,
   required ConvertTarget target,
   required bool audio,
+  VideoPreset preset = VideoPreset.balanced,
+  String audioBitrate = '192k',
 }) {
   final video = switch (target) {
-    ConvertTarget.mp3 || ConvertTarget.m4a => const <String>[],
+    ConvertTarget.mp3 ||
+    ConvertTarget.m4a ||
+    ConvertTarget.wav ||
+    ConvertTarget.flac ||
+    ConvertTarget.ogg => const <String>[],
     ConvertTarget.webm => const [
       '-c:v',
       'libvpx-vp9',
@@ -167,22 +213,63 @@ List<String> convertArguments({
       '-deadline',
       'realtime',
     ],
-    ConvertTarget.mp4 || ConvertTarget.mkv => const [
-      '-c:v',
-      'libx264',
-      '-preset',
-      'veryfast',
-      '-crf',
-      '20',
+    ConvertTarget.gif => const [
+      '-vf',
+      'fps=15,scale=min(640\\,iw):-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse',
     ],
+    ConvertTarget.mp4 ||
+    ConvertTarget.mkv ||
+    ConvertTarget.mov ||
+    ConvertTarget.avi => switch (preset) {
+      VideoPreset.balanced => const [
+        '-c:v',
+        'libx264',
+        '-preset',
+        'veryfast',
+        '-crf',
+        '20',
+      ],
+      VideoPreset.highQuality => const [
+        '-c:v',
+        'libx264',
+        '-preset',
+        'medium',
+        '-crf',
+        '18',
+      ],
+      VideoPreset.web => const [
+        '-c:v',
+        'libx264',
+        '-preset',
+        'slow',
+        '-crf',
+        '24',
+        '-vf',
+        'scale=min(1280\\,iw):-2',
+      ],
+      VideoPreset.light => const [
+        '-c:v',
+        'libx264',
+        '-preset',
+        'veryfast',
+        '-crf',
+        '28',
+        '-vf',
+        'scale=min(854\\,iw):-2',
+      ],
+    },
   };
   final sound = switch (target) {
-    ConvertTarget.mp3 => const ['-vn', '-c:a', 'libmp3lame', '-q:a', '2'],
-    ConvertTarget.m4a => const ['-vn', '-c:a', 'aac', '-b:a', '192k'],
+    ConvertTarget.gif => const <String>['-an'],
+    ConvertTarget.mp3 => ['-vn', '-c:a', 'libmp3lame', '-q:a', '2', '-b:a', audioBitrate],
+    ConvertTarget.m4a => ['-vn', '-c:a', 'aac', '-b:a', audioBitrate],
+    ConvertTarget.wav => const ['-vn', '-c:a', 'pcm_s16le'],
+    ConvertTarget.flac => const ['-vn', '-c:a', 'flac'],
+    ConvertTarget.ogg => ['-vn', '-c:a', 'libvorbis', '-b:a', audioBitrate],
     _ when audio =>
       target == ConvertTarget.webm
           ? const ['-c:a', 'libopus', '-b:a', '128k']
-          : const ['-c:a', 'aac', '-b:a', '160k'],
+          : ['-c:a', 'aac', '-b:a', audioBitrate],
     _ => const ['-an'],
   };
   return [
@@ -197,4 +284,101 @@ List<String> convertArguments({
     '-nostats',
     output,
   ];
+}
+
+String generateConcatListContent(List<String> filePaths) {
+  final buffer = StringBuffer();
+  for (final path in filePaths) {
+    final escaped = path.replaceAll("'", r"'\''");
+    buffer.writeln("file '$escaped'");
+  }
+  return buffer.toString();
+}
+
+List<String> joinArguments({
+  required String listFilePath,
+  required String output,
+  required ConvertTarget target,
+  bool reencode = false,
+}) {
+  if (!reencode) {
+    return [
+      '-y',
+      '-f',
+      'concat',
+      '-safe',
+      '0',
+      '-i',
+      listFilePath,
+      '-c',
+      'copy',
+      if (target == ConvertTarget.mp4) ...['-movflags', '+faststart'],
+      '-progress',
+      'pipe:1',
+      '-nostats',
+      output,
+    ];
+  }
+  final video = targetIsAudio(target)
+      ? const <String>['-vn']
+      : const [
+          '-c:v',
+          'libx264',
+          '-preset',
+          'veryfast',
+          '-crf',
+          '20',
+        ];
+  final sound = targetIsAudio(target)
+      ? target == ConvertTarget.mp3
+          ? const ['-c:a', 'libmp3lame', '-b:a', '192k']
+          : const ['-c:a', 'aac', '-b:a', '192k']
+      : const ['-c:a', 'aac', '-b:a', '160k'];
+  return [
+    '-y',
+    '-f',
+    'concat',
+    '-safe',
+    '0',
+    '-i',
+    listFilePath,
+    ...video,
+    ...sound,
+    if (target == ConvertTarget.mp4) ...['-movflags', '+faststart'],
+    '-progress',
+    'pipe:1',
+    '-nostats',
+    output,
+  ];
+}
+
+String? suggestJoinPath(
+  List<String> inputs,
+  ConvertTarget target,
+  bool Function(String path) taken,
+) {
+  if (inputs.isEmpty) {
+    return null;
+  }
+  final first = inputs.first;
+  final normalized = first.replaceAll(r'\', '/');
+  final slash = normalized.lastIndexOf('/');
+  final folder = slash <= 0 ? '' : normalized.substring(0, slash);
+  final ext = target.name;
+  String join(String file) {
+    final path = folder.isEmpty ? file : '$folder/$file';
+    return first.contains(r'\') ? path.replaceAll('/', r'\') : path;
+  }
+
+  final base = join('unido.$ext');
+  if (!taken(base)) {
+    return base;
+  }
+  for (var i = 1; i <= 50; i++) {
+    final candidate = join('unido-$i.$ext');
+    if (!taken(candidate)) {
+      return candidate;
+    }
+  }
+  return null;
 }
