@@ -705,4 +705,157 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get installFailed =>
       'A instalação não terminou. Você pode escolher os arquivos manualmente.';
+
+  @override
+  String get batchImport => 'Importar .txt';
+
+  @override
+  String get batchImportTooltip =>
+      'Importar arquivo .txt com links para download (yt-dlp batch)';
+
+  @override
+  String batchImportSuccess(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count links importados para a fila.',
+      one: '1 link importado para a fila.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get batchImportEmpty =>
+      'Nenhum link encontrado no arquivo selecionado.';
+
+  @override
+  String get batchFileOffer => 'Arquivo de links copiado';
+
+  @override
+  String get batchFileImport => 'Importar links';
+
+  @override
+  String get jobRemove => 'Remover';
+
+  @override
+  String get jobRemoveTitle => 'Remover download';
+
+  @override
+  String get jobRemoveMessage =>
+      'Deseja remover este download da lista? Você pode manter o arquivo no computador ou apagá-lo.';
+
+  @override
+  String get jobRemoveOnlyList => 'Remover apenas da lista';
+
+  @override
+  String get jobDeleteFile => 'Deletar arquivo';
+
+  @override
+  String get convertAction => 'Converter';
+
+  @override
+  String get convertModeConvert => 'Converter';
+
+  @override
+  String get convertModeExtract => 'Extrair Áudio';
+
+  @override
+  String get convertModeJoin => 'Juntar Arquivos';
+
+  @override
+  String get convertPresetBalanced => 'Equilibrado (Recomendado)';
+
+  @override
+  String get convertPresetHighQuality => 'Alta Qualidade';
+
+  @override
+  String get convertPresetWeb => 'Otimizado para Web';
+
+  @override
+  String get convertPresetLight => 'Tamanho Reduzido';
+
+  @override
+  String get convertQualityOriginal => 'Original';
+
+  @override
+  String get convertAddFiles => 'Adicionar arquivos';
+
+  @override
+  String get convertClearList => 'Limpar lista';
+
+  @override
+  String convertFilesSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count arquivos selecionados',
+      one: '1 arquivo selecionado',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get convertDragHint => 'Arraste e solte vídeos ou áudios aqui';
+
+  @override
+  String get convertDragSubhint =>
+      'ou clique no botão abaixo para escolher do seu computador';
+
+  @override
+  String get convertExtractBitrate => 'Taxa de áudio (Bitrate)';
+
+  @override
+  String get convertExtractHint =>
+      'Extrai somente a trilha de som preservando a duração.';
+
+  @override
+  String get convertJoinHint =>
+      'Une todos os arquivos da lista em sequência num único arquivo final.';
+
+  @override
+  String get convertJoinNeedMultiple =>
+      'Adicione pelo menos 2 arquivos para juntar.';
+
+  @override
+  String get convertJoinOutput => 'Nome do arquivo unido';
+
+  @override
+  String convertProgressBatch(int current, int total) {
+    return 'Processando $current de $total…';
+  }
+
+  @override
+  String convertSuccessBatch(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count arquivos convertidos com sucesso!',
+      one: '1 arquivo convertido com sucesso!',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get convertSuccessJoin => 'Arquivos unidos com sucesso!';
+
+  @override
+  String get convertOpenResult => 'Abrir arquivo';
+
+  @override
+  String get convertRevealResult => 'Abrir pasta';
+
+  @override
+  String get convertNew => 'Nova conversão';
+
+  @override
+  String get convertCancel => 'Cancelar processo';
+
+  @override
+  String get convertUp => 'Mover para cima';
+
+  @override
+  String get convertDown => 'Mover para baixo';
+
+  @override
+  String get convertRemove => 'Tirar da lista';
 }

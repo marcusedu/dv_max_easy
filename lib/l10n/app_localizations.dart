@@ -1323,6 +1323,246 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'A instalação não terminou. Você pode escolher os arquivos manualmente.'**
   String get installFailed;
+
+  /// No description provided for @batchImport.
+  ///
+  /// In pt, this message translates to:
+  /// **'Importar .txt'**
+  String get batchImport;
+
+  /// No description provided for @batchImportTooltip.
+  ///
+  /// In pt, this message translates to:
+  /// **'Importar arquivo .txt com links para download (yt-dlp batch)'**
+  String get batchImportTooltip;
+
+  /// No description provided for @batchImportSuccess.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =1{1 link importado para a fila.} other{{count} links importados para a fila.}}'**
+  String batchImportSuccess(int count);
+
+  /// No description provided for @batchImportEmpty.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhum link encontrado no arquivo selecionado.'**
+  String get batchImportEmpty;
+
+  /// No description provided for @batchFileOffer.
+  ///
+  /// In pt, this message translates to:
+  /// **'Arquivo de links copiado'**
+  String get batchFileOffer;
+
+  /// No description provided for @batchFileImport.
+  ///
+  /// In pt, this message translates to:
+  /// **'Importar links'**
+  String get batchFileImport;
+
+  /// No description provided for @jobRemove.
+  ///
+  /// In pt, this message translates to:
+  /// **'Remover'**
+  String get jobRemove;
+
+  /// No description provided for @jobRemoveTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Remover download'**
+  String get jobRemoveTitle;
+
+  /// No description provided for @jobRemoveMessage.
+  ///
+  /// In pt, this message translates to:
+  /// **'Deseja remover este download da lista? Você pode manter o arquivo no computador ou apagá-lo.'**
+  String get jobRemoveMessage;
+
+  /// No description provided for @jobRemoveOnlyList.
+  ///
+  /// In pt, this message translates to:
+  /// **'Remover apenas da lista'**
+  String get jobRemoveOnlyList;
+
+  /// No description provided for @jobDeleteFile.
+  ///
+  /// In pt, this message translates to:
+  /// **'Deletar arquivo'**
+  String get jobDeleteFile;
+
+  /// No description provided for @convertAction.
+  ///
+  /// In pt, this message translates to:
+  /// **'Converter'**
+  String get convertAction;
+
+  /// No description provided for @convertModeConvert.
+  ///
+  /// In pt, this message translates to:
+  /// **'Converter'**
+  String get convertModeConvert;
+
+  /// No description provided for @convertModeExtract.
+  ///
+  /// In pt, this message translates to:
+  /// **'Extrair Áudio'**
+  String get convertModeExtract;
+
+  /// No description provided for @convertModeJoin.
+  ///
+  /// In pt, this message translates to:
+  /// **'Juntar Arquivos'**
+  String get convertModeJoin;
+
+  /// No description provided for @convertPresetBalanced.
+  ///
+  /// In pt, this message translates to:
+  /// **'Equilibrado (Recomendado)'**
+  String get convertPresetBalanced;
+
+  /// No description provided for @convertPresetHighQuality.
+  ///
+  /// In pt, this message translates to:
+  /// **'Alta Qualidade'**
+  String get convertPresetHighQuality;
+
+  /// No description provided for @convertPresetWeb.
+  ///
+  /// In pt, this message translates to:
+  /// **'Otimizado para Web'**
+  String get convertPresetWeb;
+
+  /// No description provided for @convertPresetLight.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tamanho Reduzido'**
+  String get convertPresetLight;
+
+  /// No description provided for @convertQualityOriginal.
+  ///
+  /// In pt, this message translates to:
+  /// **'Original'**
+  String get convertQualityOriginal;
+
+  /// No description provided for @convertAddFiles.
+  ///
+  /// In pt, this message translates to:
+  /// **'Adicionar arquivos'**
+  String get convertAddFiles;
+
+  /// No description provided for @convertClearList.
+  ///
+  /// In pt, this message translates to:
+  /// **'Limpar lista'**
+  String get convertClearList;
+
+  /// No description provided for @convertFilesSelected.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =1{1 arquivo selecionado} other{{count} arquivos selecionados}}'**
+  String convertFilesSelected(int count);
+
+  /// No description provided for @convertDragHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Arraste e solte vídeos ou áudios aqui'**
+  String get convertDragHint;
+
+  /// No description provided for @convertDragSubhint.
+  ///
+  /// In pt, this message translates to:
+  /// **'ou clique no botão abaixo para escolher do seu computador'**
+  String get convertDragSubhint;
+
+  /// No description provided for @convertExtractBitrate.
+  ///
+  /// In pt, this message translates to:
+  /// **'Taxa de áudio (Bitrate)'**
+  String get convertExtractBitrate;
+
+  /// No description provided for @convertExtractHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Extrai somente a trilha de som preservando a duração.'**
+  String get convertExtractHint;
+
+  /// No description provided for @convertJoinHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Une todos os arquivos da lista em sequência num único arquivo final.'**
+  String get convertJoinHint;
+
+  /// No description provided for @convertJoinNeedMultiple.
+  ///
+  /// In pt, this message translates to:
+  /// **'Adicione pelo menos 2 arquivos para juntar.'**
+  String get convertJoinNeedMultiple;
+
+  /// No description provided for @convertJoinOutput.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nome do arquivo unido'**
+  String get convertJoinOutput;
+
+  /// No description provided for @convertProgressBatch.
+  ///
+  /// In pt, this message translates to:
+  /// **'Processando {current} de {total}…'**
+  String convertProgressBatch(int current, int total);
+
+  /// No description provided for @convertSuccessBatch.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =1{1 arquivo convertido com sucesso!} other{{count} arquivos convertidos com sucesso!}}'**
+  String convertSuccessBatch(int count);
+
+  /// No description provided for @convertSuccessJoin.
+  ///
+  /// In pt, this message translates to:
+  /// **'Arquivos unidos com sucesso!'**
+  String get convertSuccessJoin;
+
+  /// No description provided for @convertOpenResult.
+  ///
+  /// In pt, this message translates to:
+  /// **'Abrir arquivo'**
+  String get convertOpenResult;
+
+  /// No description provided for @convertRevealResult.
+  ///
+  /// In pt, this message translates to:
+  /// **'Abrir pasta'**
+  String get convertRevealResult;
+
+  /// No description provided for @convertNew.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nova conversão'**
+  String get convertNew;
+
+  /// No description provided for @convertCancel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Cancelar processo'**
+  String get convertCancel;
+
+  /// No description provided for @convertUp.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mover para cima'**
+  String get convertUp;
+
+  /// No description provided for @convertDown.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mover para baixo'**
+  String get convertDown;
+
+  /// No description provided for @convertRemove.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tirar da lista'**
+  String get convertRemove;
 }
 
 class _AppLocalizationsDelegate

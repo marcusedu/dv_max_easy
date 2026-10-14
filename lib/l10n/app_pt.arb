@@ -312,5 +312,66 @@
   "installConfirm": "Instalar",
   "installCancel": "Agora não",
   "installRunning": "Instalando yt-dlp e FFmpeg…",
-  "installFailed": "A instalação não terminou. Você pode escolher os arquivos manualmente."
+  "installFailed": "A instalação não terminou. Você pode escolher os arquivos manualmente.",
+  "batchImport": "Importar .txt",
+  "batchImportTooltip": "Importar arquivo .txt com links para download (yt-dlp batch)",
+  "batchImportSuccess": "{count, plural, =1{1 link importado para a fila.} other{{count} links importados para a fila.}}",
+  "@batchImportSuccess": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "batchImportEmpty": "Nenhum link encontrado no arquivo selecionado.",
+  "batchFileOffer": "Arquivo de links copiado",
+  "batchFileImport": "Importar links",
+  "jobRemove": "Remover",
+  "jobRemoveTitle": "Remover download",
+  "jobRemoveMessage": "Deseja remover este download da lista? Você pode manter o arquivo no computador ou apagá-lo.",
+  "jobRemoveOnlyList": "Remover apenas da lista",
+  "jobDeleteFile": "Deletar arquivo",
+  "convertAction": "Converter",
+  "convertModeConvert": "Converter",
+  "convertModeExtract": "Extrair Áudio",
+  "convertModeJoin": "Juntar Arquivos",
+  "convertPresetBalanced": "Equilibrado (Recomendado)",
+  "convertPresetHighQuality": "Alta Qualidade",
+  "convertPresetWeb": "Otimizado para Web",
+  "convertPresetLight": "Tamanho Reduzido",
+  "convertQualityOriginal": "Original",
+  "convertAddFiles": "Adicionar arquivos",
+  "convertClearList": "Limpar lista",
+  "convertFilesSelected": "{count, plural, =1{1 arquivo selecionado} other{{count} arquivos selecionados}}",
+  "@convertFilesSelected": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "convertDragHint": "Arraste e solte vídeos ou áudios aqui",
+  "convertDragSubhint": "ou clique no botão abaixo para escolher do seu computador",
+  "convertExtractBitrate": "Taxa de áudio (Bitrate)",
+  "convertExtractHint": "Extrai somente a trilha de som preservando a duração.",
+  "convertJoinHint": "Une todos os arquivos da lista em sequência num único arquivo final.",
+  "convertJoinNeedMultiple": "Adicione pelo menos 2 arquivos para juntar.",
+  "convertJoinOutput": "Nome do arquivo unido",
+  "convertProgressBatch": "Processando {current} de {total}…",
+  "@convertProgressBatch": {
+    "placeholders": {
+      "current": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "convertSuccessBatch": "{count, plural, =1{1 arquivo convertido com sucesso!} other{{count} arquivos convertidos com sucesso!}}",
+  "@convertSuccessBatch": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "convertSuccessJoin": "Arquivos unidos com sucesso!",
+  "convertOpenResult": "Abrir arquivo",
+  "convertRevealResult": "Abrir pasta",
+  "convertNew": "Nova conversão",
+  "convertCancel": "Cancelar processo",
+  "convertUp": "Mover para cima",
+  "convertDown": "Mover para baixo",
+  "convertRemove": "Tirar da lista"
 }
