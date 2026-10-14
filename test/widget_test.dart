@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:dv_max_easy/features/downloads/application/download_controller.dart';
-import 'package:dv_max_easy/features/lists/presentation/lists_page.dart';
 import 'package:dv_max_easy/features/profiles/domain/profile.dart';
 import 'package:dv_max_easy/features/settings/domain/app_settings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -105,12 +104,22 @@ void main() {
 
     expect(find.text('Biri - Sabe pq o PT não vai virar.mkv'), findsOneWidget);
     expect(find.text(file.path), findsNothing);
-    expect(find.text('Abrir pasta'), findsOneWidget);
+    final urlBox = tester.getRect(
+      find.text('https://x.com/birinaite80/status/1'),
+    );
+    final openBox = tester.getRect(find.byTooltip('Abrir no navegador'));
+    expect(openBox.left, greaterThan(urlBox.right - 4));
+    expect(openBox.left, lessThan(urlBox.right + 36));
+    final folderIcon = tester.getRect(find.byIcon(Icons.folder_outlined));
+    final folderText = tester.getRect(find.text(directory.path));
+    expect(folderText.left - folderIcon.right, inInclusiveRange(4, 12));
     expect(find.byTooltip('Abrir'), findsOneWidget);
     expect(find.byTooltip('Abrir no navegador'), findsOneWidget);
-    expect(find.text('Cortar'), findsOneWidget);
+    expect(find.byTooltip('Abrir pasta'), findsOneWidget);
     expect(find.text('Vídeo'), findsOneWidget);
     expect(find.text('mkv'), findsOneWidget);
+    expect(find.text('Abrir pasta'), findsNothing);
+    expect(find.text('Cortar'), findsNothing);
 
     await tester.tap(
       find.text('https://x.com/birinaite80/status/1'),
@@ -121,7 +130,9 @@ void main() {
     expect(find.text('Abrir'), findsOneWidget);
     expect(find.text('Copiar'), findsOneWidget);
     expect(find.text('Compartilhar'), findsOneWidget);
-    expect(find.text('Abrir pasta'), findsNWidgets(2));
+    expect(find.text('Abrir pasta'), findsOneWidget);
+    expect(find.text('Cortar'), findsOneWidget);
+    expect(find.text('Remover'), findsOneWidget);
 
     await tester.tapAt(const Offset(420, 160));
     await tester.pumpAndSettle();
@@ -130,14 +141,28 @@ void main() {
     expect(find.text('Abrir'), findsOneWidget);
     expect(find.text('Copiar'), findsOneWidget);
     expect(find.text('Compartilhar'), findsOneWidget);
+    expect(find.text('Abrir pasta'), findsOneWidget);
+    expect(find.text('Cortar'), findsOneWidget);
+    expect(find.text('Remover'), findsOneWidget);
 
-    await tester.tapAt(const Offset(420, 160));
+    await tester.tap(find.text('Remover'));
     await tester.pumpAndSettle();
+    expect(find.text('Remover download'), findsOneWidget);
+    expect(find.text('Remover apenas da lista'), findsOneWidget);
+    expect(find.text('Deletar arquivo'), findsOneWidget);
+    expect(find.text('Cancelar'), findsOneWidget);
+
+    await tester.tap(find.text('Cancelar'));
+    await tester.pumpAndSettle();
+    expect(find.text('Remover download'), findsNothing);
+    expect(file.existsSync(), isTrue);
+
     await tester.tap(find.text('Concluídos'));
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.more_horiz));
     await tester.pumpAndSettle();
     expect(find.text('Abrir'), findsOneWidget);
+    expect(find.text('Remover'), findsOneWidget);
   });
 
   testWidgets('control 6 opens settings', (tester) async {
@@ -479,35 +504,40 @@ void main() {
     expect(find.text('https://videos.example/old'), findsOneWidget);
   });
 
-  testWidgets('a saved list keeps a link without downloading it', (
-    tester,
-  ) async {
+  testWidgets(
+    'a batch txt file is offered on clipboard and import button is available',
+    (tester) async {
     tester.view.physicalSize = const Size(1200, 1100);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(appWithSettings(readySettings()));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Listas'));
+    final batchFile = File('/tmp/dv_max_test_links.txt');
+    batchFile.writeAsStringSync('https://example.com/1\n');
+    addTearDown(() {
+      if (batchFile.existsSync()) batchFile.deleteSync();
+    });
+
+    await tester.pumpWidget(
+      appWithSettings(readySettings(), clipboard: batchFile.path),
+    );
     await tester.pumpAndSettle();
 
-    expect(
-      find.text('Nenhuma lista salva. Guarde links para baixar de novo.'),
-      findsOneWidget,
-    );
-    await tester.tap(find.text('Nova lista'));
-    await tester.pumpAndSettle();
-    await tester.enterText(
-      find.byKey(listsUrlFieldKey),
-      'https://example.com/a',
-    );
-    await tester.tap(find.text('Adicionar'));
-    await tester.pumpAndSettle();
+    // Menu Listas foi removido da barra lateral
+    expect(find.text('Listas'), findsNothing);
 
-    expect(find.text('https://example.com/a'), findsOneWidget);
-    expect(find.text('1 link'), findsOneWidget);
-    expect(find.text('Baixar'), findsNothing);
+    // Botão de importar .txt está presente na tela
+    expect(find.text('Importar .txt'), findsOneWidget);
+
+    // Banner de arquivo de lista copiado é exibido
+    expect(find.text('Arquivo de links copiado'), findsOneWidget);
+    expect(find.text(batchFile.path), findsOneWidget);
+    expect(find.text('Importar links'), findsOneWidget);
+
+    // Ao clicar em Dispensar, o banner fecha
+    await tester.tap(find.text('Agora não'));
+    await tester.pumpAndSettle();
+    expect(find.text('Arquivo de links copiado'), findsNothing);
   });
 
   testWidgets('the convert page waits for a local file', (tester) async {
@@ -525,5 +555,110 @@ void main() {
     expect(find.text('Nenhum arquivo escolhido.'), findsOneWidget);
     expect(find.text('MP4'), findsOneWidget);
     expect(find.text('MP3'), findsOneWidget);
+  });
+
+  testWidgets('remove modal allows deleting physical file from disk', (tester) async {
+    tester.view.physicalSize = const Size(1200, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final directory = Directory.systemTemp.createTempSync('dv-delete-test');
+    addTearDown(() {
+      if (directory.existsSync()) directory.deleteSync(recursive: true);
+    });
+    final file = File('${directory.path}/sample.mkv')..writeAsStringSync('sample content');
+    expect(file.existsSync(), isTrue);
+
+    await tester.pumpWidget(
+      appWithSettings(
+        readySettings(),
+        jobs: [
+          DownloadJob(
+            id: 'sample-job',
+            url: 'https://example.com/video',
+            profileName: 'Filmes',
+            running: false,
+            detail: 'done',
+            outputPath: file.path,
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Verify folder can be clicked with tooltip
+    expect(find.byTooltip('Abrir pasta'), findsOneWidget);
+    await tester.tap(find.byTooltip('Abrir pasta'));
+    await tester.pumpAndSettle();
+
+    // Open context menu and select Remover
+    await tester.tap(find.byIcon(Icons.more_horiz));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Remover'));
+    await tester.pumpAndSettle();
+
+    // Select Deletar arquivo
+    await tester.tap(find.text('Deletar arquivo'));
+    await tester.pumpAndSettle();
+
+    // The physical file was deleted from disk and job removed from UI
+    expect(file.existsSync(), isFalse);
+    expect(find.text('https://example.com/video'), findsNothing);
+  });
+
+  testWidgets('context menu Converter action opens convert page with file loaded', (tester) async {
+    tester.view.physicalSize = const Size(1200, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final directory = Directory.systemTemp.createTempSync('dv-convert-menu-test');
+    addTearDown(() {
+      if (directory.existsSync()) directory.deleteSync(recursive: true);
+    });
+    final file = File('${directory.path}/meu_video.mp4')..writeAsStringSync('dummy content');
+
+    await tester.pumpWidget(
+      appWithSettings(
+        readySettings(),
+        jobs: [
+          DownloadJob(
+            id: 'job-for-convert',
+            url: 'https://example.com/meu_video',
+            profileName: 'Filmes',
+            running: false,
+            detail: 'done',
+            outputPath: file.path,
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Open context menu via ... button
+    await tester.tap(find.byIcon(Icons.more_horiz));
+    await tester.pumpAndSettle();
+
+    // Verify Converter item exists in menu and tap it
+    expect(find.text('Converter'), findsNWidgets(2)); // sidebar and menu item
+    await tester.tap(find.text('Converter').last);
+    await tester.pumpAndSettle();
+
+    // Should now be on the Convert page with the file listed
+    expect(find.text('1 arquivo selecionado'), findsOneWidget);
+    expect(find.text('meu_video.mp4'), findsOneWidget);
+    expect(find.text('Extrair Áudio'), findsOneWidget);
+    expect(find.text('Juntar Arquivos'), findsOneWidget);
+
+    // Switch to Extrair Audio mode
+    await tester.tap(find.text('Extrair Áudio'));
+    await tester.pumpAndSettle();
+    expect(find.text('Extrair áudio'), findsOneWidget);
+
+    // Switch to Juntar Arquivos mode
+    await tester.tap(find.text('Juntar Arquivos'));
+    await tester.pumpAndSettle();
+    expect(find.text('Juntar 1 arquivos'), findsOneWidget);
   });
 }
