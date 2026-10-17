@@ -16,6 +16,7 @@ import 'package:dv_max_easy/features/downloads/domain/batch_file.dart';
 import 'package:dv_max_easy/features/downloads/presentation/clipboard_toast.dart';
 import 'package:dv_max_easy/features/downloads/presentation/download_status_bar.dart';
 import 'package:dv_max_easy/features/downloads/presentation/queue_panel.dart';
+import 'package:dv_max_easy/features/gallery/presentation/gallery_page.dart';
 import 'package:dv_max_easy/features/profiles/presentation/profiles_page.dart';
 import 'package:dv_max_easy/features/settings/application/settings_controller.dart';
 import 'package:dv_max_easy/features/settings/presentation/settings_form.dart';
@@ -116,9 +117,7 @@ class DesktopShellState extends ConsumerState<DesktopShell>
     final l10n = AppLocalizations.of(context);
     messenger.clearSnackBars();
     if (urls.isEmpty) {
-      messenger.showSnackBar(
-        SnackBar(content: Text(l10n.batchImportEmpty)),
-      );
+      messenger.showSnackBar(SnackBar(content: Text(l10n.batchImportEmpty)));
       return;
     }
     await ref.read(downloadControllerProvider.notifier).enqueueAll(urls);
@@ -239,13 +238,13 @@ class DesktopShellState extends ConsumerState<DesktopShell>
           ShellSection.done,
         ),
         _mod(LogicalKeyboardKey.digit3): const SelectSectionIntent(
-          ShellSection.convert,
+          ShellSection.gallery,
         ),
         _mod(LogicalKeyboardKey.digit4): const SelectSectionIntent(
-          ShellSection.profiles,
+          ShellSection.convert,
         ),
         _mod(LogicalKeyboardKey.digit5): const SelectSectionIntent(
-          ShellSection.settings,
+          ShellSection.profiles,
         ),
         _mod(LogicalKeyboardKey.digit6): const SelectSectionIntent(
           ShellSection.settings,
@@ -315,6 +314,7 @@ class DesktopShellState extends ConsumerState<DesktopShell>
                         labels: [
                           l10n.navQueue,
                           l10n.navDone,
+                          l10n.navGallery,
                           l10n.navConvert,
                           l10n.navProfiles,
                           l10n.navSettings,
@@ -332,15 +332,16 @@ class DesktopShellState extends ConsumerState<DesktopShell>
                                 return FadeTransition(
                                   opacity: animation,
                                   child: SlideTransition(
-                                    position: Tween<Offset>(
-                                      begin: const Offset(0, 0.012),
-                                      end: Offset.zero,
-                                    ).animate(
-                                      CurvedAnimation(
-                                        parent: animation,
-                                        curve: AppMotion.easeOut,
-                                      ),
-                                    ),
+                                    position:
+                                        Tween<Offset>(
+                                          begin: const Offset(0, 0.012),
+                                          end: Offset.zero,
+                                        ).animate(
+                                          CurvedAnimation(
+                                            parent: animation,
+                                            curve: AppMotion.easeOut,
+                                          ),
+                                        ),
                                     child: child,
                                   ),
                                 );
@@ -375,25 +376,27 @@ class DesktopShellState extends ConsumerState<DesktopShell>
                                   return FadeTransition(
                                     opacity: animation,
                                     child: SlideTransition(
-                                      position: Tween<Offset>(
-                                        begin: const Offset(0, 0.08),
-                                        end: Offset.zero,
-                                      ).animate(
-                                        CurvedAnimation(
-                                          parent: animation,
-                                          curve: AppMotion.easeOut,
-                                        ),
-                                      ),
-                                      child: ScaleTransition(
-                                        scale: Tween<double>(
-                                          begin: 0.96,
-                                          end: 1.0,
-                                        ).animate(
-                                          CurvedAnimation(
-                                            parent: animation,
-                                            curve: AppMotion.easeOut,
+                                      position:
+                                          Tween<Offset>(
+                                            begin: const Offset(0, 0.08),
+                                            end: Offset.zero,
+                                          ).animate(
+                                            CurvedAnimation(
+                                              parent: animation,
+                                              curve: AppMotion.easeOut,
+                                            ),
                                           ),
-                                        ),
+                                      child: ScaleTransition(
+                                        scale:
+                                            Tween<double>(
+                                              begin: 0.96,
+                                              end: 1.0,
+                                            ).animate(
+                                              CurvedAnimation(
+                                                parent: animation,
+                                                curve: AppMotion.easeOut,
+                                              ),
+                                            ),
                                         child: child,
                                       ),
                                     ),
@@ -420,9 +423,8 @@ class DesktopShellState extends ConsumerState<DesktopShell>
                                               ),
                                               action: SnackBarAction(
                                                 label: l10n.navQueue,
-                                                onPressed: () => _select(
-                                                  ShellSection.queue,
-                                                ),
+                                                onPressed: () =>
+                                                    _select(ShellSection.queue),
                                               ),
                                             ),
                                           );
@@ -608,6 +610,7 @@ class _Mark extends StatelessWidget {
 const _navIcons = [
   Icons.download_rounded,
   Icons.check_circle_outline,
+  Icons.play_circle_outline,
   Icons.movie_filter_outlined,
   Icons.layers_outlined,
   Icons.settings_outlined,
@@ -669,8 +672,9 @@ class _NavButton extends StatelessWidget {
                         label,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: color,
-                          fontWeight:
-                              selected ? FontWeight.w600 : FontWeight.w400,
+                          fontWeight: selected
+                              ? FontWeight.w600
+                              : FontWeight.w400,
                         ),
                       ),
                     ],
@@ -709,36 +713,38 @@ class _SectionBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.l),
-      child: switch (section) {
-        ShellSection.queue => QueuePanel(
-          urlController: urlController,
-          urlFocus: urlFocus,
-          onSubmit: onSubmit,
-          onPaste: onPaste,
-          onDownload: onDownload,
-          onOpenCompleted: onOpenCompleted,
-          onConvert: onConvert,
-        ),
-        ShellSection.convert => _Page(
-          title: l10n.navConvert,
-          child: const ConvertPage(),
-        ),
-        ShellSection.done => _Page(
-          title: l10n.navDone,
-          child: const CompletedPanel(),
-        ),
-        ShellSection.profiles => _Page(
-          title: l10n.navProfiles,
-          child: const ProfilesPage(),
-        ),
-        ShellSection.settings => _Page(
-          title: l10n.navSettings,
-          child: const SettingsForm(),
-        ),
-      },
-    );
+    final child = switch (section) {
+      ShellSection.queue => QueuePanel(
+        urlController: urlController,
+        urlFocus: urlFocus,
+        onSubmit: onSubmit,
+        onPaste: onPaste,
+        onDownload: onDownload,
+        onOpenCompleted: onOpenCompleted,
+        onConvert: onConvert,
+      ),
+      ShellSection.convert => _Page(
+        title: l10n.navConvert,
+        child: const ConvertPage(),
+      ),
+      ShellSection.done => _Page(
+        title: l10n.navDone,
+        child: const CompletedPanel(),
+      ),
+      ShellSection.gallery => const GalleryPage(),
+      ShellSection.profiles => _Page(
+        title: l10n.navProfiles,
+        child: const ProfilesPage(),
+      ),
+      ShellSection.settings => _Page(
+        title: l10n.navSettings,
+        child: const SettingsForm(),
+      ),
+    };
+    if (section == ShellSection.gallery) {
+      return child;
+    }
+    return Padding(padding: const EdgeInsets.all(AppSpacing.l), child: child);
   }
 }
 

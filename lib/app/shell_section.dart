@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-enum ShellSection { queue, done, convert, profiles, settings }
+enum ShellSection { queue, done, gallery, convert, profiles, settings }
 
 final shellSectionProvider =
     NotifierProvider<ShellSectionNotifier, ShellSection>(

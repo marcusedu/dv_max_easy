@@ -19,6 +19,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get navDone => 'Concluídos';
 
   @override
+  String get navGallery => 'Galeria';
+
+  @override
   String get navLists => 'Listas';
 
   @override
@@ -956,4 +959,92 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get convertRemove => 'Tirar da lista';
+
+  @override
+  String get galleryEmpty => 'Os vídeos concluídos aparecem aqui.';
+
+  @override
+  String get galleryPrevious => 'Vídeo anterior';
+
+  @override
+  String get galleryNext => 'Próximo vídeo';
+
+  @override
+  String get galleryLike => 'Gostei';
+
+  @override
+  String get galleryUnlike => 'Desmarcar gostei';
+
+  @override
+  String get galleryShare => 'Compartilhar';
+
+  @override
+  String get galleryInfo => 'Informações';
+
+  @override
+  String get galleryDelete => 'Apagar';
+
+  @override
+  String get galleryDeleteTitle => 'Apagar este vídeo?';
+
+  @override
+  String get galleryDeleteBody =>
+      'O arquivo sai do disco. O histórico em Concluídos permanece.';
+
+  @override
+  String get galleryDeleteConfirm => 'Apagar';
+
+  @override
+  String get galleryDeleteCancel => 'Cancelar';
+
+  @override
+  String get galleryDeleteFailed => 'Não consegui apagar o arquivo.';
+
+  @override
+  String get galleryInfoTitle => 'Informações';
+
+  @override
+  String get galleryInfoPath => 'Local';
+
+  @override
+  String get galleryInfoUrl => 'Origem';
+
+  @override
+  String get galleryInfoSize => 'Tamanho';
+
+  @override
+  String get galleryInfoDuration => 'Duração';
+
+  @override
+  String get galleryCopiedLink => 'Link copiado';
+
+  @override
+  String get galleryCopiedPath => 'Caminho copiado';
+
+  @override
+  String get galleryUnknown => '—';
+
+  @override
+  String get gallerySettingsTitle => 'Galeria';
+
+  @override
+  String get galleryEndLabel => 'Ao terminar um vídeo longo';
+
+  @override
+  String get galleryEndStay => 'Parar';
+
+  @override
+  String get galleryEndRepeat => 'Repetir';
+
+  @override
+  String get galleryEndNext => 'Ir para o próximo';
+
+  @override
+  String get galleryScrollLabel => 'Rolagem';
+
+  @override
+  String get galleryScrollNatural => 'Natural';
+
+  @override
+  String get galleryScrollInverted => 'Invertida';
 }

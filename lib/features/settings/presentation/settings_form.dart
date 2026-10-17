@@ -148,6 +148,46 @@ class SettingsForm extends ConsumerWidget {
                         .setRedactUrls(value),
                   ),
                   const SizedBox(height: AppSpacing.l),
+                  Text(l10n.gallerySettingsTitle, style: text.bodyMedium),
+                  const SizedBox(height: AppSpacing.s),
+                  Text(l10n.galleryEndLabel, style: text.bodySmall),
+                  const SizedBox(height: AppSpacing.s),
+                  Wrap(
+                    spacing: AppSpacing.s,
+                    children: [
+                      for (final choice in const ['stay', 'repeat', 'next'])
+                        ChoiceChip(
+                          label: Text(_galleryEndLabel(l10n, choice)),
+                          selected: view.settings.galleryEnd == choice,
+                          onSelected: (_) => ref
+                              .read(settingsControllerProvider.notifier)
+                              .setGalleryEnd(choice),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.m),
+                  Text(l10n.galleryScrollLabel, style: text.bodySmall),
+                  const SizedBox(height: AppSpacing.s),
+                  Wrap(
+                    spacing: AppSpacing.s,
+                    children: [
+                      ChoiceChip(
+                        label: Text(l10n.galleryScrollNatural),
+                        selected: !view.settings.galleryScrollInverted,
+                        onSelected: (_) => ref
+                            .read(settingsControllerProvider.notifier)
+                            .setGalleryScrollInverted(false),
+                      ),
+                      ChoiceChip(
+                        label: Text(l10n.galleryScrollInverted),
+                        selected: view.settings.galleryScrollInverted,
+                        onSelected: (_) => ref
+                            .read(settingsControllerProvider.notifier)
+                            .setGalleryScrollInverted(true),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.l),
                   const _StorageBlock(),
                 ],
               ),
@@ -156,6 +196,14 @@ class SettingsForm extends ConsumerWidget {
         );
       },
     );
+  }
+
+  String _galleryEndLabel(AppLocalizations l10n, String value) {
+    return switch (value) {
+      'repeat' => l10n.galleryEndRepeat,
+      'next' => l10n.galleryEndNext,
+      _ => l10n.galleryEndStay,
+    };
   }
 
   String _hint(AppLocalizations l10n) {

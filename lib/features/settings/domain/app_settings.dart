@@ -8,6 +8,8 @@ final class AppSettings {
     this.clipboardPromptEnabled = true,
     this.redactUrlsInLog = true,
     this.selectedProfileId,
+    this.galleryEnd = 'stay',
+    this.galleryScrollInverted = false,
   });
 
   final String? defaultDownloadFolder;
@@ -18,6 +20,8 @@ final class AppSettings {
   final bool clipboardPromptEnabled;
   final bool redactUrlsInLog;
   final String? selectedProfileId;
+  final String galleryEnd;
+  final bool galleryScrollInverted;
 
   static const schemaVersion = 1;
 
@@ -34,6 +38,8 @@ final class AppSettings {
     bool? redactUrlsInLog,
     String? selectedProfileId,
     bool clearProfile = false,
+    String? galleryEnd,
+    bool? galleryScrollInverted,
   }) {
     return AppSettings(
       defaultDownloadFolder: clearFolder
@@ -50,6 +56,9 @@ final class AppSettings {
       selectedProfileId: clearProfile
           ? null
           : selectedProfileId ?? this.selectedProfileId,
+      galleryEnd: galleryEnd ?? this.galleryEnd,
+      galleryScrollInverted:
+          galleryScrollInverted ?? this.galleryScrollInverted,
     );
   }
 
@@ -64,6 +73,8 @@ final class AppSettings {
       'clipboardPromptEnabled': clipboardPromptEnabled,
       'redactUrlsInLog': redactUrlsInLog,
       'selectedProfileId': selectedProfileId,
+      'galleryEnd': galleryEnd,
+      'galleryScrollInverted': galleryScrollInverted,
     };
   }
 
@@ -79,7 +90,16 @@ final class AppSettings {
       clipboardPromptEnabled: json['clipboardPromptEnabled'] != false,
       redactUrlsInLog: json['redactUrlsInLog'] != false,
       selectedProfileId: _string(json['selectedProfileId']),
+      galleryEnd: _galleryEnd(json['galleryEnd']),
+      galleryScrollInverted: json['galleryScrollInverted'] == true,
     );
+  }
+
+  static String _galleryEnd(Object? value) {
+    if (value == 'repeat' || value == 'next' || value == 'stay') {
+      return value as String;
+    }
+    return 'stay';
   }
 
   static String? _string(Object? value) {

@@ -157,6 +157,14 @@ final class SettingsController extends AsyncNotifier<SettingsView> {
     await _save(_current.settings.copyWith(redactUrlsInLog: enabled));
   }
 
+  Future<void> setGalleryEnd(String value) async {
+    await _save(_current.settings.copyWith(galleryEnd: value));
+  }
+
+  Future<void> setGalleryScrollInverted(bool inverted) async {
+    await _save(_current.settings.copyWith(galleryScrollInverted: inverted));
+  }
+
   Future<void> selectProfile(String? id) async {
     final next = _current.settings.copyWith(
       selectedProfileId: id,

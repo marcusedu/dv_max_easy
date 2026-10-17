@@ -112,6 +112,12 @@ abstract class AppLocalizations {
   /// **'Concluídos'**
   String get navDone;
 
+  /// No description provided for @navGallery.
+  ///
+  /// In pt, this message translates to:
+  /// **'Galeria'**
+  String get navGallery;
+
   /// No description provided for @navLists.
   ///
   /// In pt, this message translates to:
@@ -1725,6 +1731,180 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Tirar da lista'**
   String get convertRemove;
+
+  /// No description provided for @galleryEmpty.
+  ///
+  /// In pt, this message translates to:
+  /// **'Os vídeos concluídos aparecem aqui.'**
+  String get galleryEmpty;
+
+  /// No description provided for @galleryPrevious.
+  ///
+  /// In pt, this message translates to:
+  /// **'Vídeo anterior'**
+  String get galleryPrevious;
+
+  /// No description provided for @galleryNext.
+  ///
+  /// In pt, this message translates to:
+  /// **'Próximo vídeo'**
+  String get galleryNext;
+
+  /// No description provided for @galleryLike.
+  ///
+  /// In pt, this message translates to:
+  /// **'Gostei'**
+  String get galleryLike;
+
+  /// No description provided for @galleryUnlike.
+  ///
+  /// In pt, this message translates to:
+  /// **'Desmarcar gostei'**
+  String get galleryUnlike;
+
+  /// No description provided for @galleryShare.
+  ///
+  /// In pt, this message translates to:
+  /// **'Compartilhar'**
+  String get galleryShare;
+
+  /// No description provided for @galleryInfo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Informações'**
+  String get galleryInfo;
+
+  /// No description provided for @galleryDelete.
+  ///
+  /// In pt, this message translates to:
+  /// **'Apagar'**
+  String get galleryDelete;
+
+  /// No description provided for @galleryDeleteTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Apagar este vídeo?'**
+  String get galleryDeleteTitle;
+
+  /// No description provided for @galleryDeleteBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'O arquivo sai do disco. O histórico em Concluídos permanece.'**
+  String get galleryDeleteBody;
+
+  /// No description provided for @galleryDeleteConfirm.
+  ///
+  /// In pt, this message translates to:
+  /// **'Apagar'**
+  String get galleryDeleteConfirm;
+
+  /// No description provided for @galleryDeleteCancel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Cancelar'**
+  String get galleryDeleteCancel;
+
+  /// No description provided for @galleryDeleteFailed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não consegui apagar o arquivo.'**
+  String get galleryDeleteFailed;
+
+  /// No description provided for @galleryInfoTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Informações'**
+  String get galleryInfoTitle;
+
+  /// No description provided for @galleryInfoPath.
+  ///
+  /// In pt, this message translates to:
+  /// **'Local'**
+  String get galleryInfoPath;
+
+  /// No description provided for @galleryInfoUrl.
+  ///
+  /// In pt, this message translates to:
+  /// **'Origem'**
+  String get galleryInfoUrl;
+
+  /// No description provided for @galleryInfoSize.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tamanho'**
+  String get galleryInfoSize;
+
+  /// No description provided for @galleryInfoDuration.
+  ///
+  /// In pt, this message translates to:
+  /// **'Duração'**
+  String get galleryInfoDuration;
+
+  /// No description provided for @galleryCopiedLink.
+  ///
+  /// In pt, this message translates to:
+  /// **'Link copiado'**
+  String get galleryCopiedLink;
+
+  /// No description provided for @galleryCopiedPath.
+  ///
+  /// In pt, this message translates to:
+  /// **'Caminho copiado'**
+  String get galleryCopiedPath;
+
+  /// No description provided for @galleryUnknown.
+  ///
+  /// In pt, this message translates to:
+  /// **'—'**
+  String get galleryUnknown;
+
+  /// No description provided for @gallerySettingsTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Galeria'**
+  String get gallerySettingsTitle;
+
+  /// No description provided for @galleryEndLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ao terminar um vídeo longo'**
+  String get galleryEndLabel;
+
+  /// No description provided for @galleryEndStay.
+  ///
+  /// In pt, this message translates to:
+  /// **'Parar'**
+  String get galleryEndStay;
+
+  /// No description provided for @galleryEndRepeat.
+  ///
+  /// In pt, this message translates to:
+  /// **'Repetir'**
+  String get galleryEndRepeat;
+
+  /// No description provided for @galleryEndNext.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ir para o próximo'**
+  String get galleryEndNext;
+
+  /// No description provided for @galleryScrollLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Rolagem'**
+  String get galleryScrollLabel;
+
+  /// No description provided for @galleryScrollNatural.
+  ///
+  /// In pt, this message translates to:
+  /// **'Natural'**
+  String get galleryScrollNatural;
+
+  /// No description provided for @galleryScrollInverted.
+  ///
+  /// In pt, this message translates to:
+  /// **'Invertida'**
+  String get galleryScrollInverted;
 }
 
 class _AppLocalizationsDelegate
