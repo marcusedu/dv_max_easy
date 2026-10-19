@@ -4,6 +4,7 @@ import 'package:dv_max_easy/app/app_identity.dart';
 import 'package:dv_max_easy/app/shell_section.dart';
 import 'package:dv_max_easy/app/window_drag.dart';
 import 'package:dv_max_easy/design/app_theme.dart';
+import 'package:dv_max_easy/design/sidebar_doodle.dart';
 import 'package:dv_max_easy/features/convert/application/convert_request.dart';
 import 'package:dv_max_easy/features/convert/domain/convert_plan.dart';
 import 'package:dv_max_easy/features/convert/presentation/convert_page.dart';
@@ -321,55 +322,13 @@ class DesktopShellState extends ConsumerState<DesktopShell>
                         ],
                       ),
                       Expanded(
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            AnimatedSwitcher(
-                              duration: AppMotion.pageTransition,
-                              switchInCurve: AppMotion.easeOut,
-                              switchOutCurve: AppMotion.easeOut,
-                              transitionBuilder: (child, animation) {
-                                return FadeTransition(
-                                  opacity: animation,
-                                  child: SlideTransition(
-                                    position:
-                                        Tween<Offset>(
-                                          begin: const Offset(0, 0.012),
-                                          end: Offset.zero,
-                                        ).animate(
-                                          CurvedAnimation(
-                                            parent: animation,
-                                            curve: AppMotion.easeOut,
-                                          ),
-                                        ),
-                                    child: child,
-                                  ),
-                                );
-                              },
-                              child: KeyedSubtree(
-                                key: ValueKey(section),
-                                child: _SectionBody(
-                                  section: section,
-                                  urlFocus: urlFocus,
-                                  urlController: urlController,
-                                  onSubmit: _start,
-                                  onPaste: _pasteAndStart,
-                                  onDownload: _start,
-                                  onConvert: _openConvert,
-                                  onOpenCompleted: (url) {
-                                    ref
-                                        .read(libraryQueryProvider.notifier)
-                                        .focusUrl(url);
-                                    _select(ShellSection.done);
-                                  },
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              right: AppSpacing.l,
-                              bottom: AppSpacing.m,
-                              child: AnimatedSwitcher(
-                                duration: AppMotion.medium,
+                        child: ColoredBox(
+                          color: scheme.surface,
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              AnimatedSwitcher(
+                                duration: AppMotion.pageTransition,
                                 switchInCurve: AppMotion.easeOut,
                                 switchOutCurve: AppMotion.easeOut,
                                 transitionBuilder: (child, animation) {
@@ -378,7 +337,7 @@ class DesktopShellState extends ConsumerState<DesktopShell>
                                     child: SlideTransition(
                                       position:
                                           Tween<Offset>(
-                                            begin: const Offset(0, 0.08),
+                                            begin: const Offset(0, 0.012),
                                             end: Offset.zero,
                                           ).animate(
                                             CurvedAnimation(
@@ -386,61 +345,108 @@ class DesktopShellState extends ConsumerState<DesktopShell>
                                               curve: AppMotion.easeOut,
                                             ),
                                           ),
-                                      child: ScaleTransition(
-                                        scale:
-                                            Tween<double>(
-                                              begin: 0.96,
-                                              end: 1.0,
+                                      child: child,
+                                    ),
+                                  );
+                                },
+                                child: KeyedSubtree(
+                                  key: ValueKey(section),
+                                  child: _SectionBody(
+                                    section: section,
+                                    urlFocus: urlFocus,
+                                    urlController: urlController,
+                                    onSubmit: _start,
+                                    onPaste: _pasteAndStart,
+                                    onDownload: _start,
+                                    onConvert: _openConvert,
+                                    onOpenCompleted: (url) {
+                                      ref
+                                          .read(libraryQueryProvider.notifier)
+                                          .focusUrl(url);
+                                      _select(ShellSection.done);
+                                    },
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                right: AppSpacing.l,
+                                bottom: AppSpacing.m,
+                                child: AnimatedSwitcher(
+                                  duration: AppMotion.medium,
+                                  switchInCurve: AppMotion.easeOut,
+                                  switchOutCurve: AppMotion.easeOut,
+                                  transitionBuilder: (child, animation) {
+                                    return FadeTransition(
+                                      opacity: animation,
+                                      child: SlideTransition(
+                                        position:
+                                            Tween<Offset>(
+                                              begin: const Offset(0, 0.08),
+                                              end: Offset.zero,
                                             ).animate(
                                               CurvedAnimation(
                                                 parent: animation,
                                                 curve: AppMotion.easeOut,
                                               ),
                                             ),
-                                        child: child,
+                                        child: ScaleTransition(
+                                          scale:
+                                              Tween<double>(
+                                                begin: 0.96,
+                                                end: 1.0,
+                                              ).animate(
+                                                CurvedAnimation(
+                                                  parent: animation,
+                                                  curve: AppMotion.easeOut,
+                                                ),
+                                              ),
+                                          child: child,
+                                        ),
                                       ),
-                                    ),
-                                  );
-                                },
-                                child: showClipboardToast
-                                    ? ClipboardToast(
-                                        key: ValueKey(offer),
-                                        url: offer,
-                                        onDownload: () {
-                                          _start(offer);
-                                          ref
+                                    );
+                                  },
+                                  child: showClipboardToast
+                                      ? ClipboardToast(
+                                          key: ValueKey(offer),
+                                          url: offer,
+                                          onDownload: () {
+                                            _start(offer);
+                                            ref
+                                                .read(
+                                                  clipboardOfferProvider
+                                                      .notifier,
+                                                )
+                                                .dismiss();
+                                            final messenger =
+                                                ScaffoldMessenger.of(context);
+                                            messenger.clearSnackBars();
+                                            messenger.showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  l10n.downloadStarting,
+                                                ),
+                                                action: SnackBarAction(
+                                                  label: l10n.navQueue,
+                                                  onPressed: () => _select(
+                                                    ShellSection.queue,
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                          onDismiss: () => ref
                                               .read(
                                                 clipboardOfferProvider.notifier,
                                               )
-                                              .dismiss();
-                                          final messenger =
-                                              ScaffoldMessenger.of(context);
-                                          messenger.clearSnackBars();
-                                          messenger.showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                l10n.downloadStarting,
-                                              ),
-                                              action: SnackBarAction(
-                                                label: l10n.navQueue,
-                                                onPressed: () =>
-                                                    _select(ShellSection.queue),
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                        onDismiss: () => ref
-                                            .read(
-                                              clipboardOfferProvider.notifier,
-                                            )
-                                            .dismiss(),
-                                      )
-                                    : const SizedBox.shrink(
-                                        key: ValueKey('empty_toast'),
-                                      ),
+                                              .dismiss(),
+                                        )
+                                      : const SizedBox.shrink(
+                                          key: ValueKey('empty_toast'),
+                                        ),
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -541,46 +547,52 @@ class _Sidebar extends StatelessWidget {
       ),
       child: SizedBox(
         width: AppSpacing.sidebar,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.s,
-            vertical: AppSpacing.m,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.m,
-                  AppSpacing.s,
-                  AppSpacing.m,
-                  AppSpacing.l,
-                ),
-                child: Row(
-                  children: [
-                    const _Mark(size: 28, radius: 7),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        AppIdentity.displayName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: pageTitle(scheme.onSurface)
-                            .copyWith(fontSize: 22),
-                      ),
-                    ),
-                  ],
-                ),
+        child: Stack(
+          clipBehavior: Clip.hardEdge,
+          children: [
+            const Positioned.fill(child: SidebarDoodle()),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.s,
+                vertical: AppSpacing.m,
               ),
-              for (final (index, value) in ShellSection.values.indexed)
-                _NavButton(
-                  label: labels[index],
-                  icon: _navIcons[index],
-                  selected: section == value,
-                  onPressed: () => onSelect(value),
-                ),
-            ],
-          ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.m,
+                      AppSpacing.s,
+                      AppSpacing.m,
+                      AppSpacing.l,
+                    ),
+                    child: Row(
+                      children: [
+                        const _Mark(size: 28, radius: 7),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            AppIdentity.displayName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: pageTitle(scheme.onSurface)
+                                .copyWith(fontSize: 22),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  for (final (index, value) in ShellSection.values.indexed)
+                    _NavButton(
+                      label: labels[index],
+                      icon: _navIcons[index],
+                      selected: section == value,
+                      onPressed: () => onSelect(value),
+                    ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
