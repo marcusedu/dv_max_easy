@@ -1,0 +1,64 @@
+PODS:
+  - device_info_plus (0.0.1):
+    - Flutter
+  - file_selector_ios (0.0.1):
+    - Flutter
+  - Flutter (1.0.0)
+  - irondash_engine_context (0.0.1):
+    - Flutter
+  - media_kit_libs_ios_video (1.0.4):
+    - Flutter
+  - media_kit_video (0.0.1):
+    - Flutter
+  - package_info_plus (0.4.5):
+    - Flutter
+  - super_native_extensions (0.0.1):
+    - Flutter
+  - wakelock_plus (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
+  - file_selector_ios (from `.symlinks/plugins/file_selector_ios/ios`)
+  - Flutter (from `Flutter`)
+  - irondash_engine_context (from `.symlinks/plugins/irondash_engine_context/ios`)
+  - media_kit_libs_ios_video (from `.symlinks/plugins/media_kit_libs_ios_video/ios`)
+  - media_kit_video (from `.symlinks/plugins/media_kit_video/ios`)
+  - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
+  - super_native_extensions (from `.symlinks/plugins/super_native_extensions/ios`)
+  - wakelock_plus (from `.symlinks/plugins/wakelock_plus/ios`)
+
+EXTERNAL SOURCES:
+  device_info_plus:
+    :path: ".symlinks/plugins/device_info_plus/ios"
+  file_selector_ios:
+    :path: ".symlinks/plugins/file_selector_ios/ios"
+  Flutter:
+    :path: Flutter
+  irondash_engine_context:
+    :path: ".symlinks/plugins/irondash_engine_context/ios"
+  media_kit_libs_ios_video:
+    :path: ".symlinks/plugins/media_kit_libs_ios_video/ios"
+  media_kit_video:
+    :path: ".symlinks/plugins/media_kit_video/ios"
+  package_info_plus:
+    :path: ".symlinks/plugins/package_info_plus/ios"
+  super_native_extensions:
+    :path: ".symlinks/plugins/super_native_extensions/ios"
+  wakelock_plus:
+    :path: ".symlinks/plugins/wakelock_plus/ios"
+
+SPEC CHECKSUMS:
+  device_info_plus: 21fcca2080fbcd348be798aa36c3e5ed849eefbe
+  file_selector_ios: ec57ec07954363dd730b642e765e58f199bb621a
+  Flutter: 71a624a5bc0c04062bf19101d501e466baf2fb47
+  irondash_engine_context: 8e58ca8e0212ee9d1c7dc6a42121849986c88486
+  media_kit_libs_ios_video: 5a18affdb97d1f5d466dc79988b13eff6c5e2854
+  media_kit_video: 1746e198cb697d1ffb734b1d05ec429d1fcd1474
+  package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
+  super_native_extensions: b763c02dc3a8fd078389f410bf15149179020cb4
+  wakelock_plus: e29112ab3ef0b318e58cfa5c32326458be66b556
+
+PODFILE CHECKSUM: 3ba3a73b1b12adcf321a227a745625fe0888cc82
+
+COCOAPODS: 1.16.2

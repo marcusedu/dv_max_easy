@@ -4,10 +4,13 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   file_selector_windows
+  flutter_inappwebview_windows
   irondash_engine_context
   media_kit_libs_windows_video
   media_kit_video
+  screen_retriever_windows
   super_native_extensions
+  window_manager
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST
