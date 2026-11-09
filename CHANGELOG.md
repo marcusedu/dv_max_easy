@@ -5,6 +5,26 @@ Todas as alterações notáveis deste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/)
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [1.2.0] - 2026-11-09
+
+### 🚀 Novas Funcionalidades
+- **Assinatura e Notarização no macOS (`feat(macos)`)**:
+  - Configuração de entitlements de Hardened Runtime (`Release.entitlements`) com suporte a execução JIT, carregamento de dylibs e acesso à rede.
+  - Script de build no macOS preparado para assinatura com Apple Developer ID Application e submissão automatizada de notarização junto à Apple (`notarytool`).
+
+### 🐛 Correções de Bugs
+- **Tratamento de Nomes de Arquivos Muito Longos (`fix(downloads)`)**:
+  - Truncamento preventivo e seguro de variáveis de título no template de saída (`safeFilenameTemplate`), contornando a falha do `yt-dlp` com múltiplos pontos finais em legendas longas (como posts e reels do Facebook/Instagram).
+  - Recuperação automática em caso de erro de sistema de arquivos (`[Errno 63]`, `[Errno 36]`, `[Errno 206]`), reexecutando imediatamente com nome compacto.
+  - Encurtamento de nome ativado ao clicar em "Tentar de novo" na fila de downloads, impedindo repetição do erro.
+- **Formato de Vídeo e Remuxing de Container (`fix(downloads)`)**:
+  - Adição de `--remux-video` apontando para o container configurado no perfil (`mp4` ou `mkv`).
+  - Garante que mídias baixadas em stream pré-muxado (como links que vinham em `.m4v`) sejam remuxadas via stream copy para `.mp4` sem recodificação demorada.
+
+### 🛠️ Manutenção e Infraestrutura
+- **Automação de Build Multiplataforma (`ci(scripts)`)**:
+  - Scripts dedicados para geração de instaladores e pacotes de distribuição para desktop: `.dmg` no macOS, `.msi` no Windows e `.deb` no Linux.
+
 ## [1.1.0] - 2026-11-09
 
 ### 🚀 Novas Funcionalidades

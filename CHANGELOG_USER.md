@@ -4,6 +4,27 @@ Acompanhe as atualizações e melhorias lançadas para tornar sua experiência c
 
 ---
 
+## 🌟 Versão 1.2.0 — Downloads Mais Confiáveis e Pacotes Oficiais
+
+*Data de lançamento: 09 de novembro de 2026*
+
+### 📥 Downloads sem Erro de Título Longo
+- **O que mudou**: Ao baixar vídeos do Facebook, Instagram ou Reels com legendas muito extensas, o app podia apresentar erro de nome de arquivo longo. Agora o DV Max ajusta o nome com inteligência para caber no limite do sistema de arquivos.
+- **Tentativa inteligente**: Caso ocorra alguma limitação de tamanho, o download se recupera e é concluído automaticamente com o nome seguro e encurtado.
+
+---
+
+### 🎬 Vídeos Sempre em MP4
+- **O que mudou**: Em alguns sites, os vídeos eram baixados em formato `.m4v`. Agora o DV Max garante que todo arquivo com perfil MP4 seja convertido instantaneamente para `.mp4` com a mesma qualidade original de vídeo e áudio.
+
+---
+
+### 📦 Instaladores Oficiais e Prontos para Usar
+- **Instalação Simplificada**: Pacotes instaladores oficiais para todos os sistemas operacionais suportados: `.dmg` para Mac, `.msi` para Windows e `.deb` para Linux.
+- **Segurança no Mac**: Binários devidamente preparados e assinados para execução confiável e sem bloqueios no macOS.
+
+---
+
 ## 🌟 Versão 1.1.0 — Nova Central de Triagem, Bandeja do Sistema e Tags
 
 *Data de lançamento: 09 de novembro de 2026*
