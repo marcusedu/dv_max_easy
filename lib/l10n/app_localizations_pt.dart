@@ -22,6 +22,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get navGallery => 'Galeria';
 
   @override
+  String get navTriage => 'Triagem';
+
+  @override
   String get navLists => 'Listas';
 
   @override

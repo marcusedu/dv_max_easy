@@ -7,6 +7,7 @@ import 'package:dv_max_easy/features/downloads/application/download_controller.d
 import 'package:dv_max_easy/features/lists/infrastructure/json_link_list_store.dart';
 import 'package:dv_max_easy/features/downloads/infrastructure/json_job_store.dart';
 import 'package:dv_max_easy/features/gallery/infrastructure/json_gallery_store.dart';
+import 'package:dv_max_easy/features/organizer/infrastructure/json_organizer_slots_store.dart';
 import 'package:dv_max_easy/features/profiles/infrastructure/json_profile_store.dart';
 import 'package:dv_max_easy/features/settings/application/settings_controller.dart';
 import 'package:dv_max_easy/features/settings/domain/standard_folders.dart';
@@ -68,6 +69,11 @@ Future<void> main() async {
     clock: clock,
     log: log,
   );
+  final organizerSlots = JsonOrganizerSlotsStore(
+    file: File(p.join(support.path, 'organizer_slots.json')),
+    clock: clock,
+    log: log,
+  );
   final restored = await jobs.load();
   final galleryDocument = await gallery.load();
   runApp(
@@ -83,6 +89,7 @@ Future<void> main() async {
         initialDownloadsProvider.overrideWithValue(restored),
         galleryStoreProvider.overrideWithValue(gallery),
         initialGalleryProvider.overrideWithValue(galleryDocument),
+        organizerSlotsStoreProvider.overrideWithValue(organizerSlots),
       ],
       child: const DvMaxApp(),
     ),

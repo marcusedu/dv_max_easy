@@ -118,6 +118,12 @@ abstract class AppLocalizations {
   /// **'Galeria'**
   String get navGallery;
 
+  /// No description provided for @navTriage.
+  ///
+  /// In pt, this message translates to:
+  /// **'Triagem'**
+  String get navTriage;
+
   /// No description provided for @navLists.
   ///
   /// In pt, this message translates to:

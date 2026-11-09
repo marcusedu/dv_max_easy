@@ -13,6 +13,7 @@ import 'package:dv_max_easy/features/profiles/domain/profile.dart';
 import 'package:dv_max_easy/features/profiles/infrastructure/json_profile_store.dart';
 import 'package:dv_max_easy/features/settings/application/settings_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path/path.dart' as p;
 
 export 'package:dv_max_easy/features/downloads/domain/download_job.dart';
 
@@ -274,6 +275,21 @@ final class DownloadController extends Notifier<List<DownloadJob>> {
       for (final job in state)
         if (job.id != id) job,
     ], immediate: true);
+  }
+
+  void updateOutputPath({required String oldPath, required String newPath}) {
+    final normOld = p.normalize(oldPath);
+    var modified = false;
+    final updated = state.map((job) {
+      if (job.outputPath != null && p.normalize(job.outputPath!) == normOld) {
+        modified = true;
+        return job.copyWith(outputPath: newPath);
+      }
+      return job;
+    }).toList();
+    if (modified) {
+      _set(updated, immediate: true);
+    }
   }
 
   Future<int> purgeExpired() async {

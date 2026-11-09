@@ -23,6 +23,7 @@ import 'package:dv_max_easy/features/downloads/presentation/download_status_bar.
 import 'package:dv_max_easy/features/downloads/presentation/link_history_dialog.dart';
 import 'package:dv_max_easy/features/downloads/presentation/queue_panel.dart';
 import 'package:dv_max_easy/features/gallery/presentation/gallery_page.dart';
+import 'package:dv_max_easy/features/organizer/presentation/organizer_page.dart';
 import 'package:dv_max_easy/features/profiles/presentation/profiles_page.dart';
 import 'package:dv_max_easy/features/settings/application/settings_controller.dart';
 import 'package:dv_max_easy/features/settings/presentation/settings_form.dart';
@@ -353,6 +354,7 @@ class DesktopShellState extends ConsumerState<DesktopShell>
                           l10n.navQueue,
                           l10n.navDone,
                           l10n.navGallery,
+                          l10n.navTriage,
                           l10n.navConvert,
                           l10n.navProfiles,
                           l10n.navSettings,
@@ -696,6 +698,7 @@ const _navIcons = [
   Icons.download_rounded,
   Icons.check_circle_outline,
   Icons.play_circle_outline,
+  Icons.auto_fix_high_rounded,
   Icons.movie_filter_outlined,
   Icons.layers_outlined,
   Icons.settings_outlined,
@@ -817,6 +820,10 @@ class _SectionBody extends StatelessWidget {
         child: const CompletedPanel(),
       ),
       ShellSection.gallery => const GalleryPage(),
+      ShellSection.triage => _Page(
+        title: l10n.navTriage,
+        child: const OrganizerPage(),
+      ),
       ShellSection.profiles => _Page(
         title: l10n.navProfiles,
         child: const ProfilesPage(),
