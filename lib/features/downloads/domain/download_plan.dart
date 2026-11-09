@@ -109,6 +109,8 @@ List<String> downloadArguments({
     args.addAll([
       '--merge-output-format',
       profile.container.name,
+      '--remux-video',
+      profile.container.name,
       '-f',
       _videoFormat(profile),
     ]);

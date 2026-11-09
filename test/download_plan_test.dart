@@ -95,4 +95,25 @@ void main() {
     final dest = parseDownloadLine('dest:/Users/me/Movies/Filme [abc].mkv');
     expect(dest?.outputPath, '/Users/me/Movies/Filme [abc].mkv');
   });
+
+  test('video profile includes remux-video for target container', () {
+    final mp4Profile = filmsPreset().copyWith(container: MediaContainer.mp4);
+    final mp4Args = downloadArguments(
+      profile: mp4Profile,
+      destination: '/tmp',
+      ffmpegPath: '/usr/bin/ffmpeg',
+      url: 'https://example.com/video',
+    );
+    expect(mp4Args, containsAllInOrder(['--merge-output-format', 'mp4']));
+    expect(mp4Args, containsAllInOrder(['--remux-video', 'mp4']));
+
+    final mkvArgs = downloadArguments(
+      profile: filmsPreset(),
+      destination: '/tmp',
+      ffmpegPath: '/usr/bin/ffmpeg',
+      url: 'https://example.com/video',
+    );
+    expect(mkvArgs, containsAllInOrder(['--merge-output-format', 'mkv']));
+    expect(mkvArgs, containsAllInOrder(['--remux-video', 'mkv']));
+  });
 }
