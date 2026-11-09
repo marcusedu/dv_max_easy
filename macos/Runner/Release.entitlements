@@ -1,5 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<dict/>
+<dict>
+    <!-- Necessário para o runtime da Dart VM / Flutter JIT e compilação de shaders -->
+    <key>com.apple.security.cs.allow-jit</key>
+    <true/>
+    <!-- Necessário para carregamento de bibliotecas dinâmicas e MediaKit -->
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+    <true/>
+    <key>com.apple.security.cs.allow-dyld-environment-variables</key>
+    <true/>
+    <!-- Conexões de rede para downloads via yt-dlp e checagens de atualizações -->
+    <key>com.apple.security.network.client</key>
+    <true/>
+    <!-- Acesso a arquivos selecionados pelo usuário no explorador -->
+    <key>com.apple.security.files.user-selected.read-write</key>
+    <true/>
+    <!-- Acesso à pasta de Downloads do usuário -->
+    <key>com.apple.security.files.downloads.read-write</key>
+    <true/>
+</dict>
 </plist>
