@@ -129,6 +129,27 @@ trap 'rm -rf "${STAGE_DIR}"' EXIT
 echo -e "\n${BLUE}➔ [2/5] Preparando e assinando binários com Hardened Runtime...${NC}"
 cp -R "${APP_SRC_PATH}" "${APP_IN_STAGE}"
 
+# Compatibilidade macOS: normalizar minos para 12.0 (Monterey)
+# Corrige o bug do Flutter tools (issue #145104) que fixa minos 13.0 em Dart Native Assets (ex: objective_c, cnativeapi)
+TARGET_MINOS="12.0"
+if command -v vtool >/dev/null 2>&1 && [ -d "${APP_IN_STAGE}/Contents/Frameworks" ]; then
+    echo -e "   Verificando compatibilidade de versão mínima do macOS (${TARGET_MINOS})..."
+    find "${APP_IN_STAGE}/Contents/Frameworks" -type f | while read -r bin; do
+        if file "${bin}" | grep -q "Mach-O"; then
+            MINOS_VAL=$(vtool -show-build "${bin}" 2>/dev/null | grep "minos" | head -n 1 | awk '{print $2}' || true)
+            if [ -n "${MINOS_VAL}" ]; then
+                MAJOR_MINOS="${MINOS_VAL%%.*}"
+                if [ "${MAJOR_MINOS}" -gt 12 ]; then
+                    SDK_VAL=$(vtool -show-build "${bin}" 2>/dev/null | grep "sdk" | head -n 1 | awk '{print $2}' || true)
+                    [ -z "${SDK_VAL}" ] && SDK_VAL="27.0"
+                    echo -e "   ${YELLOW}Ajustando minos de ${MINOS_VAL} para ${TARGET_MINOS} em $(basename "${bin}")...${NC}"
+                    vtool -set-build-version macos "${TARGET_MINOS}" "${SDK_VAL}" -replace -output "${bin}" "${bin}" >/dev/null 2>&1 || true
+                fi
+            fi
+        fi
+    done
+fi
+
 if [ "${SIGN_IDENTITY}" != "-" ]; then
     echo -e "   Assinando frameworks e bibliotecas dinâmicas internas..."
     # 1. Assinar frameworks e bibliotecas dinâmicas em Contents/Frameworks
