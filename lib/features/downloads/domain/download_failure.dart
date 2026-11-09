@@ -11,6 +11,8 @@ String? notableErrorLine(String line) {
       lower.contains('name too long') ||
       lower.contains('errno 63') ||
       lower.contains('errno 36') ||
+      lower.contains('errno 206') ||
+      lower.contains('extension is too long') ||
       lower.contains('enametoolong');
   if (!named) {
     return null;
@@ -28,6 +30,8 @@ String classifyDownloadFailure(String raw) {
       text.contains('name too long') ||
       text.contains('errno 63') ||
       text.contains('errno 36') ||
+      text.contains('errno 206') ||
+      text.contains('extension is too long') ||
       text.contains('enametoolong')) {
     return 'filename_too_long';
   }

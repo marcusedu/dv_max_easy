@@ -56,12 +56,56 @@ bool isPlaylistPage(String raw) {
   return list != null && list.isNotEmpty && (video == null || video.isEmpty);
 }
 
+/// Trunca campos de texto no modelo de nome de arquivo (como %(title)s) para
+/// evitar que títulos longos (ex.: legendas completas de redes sociais) estourem
+/// o limite de 255 bytes do sistema de arquivos no macOS, Windows e Linux.
+String safeFilenameTemplate(
+  String template, {
+  int maxTitleLength = 80,
+  bool fallbackShort = false,
+}) {
+  if (fallbackShort) {
+    if (template.contains('%(id)s')) {
+      return '%(title).35s [%(id)s].%(ext)s';
+    }
+    return '%(id)s.%(ext)s';
+  }
+
+  final fieldPattern = RegExp(
+    r'%\((title|fulltitle|alt_title|channel|uploader|playlist_title)\)(?:\.(\d+))?s',
+  );
+  if (fieldPattern.hasMatch(template)) {
+    return template.replaceAllMapped(fieldPattern, (match) {
+      final field = match.group(1)!;
+      final existing = match.group(2);
+      if (existing != null) {
+        final parsed = int.tryParse(existing);
+        if (parsed != null && parsed <= maxTitleLength) {
+          return match.group(0)!;
+        }
+      }
+      return '%($field).${maxTitleLength}s';
+    });
+  }
+
+  return template;
+}
+
 List<String> downloadArguments({
   required Profile profile,
   required String destination,
   required String ffmpegPath,
   required String url,
+  bool shortenFilename = false,
 }) {
+  final template = safeFilenameTemplate(
+    profile.filenameTemplate,
+    maxTitleLength: shortenFilename ? 35 : 80,
+    fallbackShort: shortenFilename &&
+        !profile.filenameTemplate.contains('title') &&
+        !profile.filenameTemplate.contains('id'),
+  );
+  final trimLength = shortenFilename ? '50' : '120';
   final args = <String>[
     '--no-warnings',
     '--newline',
@@ -75,11 +119,11 @@ List<String> downloadArguments({
     '--ffmpeg-location',
     ffmpegPath,
     '--trim-filenames',
-    '120',
+    trimLength,
     '-P',
     destination,
     '-o',
-    profile.filenameTemplate,
+    template,
     '--no-mtime',
     '--print',
     'before_dl:thumb:%(thumbnail)s',

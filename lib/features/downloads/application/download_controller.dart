@@ -161,6 +161,10 @@ final class DownloadController extends Notifier<List<DownloadJob>> {
       );
       return;
     }
+    final isFilenameError = existing.error == 'filename_too_long' ||
+        (existing.errorDetail != null &&
+            classifyDownloadFailure(existing.errorDetail!) ==
+                'filename_too_long');
     final job = existing.copyWith(
       running: true,
       detail: 'starting',
@@ -175,6 +179,7 @@ final class DownloadController extends Notifier<List<DownloadJob>> {
       ffmpeg: ffmpeg,
       profile: profile,
       destination: destination,
+      shortenFilename: isFilenameError,
     );
   }
 
@@ -184,12 +189,14 @@ final class DownloadController extends Notifier<List<DownloadJob>> {
     required String ffmpeg,
     required Profile profile,
     required String destination,
+    bool shortenFilename = false,
   }) async {
     final args = downloadArguments(
       profile: profile,
       destination: destination,
       ffmpegPath: ffmpeg,
       url: job.url,
+      shortenFilename: shortenFilename,
     );
     try {
       final process = await Process.start(ytDlp, args);
@@ -205,6 +212,29 @@ final class DownloadController extends Notifier<List<DownloadJob>> {
       final failure = code == 0
           ? null
           : classifyDownloadFailure(current.errorDetail ?? '');
+
+      if (failure == 'filename_too_long' && !shortenFilename) {
+        _replace(
+          current.copyWith(
+            running: true,
+            detail: 'starting',
+            clearError: true,
+            clearErrorDetail: true,
+            clearFraction: true,
+          ),
+          immediate: true,
+        );
+        await _spawn(
+          job: current,
+          ytDlp: ytDlp,
+          ffmpeg: ffmpeg,
+          profile: profile,
+          destination: destination,
+          shortenFilename: true,
+        );
+        return;
+      }
+
       _replace(
         current.copyWith(
           running: false,

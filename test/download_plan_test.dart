@@ -1,3 +1,4 @@
+import 'package:dv_max_easy/features/downloads/domain/download_failure.dart';
 import 'package:dv_max_easy/features/downloads/domain/download_plan.dart';
 import 'package:dv_max_easy/features/profiles/domain/profile.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -115,5 +116,64 @@ void main() {
     );
     expect(mkvArgs, containsAllInOrder(['--merge-output-format', 'mkv']));
     expect(mkvArgs, containsAllInOrder(['--remux-video', 'mkv']));
+  });
+
+  test('safeFilenameTemplate bounds titles and handles short fallback', () {
+    expect(
+      safeFilenameTemplate('%(title)s [%(id)s].%(ext)s'),
+      '%(title).80s [%(id)s].%(ext)s',
+    );
+    expect(
+      safeFilenameTemplate('%(title).150s [%(id)s].%(ext)s', maxTitleLength: 80),
+      '%(title).80s [%(id)s].%(ext)s',
+    );
+    expect(
+      safeFilenameTemplate('%(title).40s [%(id)s].%(ext)s', maxTitleLength: 80),
+      '%(title).40s [%(id)s].%(ext)s',
+    );
+    expect(
+      safeFilenameTemplate('%(uploader)s - %(title)s.%(ext)s', maxTitleLength: 50),
+      '%(uploader).50s - %(title).50s.%(ext)s',
+    );
+    expect(
+      safeFilenameTemplate('%(title)s [%(id)s].%(ext)s', fallbackShort: true),
+      '%(title).35s [%(id)s].%(ext)s',
+    );
+    expect(
+      safeFilenameTemplate('video.%(ext)s', fallbackShort: true),
+      '%(id)s.%(ext)s',
+    );
+  });
+
+  test('shortenFilename uses compact template and trim length 50', () {
+    final args = downloadArguments(
+      profile: filmsPreset(),
+      destination: '/tmp',
+      ffmpegPath: '/usr/bin/ffmpeg',
+      url: 'https://example.com/video',
+      shortenFilename: true,
+    );
+    expect(args, containsAllInOrder(['--trim-filenames', '50']));
+    final oIdx = args.indexOf('-o');
+    expect(args[oIdx + 1], '%(title).35s [%(id)s].%(ext)s');
+  });
+
+  test('classifyDownloadFailure detects all OS filename length errors', () {
+    expect(
+      classifyDownloadFailure('ERROR: [Errno 63] File name too long'),
+      'filename_too_long',
+    );
+    expect(
+      classifyDownloadFailure('ERROR: [Errno 36] File name too long'),
+      'filename_too_long',
+    );
+    expect(
+      classifyDownloadFailure('ERROR: [Errno 206] The filename or extension is too long'),
+      'filename_too_long',
+    );
+    expect(
+      classifyDownloadFailure('OSError: ENAMETOOLONG'),
+      'filename_too_long',
+    );
   });
 }
