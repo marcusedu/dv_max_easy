@@ -34,12 +34,16 @@ echo -e "Versão detectada: ${GREEN}${SEMVER}${NC} (Build: ${YELLOW}${BUILD_NUM}
 # Parâmetros
 SKIP_BUILD=false
 SIGN_IDENTITY="${APPLE_DEVELOPER_ID:-}"
-NOTARIZE_PROFILE="${APPLE_NOTARY_PROFILE:-}"
+NOTARIZE_PROFILE="${APPLE_NOTARY_PROFILE:-dvmax-notary}"
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --skip-build)
             SKIP_BUILD=true
+            shift
+            ;;
+        --skip-notarize)
+            NOTARIZE_PROFILE=""
             shift
             ;;
         --identity|-i)
@@ -59,6 +63,7 @@ while [[ $# -gt 0 ]]; do
             echo "                              (Se omitido, detecta automaticamente no Keychain)."
             echo "  -n, --notarize-profile <P>  Nome do perfil de credenciais salvo via 'xcrun notarytool store-credentials'."
             echo "  --skip-build                Pula a etapa 'flutter build macos --release' e usa o binário existente."
+            echo "  --skip-notarize             Pula a etapa de notarização junto à Apple."
             echo "  -h, --help                  Exibe esta mensagem de ajuda."
             exit 0
             ;;
