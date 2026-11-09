@@ -50,20 +50,20 @@ final class DownloadController extends Notifier<List<DownloadJob>> {
     return ref.watch(initialDownloadsProvider);
   }
 
-  Future<int> enqueueAll(Iterable<String> rawUrls) async {
+  Future<int> enqueueAll(Iterable<String> rawUrls, {List<String> tags = const []}) async {
     var count = 0;
     for (final raw in rawUrls) {
       final url = raw.trim();
       if (!isHttpUrl(url)) {
         continue;
       }
-      await enqueue(url);
+      await enqueue(url, tags: tags);
       count++;
     }
     return count;
   }
 
-  Future<void> enqueue(String raw) async {
+  Future<void> enqueue(String raw, {List<String> tags = const []}) async {
     final url = raw.trim();
     if (!isHttpUrl(url)) {
       return;
@@ -95,6 +95,18 @@ final class DownloadController extends Notifier<List<DownloadJob>> {
     final destination = profile.destinationFolder ?? folder;
     await Directory(destination).create(recursive: true);
     final id = '${DateTime.now().microsecondsSinceEpoch}_${_seq++}';
+    final profileTag = '#perfil:${profile.name.toLowerCase().trim().replaceAll(RegExp(r'\s+'), '_')}';
+    final combinedTags = <String>[profileTag];
+    for (final tag in tags) {
+      var t = tag.trim().toLowerCase();
+      if (t.isEmpty) continue;
+      if (!t.startsWith('#')) {
+        t = '#$t';
+      }
+      if (!combinedTags.contains(t)) {
+        combinedTags.add(t);
+      }
+    }
     final job = DownloadJob(
       id: id,
       url: url,
@@ -105,6 +117,7 @@ final class DownloadController extends Notifier<List<DownloadJob>> {
       qualityLabel: _quality(profile),
       containerLabel: profile.container.name,
       destination: destination,
+      tags: combinedTags,
     );
     _set([job, ...state], immediate: true);
     await _spawn(
@@ -446,4 +459,22 @@ final class DownloadController extends Notifier<List<DownloadJob>> {
   void _write() {
     ref.read(jobStoreProvider).save(state);
   }
+}
+
+List<String> parseTags(String text) {
+  final cleaned = text.replaceAll(',', ' ').replaceAll(';', ' ');
+  final tokens = cleaned.split(RegExp(r'\s+'));
+  final result = <String>[];
+  for (var token in tokens) {
+    token = token.trim();
+    if (token.isEmpty) continue;
+    if (!token.startsWith('#')) {
+      token = '#$token';
+    }
+    token = token.toLowerCase();
+    if (token.length > 1 && !result.contains(token)) {
+      result.add(token);
+    }
+  }
+  return result;
 }

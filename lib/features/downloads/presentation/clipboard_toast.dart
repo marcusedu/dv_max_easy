@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dv_max_easy/design/app_theme.dart';
+import 'package:dv_max_easy/features/downloads/application/clipboard_monitor.dart';
 import 'package:dv_max_easy/features/downloads/application/link_meta_probe.dart';
 import 'package:dv_max_easy/features/downloads/presentation/source_favicon.dart';
 import 'package:dv_max_easy/l10n/app_localizations.dart';
@@ -65,7 +66,9 @@ class ClipboardToast extends ConsumerWidget {
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
-                              l10n.clipboardOffer,
+                              isMediaUrl(url)
+                                  ? 'Link compatível detectado. Baixar?'
+                                  : l10n.clipboardOffer,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: text.bodySmall?.copyWith(

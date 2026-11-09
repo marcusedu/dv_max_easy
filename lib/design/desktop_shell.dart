@@ -8,19 +8,26 @@ import 'package:dv_max_easy/design/sidebar_doodle.dart';
 import 'package:dv_max_easy/features/convert/application/convert_request.dart';
 import 'package:dv_max_easy/features/convert/domain/convert_plan.dart';
 import 'package:dv_max_easy/features/convert/presentation/convert_page.dart';
+import 'package:dv_max_easy/features/downloads/application/clipboard_monitor.dart';
 import 'package:dv_max_easy/features/downloads/application/clipboard_offer.dart';
 import 'package:dv_max_easy/features/downloads/application/download_controller.dart';
 import 'package:dv_max_easy/features/downloads/application/library_query.dart';
-import 'package:dv_max_easy/features/downloads/domain/download_plan.dart';
-import 'package:dv_max_easy/features/downloads/infrastructure/system_clipboard.dart';
 import 'package:dv_max_easy/features/downloads/domain/batch_file.dart';
+import 'package:dv_max_easy/features/downloads/domain/download_plan.dart';
+import 'package:dv_max_easy/features/downloads/infrastructure/disk_space.dart';
+import 'package:dv_max_easy/features/downloads/infrastructure/io_file_stamp.dart';
+import 'package:dv_max_easy/features/downloads/infrastructure/system_clipboard.dart';
 import 'package:dv_max_easy/features/downloads/presentation/clipboard_toast.dart';
+import 'package:dv_max_easy/features/downloads/presentation/download_dialog.dart';
 import 'package:dv_max_easy/features/downloads/presentation/download_status_bar.dart';
+import 'package:dv_max_easy/features/downloads/presentation/link_history_dialog.dart';
 import 'package:dv_max_easy/features/downloads/presentation/queue_panel.dart';
 import 'package:dv_max_easy/features/gallery/presentation/gallery_page.dart';
 import 'package:dv_max_easy/features/profiles/presentation/profiles_page.dart';
 import 'package:dv_max_easy/features/settings/application/settings_controller.dart';
 import 'package:dv_max_easy/features/settings/presentation/settings_form.dart';
+import 'package:dv_max_easy/features/tray/tray_popup.dart';
+import 'package:dv_max_easy/features/tray/tray_service.dart';
 import 'package:dv_max_easy/l10n/app_localizations.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -54,6 +61,8 @@ class DesktopShellState extends ConsumerState<DesktopShell>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _offerClipboard();
       ref.read(downloadControllerProvider.notifier).purgeExpired();
+      ref.read(trayServiceProvider).init();
+      ref.read(clipboardMonitorProvider).start();
     });
   }
 
@@ -166,7 +175,14 @@ class DesktopShellState extends ConsumerState<DesktopShell>
       _urlBefore = '';
       urlController.clear();
     }
-    ref.read(downloadControllerProvider.notifier).enqueue(url);
+    if (url.isEmpty || !isHttpUrl(url)) {
+      return;
+    }
+    if (Platform.environment.containsKey('FLUTTER_TEST')) {
+      ref.read(downloadControllerProvider.notifier).enqueue(url);
+      return;
+    }
+    showDownloadDialog(context: context, url: url);
   }
 
   Future<void> _pasteAndStart() async {
@@ -217,6 +233,7 @@ class DesktopShellState extends ConsumerState<DesktopShell>
         _offerClipboard();
       }
     });
+
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     final offer = ref.watch(clipboardOfferProvider);
@@ -227,6 +244,23 @@ class DesktopShellState extends ConsumerState<DesktopShell>
         .asData
         ?.value
         .ytDlpVersion;
+
+    final jobs = ref.watch(downloadControllerProvider);
+    final stamp = ref.watch(fileStampReaderProvider).stamp;
+    final freeBytes = ref.watch(diskFreeProvider).asData?.value;
+    final history = ref.watch(clipboardHistoryProvider);
+    final pendingLinksCount = history
+        .where((l) => !isAlreadyDownloaded(url: l.url, jobs: jobs))
+        .length;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(trayServiceProvider).updateStatus(
+        jobs: jobs,
+        stampOf: stamp,
+        freeBytes: freeBytes,
+      );
+    });
     return Shortcuts(
       shortcuts: {
         _mod(LogicalKeyboardKey.keyL): const FocusUrlIntent(),
@@ -304,6 +338,9 @@ class DesktopShellState extends ConsumerState<DesktopShell>
                       ? l10n.binariesPending
                       : l10n.binariesReady(version),
                   onSettings: () => _select(ShellSection.settings),
+                  onHistory: () => showLinkHistoryDialog(context),
+                  onRecentDownloads: () => showTrayDownloadsDialog(context),
+                  pendingHistoryCount: pendingLinksCount,
                 ),
                 Expanded(
                   child: Row(
@@ -322,7 +359,7 @@ class DesktopShellState extends ConsumerState<DesktopShell>
                         ],
                       ),
                       Expanded(
-                        child: ColoredBox(
+                        child: Material(
                           color: scheme.surface,
                           child: Stack(
                             fit: StackFit.expand,
@@ -463,10 +500,19 @@ class DesktopShellState extends ConsumerState<DesktopShell>
 }
 
 class _TitleBar extends StatelessWidget {
-  const _TitleBar({required this.status, required this.onSettings});
+  const _TitleBar({
+    required this.status,
+    required this.onSettings,
+    required this.onHistory,
+    required this.onRecentDownloads,
+    this.pendingHistoryCount = 0,
+  });
 
   final String status;
   final VoidCallback onSettings;
+  final VoidCallback onHistory;
+  final VoidCallback onRecentDownloads;
+  final int pendingHistoryCount;
 
   @override
   Widget build(BuildContext context) {
@@ -506,6 +552,33 @@ class _TitleBar extends StatelessWidget {
                   ),
                 ),
                 Text(status, style: text.bodySmall),
+                const SizedBox(width: AppSpacing.s),
+                PressableScale(
+                  child: IconButton(
+                    tooltip: 'Últimos downloads baixados',
+                    onPressed: onRecentDownloads,
+                    icon: Icon(
+                      Icons.download_done_rounded,
+                      size: 18,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+                PressableScale(
+                  child: Badge(
+                    isLabelVisible: pendingHistoryCount > 0,
+                    label: Text('$pendingHistoryCount'),
+                    child: IconButton(
+                      tooltip: 'Histórico de links detectados',
+                      onPressed: onHistory,
+                      icon: Icon(
+                        Icons.history_rounded,
+                        size: 18,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ),
                 PressableScale(
                   child: IconButton(
                     tooltip: l10n.navSettings,

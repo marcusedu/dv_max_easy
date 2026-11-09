@@ -126,6 +126,7 @@ Map<String, dynamic> jobToJson(DownloadJob job) {
     if (job.keepFile) 'keepFile': true,
     if (job.purgedAt != null)
       'purgedAt': job.purgedAt!.toUtc().toIso8601String(),
+    if (job.tags.isNotEmpty) 'tags': job.tags,
   };
 }
 
@@ -169,5 +170,8 @@ DownloadJob? jobFromJson(Map<String, dynamic> json) {
     purgedAt: json['purgedAt'] is String
         ? DateTime.tryParse(json['purgedAt'] as String)
         : null,
+    tags: json['tags'] is List
+        ? [for (final t in json['tags'] as List) if (t is String && t.isNotEmpty) t]
+        : const [],
   );
 }

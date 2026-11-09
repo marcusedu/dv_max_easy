@@ -11,15 +11,20 @@ import 'package:dv_max_easy/features/profiles/infrastructure/json_profile_store.
 import 'package:dv_max_easy/features/settings/application/settings_controller.dart';
 import 'package:dv_max_easy/features/settings/domain/standard_folders.dart';
 import 'package:dv_max_easy/features/settings/infrastructure/json_settings_store.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:window_manager/window_manager.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
+  if (!kIsWeb && !Platform.environment.containsKey('FLUTTER_TEST')) {
+    await windowManager.ensureInitialized();
+  }
   final support = await getApplicationSupportDirectory();
   final clock = SystemClock();
   final log = MemoryLog();

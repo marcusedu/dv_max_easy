@@ -20,6 +20,7 @@ final class DownloadJob {
     this.thumbnailUrl,
     this.keepFile = false,
     this.purgedAt,
+    this.tags = const [],
   });
 
   final String id;
@@ -42,6 +43,7 @@ final class DownloadJob {
   final String? thumbnailUrl;
   final bool keepFile;
   final DateTime? purgedAt;
+  final List<String> tags;
 
   DownloadJob copyWith({
     bool? running,
@@ -61,6 +63,7 @@ final class DownloadJob {
     bool? keepFile,
     DateTime? purgedAt,
     bool clearPurged = false,
+    List<String>? tags,
   }) {
     return DownloadJob(
       id: id,
@@ -83,6 +86,7 @@ final class DownloadJob {
       thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
       keepFile: keepFile ?? this.keepFile,
       purgedAt: clearPurged ? null : purgedAt ?? this.purgedAt,
+      tags: tags ?? this.tags,
     );
   }
 }

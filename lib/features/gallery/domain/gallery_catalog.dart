@@ -19,6 +19,7 @@ final class GalleryItem {
     required this.positionMs,
     required this.bytes,
     this.durationMs,
+    this.tags = const [],
   });
 
   final String jobId;
@@ -29,6 +30,7 @@ final class GalleryItem {
   final int positionMs;
   final int bytes;
   final int? durationMs;
+  final List<String> tags;
 
   bool get hasOrigin => url.trim().isNotEmpty;
 
@@ -39,6 +41,7 @@ final class GalleryItem {
     int? positionMs,
     int? durationMs,
     int? bytes,
+    List<String>? tags,
   }) {
     return GalleryItem(
       jobId: jobId,
@@ -49,6 +52,7 @@ final class GalleryItem {
       positionMs: positionMs ?? this.positionMs,
       bytes: bytes ?? this.bytes,
       durationMs: durationMs ?? this.durationMs,
+      tags: tags ?? this.tags,
     );
   }
 }
@@ -82,6 +86,7 @@ List<GalleryItem> buildGallery({
         positionMs: record.positionMs,
         durationMs: record.durationMs,
         bytes: facts.bytes,
+        tags: job.tags,
       ),
     );
   }

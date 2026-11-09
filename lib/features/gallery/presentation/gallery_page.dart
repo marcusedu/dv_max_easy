@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dv_max_easy/design/app_theme.dart';
+import 'package:dv_max_easy/features/downloads/application/download_controller.dart';
 import 'package:dv_max_easy/features/downloads/infrastructure/file_actions.dart';
 import 'package:dv_max_easy/features/gallery/application/gallery_controller.dart';
 import 'package:dv_max_easy/features/gallery/domain/gallery_catalog.dart';
@@ -326,6 +327,28 @@ class _GalleryPageState extends ConsumerState<GalleryPage>
     ref.read(galleryControllerProvider.notifier).step(direction);
   }
 
+  void _jumpFirst() {
+    final state = ref.read(galleryControllerProvider);
+    if (state.items.isEmpty || state.index <= 0) {
+      return;
+    }
+    _saveOpen();
+    _slideFrom = -0.06;
+    _slide.forward(from: 0);
+    ref.read(galleryControllerProvider.notifier).jumpToFirst();
+  }
+
+  void _jumpLast() {
+    final state = ref.read(galleryControllerProvider);
+    if (state.items.isEmpty || state.index >= state.items.length - 1) {
+      return;
+    }
+    _saveOpen();
+    _slideFrom = 0.06;
+    _slide.forward(from: 0);
+    ref.read(galleryControllerProvider.notifier).jumpToLast();
+  }
+
   void _command(bool down) {
     final step = scrollStep(dy: down ? 1 : -1, inverted: _inverted);
     final direction = switch (step) {
@@ -529,6 +552,10 @@ class _GalleryPageState extends ConsumerState<GalleryPage>
       _applyMode();
     });
     final item = gallery.current;
+    final allJobs = ref.watch(downloadControllerProvider);
+    final allTags = <String>{
+      for (final job in allJobs) ...job.tags,
+    }.toList()..sort();
     return Listener(
       key: const Key('gallery-stage'),
       behavior: HitTestBehavior.opaque,
@@ -542,83 +569,101 @@ class _GalleryPageState extends ConsumerState<GalleryPage>
       onPointerPanZoomEnd: _onPanEnd,
       child: ColoredBox(
         color: Colors.black,
-        child: item == null
-            ? _EmptyGallery(message: l10n.galleryEmpty)
-            : Row(
-                children: [
-                  Expanded(
-                    child: Column(
+        child: Column(
+          children: [
+            if (allTags.isNotEmpty)
+              _TagFilterBar(
+                tags: allTags,
+                selectedTag: gallery.selectedTag,
+                onSelect: (tag) => ref
+                    .read(galleryControllerProvider.notifier)
+                    .setFilterTag(tag),
+              ),
+            Expanded(
+              child: item == null
+                  ? _EmptyGallery(message: l10n.galleryEmpty)
+                  : Row(
                       children: [
-                        AnimatedSize(
-                          duration: AppMotion.medium,
-                          curve: AppMotion.easeOut,
-                          child: AnimatedOpacity(
-                            duration: AppMotion.medium,
-                            curve: AppMotion.easeOut,
-                            opacity: _toast == null ? 0 : 1,
-                            child: _toast == null
-                                ? const SizedBox(width: double.infinity)
-                                : Padding(
-                                    padding: const EdgeInsets.only(
-                                      top: AppSpacing.m,
-                                    ),
-                                    child: Text(
-                                      _toast!,
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                          ),
-                        ),
                         Expanded(
-                          child: AnimatedBuilder(
-                            animation: _slide,
-                            builder: (context, child) {
-                              final t = AppMotion.easeOut.transform(
-                                _slide.value,
-                              );
-                              final height = MediaQuery.sizeOf(context).height;
-                              return Transform.translate(
-                                offset: Offset(
-                                  0,
-                                  _slideFrom * (1 - t) * height,
+                          child: Column(
+                            children: [
+                              AnimatedSize(
+                                duration: AppMotion.medium,
+                                curve: AppMotion.easeOut,
+                                child: AnimatedOpacity(
+                                  duration: AppMotion.medium,
+                                  curve: AppMotion.easeOut,
+                                  opacity: _toast == null ? 0 : 1,
+                                  child: _toast == null
+                                      ? const SizedBox(width: double.infinity)
+                                      : Padding(
+                                          padding: const EdgeInsets.only(
+                                            top: AppSpacing.m,
+                                          ),
+                                          child: Text(
+                                            _toast!,
+                                            textAlign: TextAlign.center,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
                                 ),
-                                child: child,
-                              );
-                            },
-                            child: _Stage(
-                              video: _video,
-                              playing: _playing,
-                              onToggle: _togglePlay,
-                            ),
+                              ),
+                              Expanded(
+                                child: AnimatedBuilder(
+                                  animation: _slide,
+                                  builder: (context, child) {
+                                    final t = AppMotion.easeOut.transform(
+                                      _slide.value,
+                                    );
+                                    final height = MediaQuery.sizeOf(context).height;
+                                    return Transform.translate(
+                                      offset: Offset(
+                                        0,
+                                        _slideFrom * (1 - t) * height,
+                                      ),
+                                      child: child,
+                                    );
+                                  },
+                                  child: _Stage(
+                                    video: _video,
+                                    playing: _playing,
+                                    onToggle: _togglePlay,
+                                  ),
+                                ),
+                              ),
+                              _Caption(
+                                name: item.name,
+                                position: _position,
+                                duration: _duration,
+                                onSeek: _seek,
+                              ),
+                            ],
                           ),
                         ),
-                        _Caption(
-                          name: item.name,
-                          position: _position,
-                          duration: _duration,
-                          onSeek: _seek,
+                        GalleryRail(
+                          liked: item.liked,
+                          canFirst: gallery.index > 0,
+                          canPrevious: gallery.index > 0,
+                          canNext: gallery.index < gallery.items.length - 1,
+                          canLast: gallery.index < gallery.items.length - 1,
+                          onFirst: _jumpFirst,
+                          onPrevious: () => _move(-1),
+                          onNext: () => _move(1),
+                          onLast: _jumpLast,
+                          onLike: () => ref
+                              .read(galleryControllerProvider.notifier)
+                              .toggleLike(),
+                          onShare: () => _share(item),
+                          onInfo: () => _showInfo(item),
+                          onDelete: _confirmDelete,
                         ),
                       ],
                     ),
-                  ),
-                  GalleryRail(
-                    liked: item.liked,
-                    canPrevious: gallery.index > 0,
-                    canNext: gallery.index < gallery.items.length - 1,
-                    onPrevious: () => _move(-1),
-                    onNext: () => _move(1),
-                    onLike: () => ref
-                        .read(galleryControllerProvider.notifier)
-                        .toggleLike(),
-                    onShare: () => _share(item),
-                    onInfo: () => _showInfo(item),
-                    onDelete: _confirmDelete,
-                  ),
-                ],
-              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -782,6 +827,56 @@ class _EmptyGallery extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.m),
           Text(message, style: const TextStyle(color: Colors.white70)),
+        ],
+      ),
+    );
+  }
+}
+
+class _TagFilterBar extends StatelessWidget {
+  const _TagFilterBar({
+    required this.tags,
+    required this.selectedTag,
+    required this.onSelect,
+  });
+
+  final List<String> tags;
+  final String? selectedTag;
+  final ValueChanged<String?> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 44,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: FilterChip(
+              label: const Text('Todas'),
+              selected: selectedTag == null || selectedTag!.isEmpty,
+              onSelected: (_) => onSelect(null),
+              backgroundColor: Colors.white.withValues(alpha: 0.1),
+              selectedColor: Colors.white.withValues(alpha: 0.28),
+              labelStyle: const TextStyle(color: Colors.white, fontSize: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+            ),
+          ),
+          for (final tag in tags)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: FilterChip(
+                label: Text(tag),
+                selected: selectedTag == tag,
+                onSelected: (selected) => onSelect(selected ? tag : null),
+                backgroundColor: Colors.white.withValues(alpha: 0.08),
+                selectedColor: Colors.white.withValues(alpha: 0.28),
+                labelStyle: const TextStyle(color: Colors.white, fontSize: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+              ),
+            ),
         ],
       ),
     );

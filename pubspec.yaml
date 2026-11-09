@@ -41,6 +41,8 @@ dependencies:
   path: ^1.9.1
   path_provider: ^2.1.6
   super_drag_and_drop: ^0.9.1
+  tray_manager: ^0.8.0
+  window_manager: ^0.5.2
 
 dev_dependencies:
   flutter_test:
@@ -62,6 +64,8 @@ flutter:
   uses-material-design: true
   assets:
     - assets/app_icon.png
+    - assets/tray_idle.png
+    - assets/tray_active.png
     - assets/fonts/Inter-Regular.ttf
     - assets/fonts/Inter-SemiBold.ttf
   fonts:

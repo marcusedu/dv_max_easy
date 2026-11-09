@@ -13,6 +13,10 @@ class GalleryRail extends StatelessWidget {
     required this.onShare,
     required this.onInfo,
     required this.onDelete,
+    this.canFirst = false,
+    this.canLast = false,
+    this.onFirst,
+    this.onLast,
     super.key,
   });
 
@@ -25,6 +29,10 @@ class GalleryRail extends StatelessWidget {
   final VoidCallback onShare;
   final VoidCallback onInfo;
   final VoidCallback onDelete;
+  final bool canFirst;
+  final bool canLast;
+  final VoidCallback? onFirst;
+  final VoidCallback? onLast;
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +42,12 @@ class GalleryRail extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          _RailButton(
+            tooltip: 'Primeiro vídeo (mais recente)',
+            icon: Icons.keyboard_double_arrow_up_rounded,
+            onPressed: canFirst ? onFirst : null,
+          ),
+          const SizedBox(height: AppSpacing.s),
           _RailButton(
             tooltip: l10n.galleryPrevious,
             icon: Icons.keyboard_arrow_up_rounded,
@@ -67,6 +81,12 @@ class GalleryRail extends StatelessWidget {
             tooltip: l10n.galleryNext,
             icon: Icons.keyboard_arrow_down_rounded,
             onPressed: canNext ? onNext : null,
+          ),
+          const SizedBox(height: AppSpacing.s),
+          _RailButton(
+            tooltip: 'Último vídeo (mais antigo)',
+            icon: Icons.keyboard_double_arrow_down_rounded,
+            onPressed: canLast ? onLast : null,
           ),
         ],
       ),

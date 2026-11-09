@@ -13,10 +13,15 @@ final galleryControllerProvider =
     NotifierProvider<GalleryController, GalleryState>(GalleryController.new);
 
 final class GalleryState {
-  const GalleryState({required this.items, required this.index});
+  const GalleryState({
+    required this.items,
+    required this.index,
+    this.selectedTag,
+  });
 
   final List<GalleryItem> items;
   final int index;
+  final String? selectedTag;
 
   GalleryItem? get current {
     if (items.isEmpty) {
@@ -26,14 +31,24 @@ final class GalleryState {
     return items[safe];
   }
 
-  GalleryState copyWith({List<GalleryItem>? items, int? index}) {
-    return GalleryState(items: items ?? this.items, index: index ?? this.index);
+  GalleryState copyWith({
+    List<GalleryItem>? items,
+    int? index,
+    String? selectedTag,
+    bool clearSelectedTag = false,
+  }) {
+    return GalleryState(
+      items: items ?? this.items,
+      index: index ?? this.index,
+      selectedTag: clearSelectedTag ? null : selectedTag ?? this.selectedTag,
+    );
   }
 }
 
 final class GalleryController extends Notifier<GalleryState> {
   GalleryDocument? _doc;
   String? _currentId;
+  String? _selectedTag;
   Timer? _saveTimer;
   var _bound = false;
 
@@ -63,6 +78,25 @@ final class GalleryController extends Notifier<GalleryState> {
       return;
     }
     _focus(state.items[next].jobId);
+  }
+
+  void jumpToFirst() {
+    if (state.items.isEmpty || state.index == 0) {
+      return;
+    }
+    _focus(state.items[0].jobId);
+  }
+
+  void jumpToLast() {
+    if (state.items.isEmpty || state.index == state.items.length - 1) {
+      return;
+    }
+    _focus(state.items[state.items.length - 1].jobId);
+  }
+
+  void setFilterTag(String? tag) {
+    _selectedTag = tag;
+    state = _compose(ref.read(downloadControllerProvider));
   }
 
   Future<void> toggleLike() async {
@@ -157,7 +191,7 @@ final class GalleryController extends Notifier<GalleryState> {
   GalleryState _compose(List<DownloadJob> jobs) {
     final doc = _doc ?? GalleryDocument.empty;
     final reader = ref.read(fileStampReaderProvider);
-    final items = buildGallery(
+    final allItems = buildGallery(
       jobs: jobs,
       document: doc,
       factsOf: (path) {
@@ -165,6 +199,9 @@ final class GalleryController extends Notifier<GalleryState> {
         return GalleryFileFacts(exists: stamp.exists, bytes: stamp.bytes);
       },
     );
+    final items = (_selectedTag != null && _selectedTag!.isNotEmpty)
+        ? allItems.where((item) => item.tags.contains(_selectedTag)).toList()
+        : allItems;
     var index = 0;
     final wanted = _currentId ?? doc.lastJobId;
     if (wanted != null) {
@@ -175,8 +212,10 @@ final class GalleryController extends Notifier<GalleryState> {
     }
     if (items.isNotEmpty) {
       _currentId = items[index].jobId;
+    } else {
+      _currentId = null;
     }
-    return GalleryState(items: items, index: index);
+    return GalleryState(items: items, index: index, selectedTag: _selectedTag);
   }
 
   void _scheduleSave() {
