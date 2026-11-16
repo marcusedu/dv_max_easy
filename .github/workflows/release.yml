@@ -51,7 +51,7 @@ jobs:
         if: matrix.platform.name == 'linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev libx11-dev libxi-dev liblzma-dev libstdc++-dev libmpv-dev libepoxy-dev
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev libx11-dev libxi-dev liblzma-dev libstdc++-12-dev libmpv-dev libepoxy-dev
 
       - name: NuGet no PATH
         if: matrix.platform.name == 'windows'
