@@ -126,9 +126,9 @@ Priority: optional
 Architecture: amd64
 Installed-Size: ${INSTALLED_SIZE}
 Maintainer: Marcus Software <contato@marcussoftware.info>
-Depends: libc6 (>= 2.31), libgtk-3-0 (>= 3.24.0), libglib2.0-0, libx11-6
+Depends: libc6 (>= 2.35), libgtk-3-0t64 | libgtk-3-0, libglib2.0-0t64 | libglib2.0-0, libx11-6, libmpv2, libepoxy0
 Recommends: ffmpeg, yt-dlp
-Homepage: https://github.com/marcusduarte/dv_max_easy
+Homepage: https://github.com/marcusedu/dv_max_easy
 Description: Cliente desktop para downloads de mídia e organizador de arquivos
  DV Max é um cliente desktop elegante em Flutter para macOS, Windows e Linux,
  com suporte a filas de download integradas ao yt-dlp, editor visual de cortes,

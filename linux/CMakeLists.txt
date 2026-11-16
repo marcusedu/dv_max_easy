@@ -72,6 +72,11 @@ set_target_properties(${BINARY_NAME}
 
 # Generated plugin build rules, which manage building the plugins and adding
 # them to the application.
+# media_kit_libs_linux compiles mimalloc in a CMake custom command that cds in
+# its own process, so cmake/make run in the wrong directory and the Linux
+# release build fails. Nothing links that object.
+set(MIMALLOC_USE_STATIC_LIBS OFF)
+set(MIMALLOC_USE_STATIC_LIBS OFF CACHE BOOL "" FORCE)
 include(flutter/generated_plugins.cmake)
 
 
