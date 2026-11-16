@@ -13,7 +13,13 @@ Funciona no macOS, no Windows e no Linux. Android, iOS e web não são alvos: as
 ## Download
 
 <!-- downloads:start -->
-Ainda não há uma build publicada. Ela entra aqui quando o workflow de release termina.
+Versão **1.2.0**.
+
+| Sistema | Arquivo |
+| :--- | :--- |
+| macOS | [DV_Max_1.2.0_macOS.dmg](https://github.com/marcusedu/dv_max_easy/releases/download/v1.2.0/DV_Max_1.2.0_macOS.dmg) |
+| Windows | [DV_Max_1.2.0_x64.msi](https://github.com/marcusedu/dv_max_easy/releases/download/v1.2.0/DV_Max_1.2.0_x64.msi) · [DV_Max_1.2.0_windows_x64.zip](https://github.com/marcusedu/dv_max_easy/releases/download/v1.2.0/DV_Max_1.2.0_windows_x64.zip) |
+| Linux | [DV_Max_1.2.0_amd64.deb](https://github.com/marcusedu/dv_max_easy/releases/download/v1.2.0/DV_Max_1.2.0_amd64.deb) · [DV_Max_1.2.0_linux_x64.tar.gz](https://github.com/marcusedu/dv_max_easy/releases/download/v1.2.0/DV_Max_1.2.0_linux_x64.tar.gz) |
 <!-- downloads:end -->
 
 ## O que dá para fazer
