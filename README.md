@@ -10,6 +10,12 @@ O app não embute o yt-dlp nem o FFmpeg. Os extratores mudam com frequência, e 
 
 Funciona no macOS, no Windows e no Linux. Android, iOS e web não são alvos: as pastas existem porque o Flutter as gera, e o app não baixa nada por elas.
 
+## Download
+
+<!-- downloads:start -->
+Ainda não há uma build publicada. Ela entra aqui quando o workflow de release termina.
+<!-- downloads:end -->
+
 ## O que dá para fazer
 
 - Colar um link `http` ou `https`, ou digitar e tocar em **Baixar**. Um link copiado aparece numa faixa ao abrir ou ao focar a janela. A faixa nunca começa o download sozinha.

@@ -1,0 +1,147 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter test
+
+  build:
+    needs: test
+    name: ${{ matrix.platform.name }}
+    runs-on: ${{ matrix.platform.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - name: macos
+            runner: macos-latest
+          # windows-2022 traz o Visual Studio 2022 com o workload de C++ que o Flutter procura.
+          # ubuntu-24.04 fica fixo: ubuntu-latest está migrando para 26.04 e o .deb depende do libmpv2 dessa imagem.
+          - name: windows
+            runner: windows-2022
+          - name: linux
+            runner: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Dependências do Linux
+        if: matrix.platform.name == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-dev libmpv-dev libepoxy-dev
+
+      - name: NuGet no PATH
+        if: matrix.platform.name == 'windows'
+        shell: pwsh
+        run: |
+          # flutter_inappwebview_windows chama `nuget` no CMake para baixar o WebView2.
+          $dest = Join-Path $env:RUNNER_TEMP "nuget.exe"
+          Invoke-WebRequest "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe" -OutFile $dest
+          $env:RUNNER_TEMP | Out-File -FilePath $env:GITHUB_PATH -Append
+
+      - name: WiX 5 no PATH
+        if: matrix.platform.name == 'windows'
+        shell: pwsh
+        run: |
+          dotnet tool install --global wix --version 5.0.2
+          Join-Path $env:USERPROFILE ".dotnet\tools" | Out-File -FilePath $env:GITHUB_PATH -Append
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Build macOS
+        if: matrix.platform.name == 'macos'
+        run: |
+          flutter config --enable-macos-desktop
+          # O runner não tem o perfil dvmax-notary. Sem este flag o script tenta notarizar e falha.
+          ./scripts/build_macos.sh --skip-notarize
+
+      - name: Build Windows
+        if: matrix.platform.name == 'windows'
+        shell: pwsh
+        run: |
+          flutter config --enable-windows-desktop
+          ./scripts/build_windows.ps1 -RequireMsi
+
+      - name: Build Linux
+        if: matrix.platform.name == 'linux'
+        run: |
+          flutter config --enable-linux-desktop
+          ./scripts/build_linux.sh
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: dist-${{ matrix.platform.name }}
+          path: dist/*
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event_name == 'push' && 'main' || github.ref }}
+
+      - uses: actions/download-artifact@v5
+        with:
+          pattern: dist-*
+          merge-multiple: true
+          path: dist
+
+      - name: Publicar release e atualizar o README
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          README_BRANCH: ${{ github.event_name == 'push' && 'main' || github.ref_name }}
+        run: |
+          set -euo pipefail
+          SEMVER="$(python3 scripts/update_readme_downloads.py --dist dist --version-only)"
+          if [ "${GITHUB_EVENT_NAME}" = "push" ]; then
+            TAG="${GITHUB_REF_NAME}"
+          else
+            TAG="v${SEMVER}"
+          fi
+          NOTES="$(mktemp)"
+          printf 'Instaladores do DV Max %s.\n' "${SEMVER}" > "${NOTES}"
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            gh release upload "${TAG}" dist/* --clobber
+          else
+            gh release create "${TAG}" dist/* \
+              --title "DV Max ${SEMVER}" \
+              --notes-file "${NOTES}" \
+              --target "${GITHUB_SHA}"
+          fi
+          python3 scripts/update_readme_downloads.py \
+            --dist dist \
+            --tag "${TAG}" \
+            --repo "${GITHUB_REPOSITORY}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          if git diff --cached --quiet; then
+            echo "README sem mudanças."
+          else
+            git commit -m "docs: atualiza os links de download da versão ${SEMVER}"
+            git push origin "HEAD:${README_BRANCH}"
+          fi

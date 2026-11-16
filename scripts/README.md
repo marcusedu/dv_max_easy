@@ -5,7 +5,7 @@ Este diretório contém os scripts automatizados para compilar e gerar os pacote
 | Plataforma | Formato de Distribuição | Script Responsável | Requisitos |
 | :--- | :--- | :--- | :--- |
 | **macOS** | `.dmg` (Apple Disk Image) | [`scripts/build_macos.sh`](./build_macos.sh) | macOS 12+, Xcode / CommandLineTools |
-| **Windows** | `.msi` (Windows Installer) + `.zip` | [`scripts/build_windows.ps1`](./build_windows.ps1) | Windows 10/11 x64, Visual Studio C++, [WiX Toolset](https://wixtoolset.org/) |
+| **Windows** | `.msi` (Windows Installer) + `.zip` | [`scripts/build_windows.ps1`](./build_windows.ps1) | Windows 10/11 x64, Visual Studio C++, `nuget.exe` no PATH, [WiX Toolset](https://wixtoolset.org/) 5 |
 | **Linux** | `.deb` (Debian/Ubuntu) + `.tar.gz` | [`scripts/build_linux.sh`](./build_linux.sh) | Linux x64, `clang`, `cmake`, `ninja`, `pkg-config`, `libgtk-3-dev` |
 
 ---
@@ -58,24 +58,28 @@ Todos os instaladores gerados são gravados na pasta **`dist/`** na raiz do proj
 
 # Se já tiver executado 'flutter build windows --release':
 .\scripts\build_windows.ps1 -SkipBuild
+
+# Falha se o .msi não for gerado (é o que o GitHub Actions usa):
+.\scripts\build_windows.ps1 -RequireMsi
 ```
 
 ### Requisitos do WiX Toolset para gerar o `.msi`:
 O script suporta tanto o **WiX v4/v5** (moderno) quanto o **WiX v3**:
 ```powershell
-# Instalação recomendada (WiX v4 via .NET CLI):
-dotnet tool install --global wix
+# Instalação recomendada. O diretório dos tools globais precisa estar no PATH.
+dotnet tool install --global wix --version 5.0.2
 
 # Ou via Windows Package Manager:
 winget install WiX
 ```
+O `nuget.exe` também precisa estar no PATH. O plugin `flutter_inappwebview` baixa o WebView2 durante o `flutter build windows`. Sem o NuGet, a compilação para antes do WiX.
 *Nota: Caso o WiX Toolset não esteja instalado na máquina, o script gerará automaticamente o pacote portátil universal `.zip` e exibirá as instruções de instalação do WiX.*
 
 ### O que o script faz:
 1. Extrai a versão de 4 dígitos necessária para o Windows Installer (`X.Y.Z.Build`).
 2. Compila a aplicação via `flutter build windows --release`.
 3. Gera o arquivo portátil comprimido `.zip` contendo todos os binários e dependências nativas (`dist/DV_Max_<VERSAO>_windows_x64.zip`).
-4. Gera o código-fonte WiX com inclusão de todos os arquivos do bundle, DLLs de plugins e atalhos na Área de Trabalho e no Menu Iniciar.
+4. Gera o código-fonte WiX com os arquivos do bundle e um atalho no Menu Iniciar. O atalho da Área de Trabalho fica de fora: num instalador por máquina ele reprova a validação do Windows Installer.
 5. Compila o instalador `.msi` (`dist/DV_Max_<VERSAO>_x64.msi`).
 6. Calcula o checksum SHA-256 de todos os artefatos.
 
@@ -102,60 +106,8 @@ winget install WiX
 
 ---
 
-## 🤖 Exemplo para GitHub Actions (CI/CD)
+## GitHub Actions
 
-```yaml
-name: Release Builds
+O workflow [`.github/workflows/release.yml`](../.github/workflows/release.yml) compila macOS, Windows e Linux, publica um GitHub Release e reescreve a seção Download do `README.md`. Ele roda ao enviar uma tag `v*` (por exemplo `v1.2.0`) ou pelo botão Run workflow.
 
-on:
-  push:
-    tags:
-      - 'v*'
-
-jobs:
-  macos:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-      - name: Build macOS DMG
-        run: ./scripts/build_macos.sh
-      - uses: actions/upload-artifact@v4
-        with:
-          name: macos-dmg
-          path: dist/*.dmg
-
-  windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-      - name: Install WiX
-        run: dotnet tool install --global wix
-      - name: Build Windows MSI
-        run: .\scripts\build_windows.ps1
-      - uses: actions/upload-artifact@v4
-        with:
-          name: windows-installer
-          path: dist/*.*
-
-  linux:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install Linux Build Dependencies
-        run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-      - name: Build Linux Packages
-        run: ./scripts/build_linux.sh
-      - uses: actions/upload-artifact@v4
-        with:
-          name: linux-packages
-          path: dist/*.*
-```
+No Windows o job coloca o `nuget.exe` e o WiX 5 no PATH e chama `.\scripts\build_windows.ps1 -RequireMsi`. No macOS passa `--skip-notarize`, porque o runner não tem o perfil `dvmax-notary`.
